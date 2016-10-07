@@ -134,9 +134,11 @@ function removeFromSelected() {
 </script>
 
 <p>
-<a href="/vote/index.php "><input type="button" onclick=t"alert('Cancel')" value="Cancel"></a>
-<input type="button" onclick="alert('Save')" value="Save">
+<a href="/vote/index.php "><input type="button" value="Cancel"></a>
+<form id="votingOptions" name="votingOptions">
+<input type="button" value="Save">
 <input type="button" onclick="alert('Start')" value="Start">
+</form>
 </p>
 
 </body>
