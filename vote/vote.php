@@ -25,12 +25,12 @@
 	$result = $conn->query($selectCmd);
 
 	# Output results from command
-	if($result->num_rows > 0) {
-		echo "Results available";
-		$resultsAvailable = true;
-	} else {
-		echo "0 results<br>";
-	}
+	#if($result->num_rows > 0) {
+	#	echo "Results available";
+	#	$resultsAvailable = true;
+	#} else {
+	#	echo "0 results<br>";
+	#}
 
 	# Close connection to db
 	#$conn->close();
@@ -68,7 +68,7 @@ Date Deactive(MM/DD): <input size=2" type="number" name="monthDeactive"> /
 <tr>
 	<td>
 	<!-- Selection displays the names and titles of professors -->
-	<select id="profSel" size="20" ondblclick="dbClickFct()">
+	<select id="profSel" size="20" ondblclick="addToSelected()">
 	<?php 
 		# Variables used to store a professors information
 		$firstName = $lastName = $title = "";
@@ -90,27 +90,54 @@ Date Deactive(MM/DD): <input size=2" type="number" name="monthDeactive"> /
 	
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
-	<select id="selected" size="20">
-	<option>TESTING123 </option>
+	<select id="selected" size="20" ondblclick="removeFromSelected()">
 	</select>
 	</td>
 </tr>
-
 </table>
 
-<script>
-function dbClickFct() {
-	# Get the name of the professor that was doubled clicked
-	var index = document.getElementById("profSel").selectedIndex;
-	var profName = document.getElementsByTagName("option")[index].value	
+<script type="text/javascript">
+function addToSelected() {
+	// Get the name of the professor that was doubled clicked
+ 	var index = document.getElementById("profSel").selectedIndex;
+	var profName = document.getElementsByTagName("option")[index].value;
+	
+	// Check to the 'selected' list so that duplicates are not add to the list
+	var selectedProfs = document.getElementById("selected");
+	var professors = selectedProfs.options;
+	
+	var profFound = false;
+	for(var x=0; x < professors.length; x++) {
+		if(professors[x].value == profName)
+		{
+			profFound = true;
+		}
+	}
 
-	var select = document.getElementById("selected");
-	alert(
-	var option = new Option(profName, profName);
+	// Add the professor to the 'selected' list 	
+	if(!profFound) {
+		// Places the selected list in a variable so that options can be added to the list 
+		var option = document.createElement("option");
+		option.text = profName;
+		option.value = profName;
+		selectedProfs.add(option);
+	} else {
+		alert(profName+" is already selected to participate.");
+	}
+};
 
-	document.getElementById("selected").appendChild(option);	
-}
+// Remove the selected professor from the list
+function removeFromSelected() {
+	var selected = document.getElementById("selected");
+	selected.remove(selected.selectedIndex);			
+};
 </script>
+
+<p>
+<a href="/vote/index.php "><input type="button" onclick=t"alert('Cancel')" value="Cancel"></a>
+<input type="button" onclick="alert('Save')" value="Save">
+<input type="button" onclick="alert('Start')" value="Start">
+</p>
 
 </body>
 </html>

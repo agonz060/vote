@@ -25,12 +25,12 @@
 	$result = $conn->query($selectCmd);
 
 	# Output results from command
-	if($result->num_rows > 0) {
-		echo "Results available";
-		$resultsAvailable = true;
-	} else {
-		echo "0 results<br>";
-	}
+	#if($result->num_rows > 0) {
+	#	echo "Results available";
+	#	$resultsAvailable = true;
+	#} else {
+	#	echo "0 results<br>";
+	#}
 
 	# Close connection to db
 	#$conn->close();
@@ -59,25 +59,85 @@ Date Deactive(MM/DD): <input size=2" type="number" name="monthDeactive"> /
 <input size="2" type="number" name="dayDeactive"><br>
 </p>
 
-<!-- Selection displays the names and titles of professors -->
-<select id="profSel" size="20" ondblclick="dbClickFct()">
-<?php 
-	# Variables used to store a professors information
-	$firstName = $lastName = $title = "";
-	$fullName = $selection = "";
-	
-	# Store results from database into variables for displaying 
-	while($row = $result->fetch_assoc()) {
-		$firstName = $row["FirstName"];
-		$lastName = $row["LastName"];
-		$title = $row["Title"];
-		$fullName = $firstName." ".$lastName;
-		$selection = " ".$fullName." : ".$title." ";
+<table style="width:30%">
+<tr>
+	<td align="center">Professors</td>
+	<td>Participating Professors</td>
+</tr>
 
-		echo "<option>".$selection."</option>";	
+<tr>
+	<td>
+	<!-- Selection displays the names and titles of professors -->
+	<select id="profSel" size="20" ondblclick="addToSelected()">
+	<?php 
+		# Variables used to store a professors information
+		$firstName = $lastName = $title = "";
+		$fullName = $selection = "";
+	
+		# Store results from database into variables for displaying 
+		while($row = $result->fetch_assoc()) {
+			$firstName = $row["FirstName"];
+			$lastName = $row["LastName"];
+			$title = $row["Title"];
+			$fullName = $firstName." ".$lastName;
+			$selection = " ".$fullName." : ".$title." ";
+
+			echo "<option value='$fullName'>".$selection."</option>";	
+		}
+	?>
+	</select>
+	</td>
+	
+	<!-- Selection displays list of double clicked (selected) professors -->
+	<td>
+	<select id="selected" size="20" ondblclick="removeFromSelected()">
+	</select>
+	</td>
+</tr>
+</table>
+
+<script type="text/javascript">
+function addToSelected() {
+	// Get the name of the professor that was doubled clicked
+ 	var index = document.getElementById("profSel").selectedIndex;
+	var profName = document.getElementsByTagName("option")[index].value;
+	
+	// Check to the 'selected' list so that duplicates are not add to the list
+	var selectedProfs = document.getElementById("selected");
+	var professors = selectedProfs.options;
+	
+	var profFound = false;
+	for(var x=0; x < professors.length; x++) {
+		if(professors[x].value == profName)
+		{
+			profFound = true;
+		}
 	}
-?>
-</select>
+
+	// Add the professor to the 'selected' list 	
+	if(!profFound) {
+		// Places the selected list in a variable so that options can be added to the list 
+		var option = document.createElement("option");
+		option.text = profName;
+		option.value = profName;
+		selectedProfs.add(option);
+	} else {
+		alert(profName+" is already selected to participate.");
+	}
+};
+
+// Remove the selected professor from the list
+function removeFromSelected() {
+	var selected = document.getElementById("selected");
+	selected.remove(selected.selectedIndex);			
+};
+</script>
+
+<p>
+<input type="button" onclick=t"alert('Cancel')" value="Cancel">
+<input type="button" onclick="alert('Save')" value="Save">
+<input type="button" onclick="alert('Start')" value="Start">
+</p>
 
 </body>
 </html>
