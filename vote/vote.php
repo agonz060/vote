@@ -35,6 +35,8 @@ function addToSelected() {
 	}
 };
 
+
+
 // Remove the selected professor from the list
 function removeFromSelected() {
 	var selected = document.getElementById("selected");
@@ -45,7 +47,7 @@ function removeFromSelected() {
 
 <body>
 
-<!-- PHP begins -->
+<!-- PHP for server connection begins -->
 <?php
 	# Setup variables necessary to connect to database
 	$serverName = "localhost";
@@ -67,14 +69,6 @@ function removeFromSelected() {
 
 	# Execute command
 	$result = $conn->query($selectCmd);
-
-	# Output results from command
-	#if($result->num_rows > 0) {
-	#	echo "Results available";
-	#	$resultsAvailable = true;
-	#} else {
-	#	echo "0 results<br>";
-	#}
 
 	# Close connection to db
 	#$conn->close();
@@ -131,6 +125,12 @@ function removeFromSelected() {
 			} else {
 				$errDeactDate = getDateErrMsg($validDay,$validMonth);
 			}
+		}
+
+		# Process comment for selected professors
+		if(!empty($_POST["profComBox"])) {
+			$comment = $_POST["profComBox"];
+			echo "Comment: $comment <br>";			
 		}	
 	}
 
@@ -199,8 +199,9 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 <!-- Begin professor selection -->
 <table style="width:30%">
 <tr>
-	<td align="center">Professors</td>
+	<td>Professors</td>
 	<td>Participating Professors</td>
+	<td>Comments</td>
 </tr>
 
 <tr>
@@ -228,8 +229,16 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 	
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
-	<select id="selected" size="20" ondblclick="removeFromSelected()">
+	<select id="selected" size="20">
 	</select>
+	</td>
+
+	<td>
+	<form>
+	<textarea name="profComBox" rows="3" cols="20"></textarea> 
+	<input type="button" value="Remove" onclick="removeFromSelected()">
+	<input type="submit" value="Save">  	
+	</form>
 	</td>
 </tr>
 </table>
@@ -240,6 +249,7 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 <input type="submit" value="Start">
 </p>
 </form>
+<!-- User input form ends here -->
 
 </body>
 </html>
