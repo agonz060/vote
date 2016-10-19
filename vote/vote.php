@@ -42,6 +42,7 @@ function removeFromSelected() {
 	var selected = document.getElementById("selected");
 	selected.remove(selected.selectedIndex);			
 };
+
 </script>
 </head>
 
@@ -237,7 +238,7 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 	<form>
 	<textarea name="profComBox" rows="3" cols="20"></textarea> 
 	<input type="button" value="Remove" onclick="removeFromSelected()">
-	<input type="submit" value="Save">  	
+	<input type="button" value="Save">  	
 	</form>
 	</td>
 </tr>
