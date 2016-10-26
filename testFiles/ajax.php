@@ -1,36 +1,28 @@
+<?php session_start(); ?>
 <html>
 <head>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript"
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript" src="js/jquery.validate.js"></script>
 <script type="text/javascript" src="js/jquery.form.js"></script>
 <script type="text/javascript">
-	$(function() {
-		$("#saveCmt").click(function(e) {
-			e.preventDefault();
-			var comment = $("#comment").val();
-			$.ajax({
-				type: "POST",
-				url: "saveCmt.php",
-				data: {comment:comment},
-				success: function() {
-				 	alert("comment saved");	
-				},
-				error:function(e){alert("failed to save");}
-			});
-		});
+$(document).ready(function() {
+        $("#saveCmt").click(function(e) {
+                var txtCmt  = $("#cmtText").val();
+                $.post("saveCmt.php", {comment : txtCmt},
+                function(response,status) {
+                        alert("response: " + response+"\n\nStatus: " + status);
+                 });
+        });
 });
 </script>
 </head>
 
 <body>
-
-<form name="cmtBox" id="cmtBox" action="saveCmt.php" method="post">
-<textarea name="comment" rows="3" cols="30"></textarea>
-<input type="button" id="saveCmt" name="saveCmt" value="Save"  >
-
-<p name="result" id="result"></p>
+<form name="profCmt" id="profCmt" >
+<textarea name="cmtText" id="cmtText" rows="3" cols="30"></textarea>
 </form>
+<input type="button" id="saveCmt" name="saveCmt" value="Save"  >
 
 </body>
 </html>
-
