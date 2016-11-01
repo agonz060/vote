@@ -34,9 +34,6 @@ function addToSelected() {
 		alert(profName+" is already selected to participate.");
 	}
 };
-
-
-
 // Remove the selected professor from the list
 function removeFromSelected() {
 	var selected = document.getElementById("selected");
@@ -44,6 +41,18 @@ function removeFromSelected() {
 };
 
 </script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+$(function () {
+	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
+	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
+});
+</script>
+
+
 </head>
 
 <body>
@@ -53,7 +62,7 @@ function removeFromSelected() {
 	# Setup variables necessary to connect to database
 	$serverName = "localhost";
 	$userName = "root";
-	$pwd = "on^yp6Ai";
+	$pwd = "shaking99";
 	$db = "Voting";	
 	$resultsAvailable = false;
 
@@ -77,7 +86,8 @@ function removeFromSelected() {
 ?>
 
 <!-- PHP that processes user input begins here -->
-<?php 
+<?php
+	date_default_timezone_set('America/Los_Angeles'); 
 	# Set voting variables
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = "";
@@ -93,41 +103,37 @@ function removeFromSelected() {
 			$title = cleanInput($_POST["title"]);
 			$validTitle = true;
 		}
-		
 		# Check for valid activation date input
-		if(empty($_POST["monthActive"]) || empty($_POST["dayActive"])) {
-			$errActDate = "* Invalid activation date";
+		if(empty($_POST["dateActive"])) {
+			$errActDate = "* Invalid Activation Date";
 		} else {
-			$day = $_POST["dayActive"];
-			$month = $_POST["monthActive"]; 	
-			
-			$validDay = isValidDate($day);
-			$validMonth = isValidDate($month);
-
-			if($validDay && $validMonth) {
+			$dateAct = $_POST["dateActive"];
+			$tmp_dateAct = new DateTime($dateAct);
+			list($year, $month, $day) = split('[-]',$dateAct);
+			if(checkdate($month,$day,$year)) {
 				$validActDate = true;	
 			} else {
-				$errDeactDate = getDateErrMsg($validDay,$validMonth);
+				$errActDate = "Invalid Activation Date";
 			}	
 		}	
 	 	
 	 	# Check for valid deactivation date input
-		if(empty($_POST["monthDeactive"]) || empty($_POST["dayDeactive"])) {
-			$errDeactDate = "* Invalid deactivation date";  
+		if(empty($_POST["dateDeactive"])) {
+			$errDeactDate = "* Invalid Deactivation Date";  
 		} else {
-			$day = $_POST["dayDeactive"];
-			$month = $_POST["monthDeactive"]; 	
-			
-			$validDay = isValidDate($day);
-			$validMonth = isValidDate($month);
-
-			if($validDay && $validMonth) {
+			$dateDeact = $_POST["dateDeactive"];
+			$tmp_dateDeact = new DateTime($dateDeact);
+			list($year,$month,$day) = split('[-]',$dateDeact);	
+			if(checkdate($month,$day,$year)) {
 				$validDeactDate = true;	
-			} else {
-				$errDeactDate = getDateErrMsg($validDay,$validMonth);
+			}
+			else {
+				$errDeactDate = "Invalid Deactivation Date";
 			}
 		}
-
+	 	if($tmp_dateDeact < $tmp_dateAct) {
+			$errDeactDate = "Deactivation Date cannot come before Activation Date.";
+		}		
 		# Process comment for selected professors
 		if(!empty($_POST["profComBox"])) {
 			$comment = $_POST["profComBox"];
@@ -141,7 +147,7 @@ function removeFromSelected() {
 		$data = htmlspecialchars($data);
 		return $data;
 	}
-
+	/*
 	function isValidDate($date) {
 		# Regex checks for a digit at the beginning and ending of input
 		$dateReg = "/^[0-9][0-9]$/";
@@ -151,7 +157,8 @@ function removeFromSelected() {
 			return false;
 		} else { return true; }	
 	}
-
+	
+		
 	function getDateErrMsg($valDay, $valMonth) {
 		if(!$valDay && !$valMonth) {
 			return "* Invalid month & date";
@@ -161,6 +168,7 @@ function removeFromSelected() {
 			return "* Invalid month";
 		}
 	}
+	*/
 ?>
 
 <!-- HTML for page Voting page elements begins here --> 
@@ -187,15 +195,10 @@ Description/Comments: <br><textarea name="voteDescription" form="votingInfo" row
 </p>
 
 <!-- Date vote becomes active/inactive -->
-<p>
-Date Active(MM/DD): <input size="2" name="monthActive" value="<?php if(isset($_POST['monthActive'])) {echo htmlentities ($_POST['monthActive']);} ?>"> 
-/ <input size="2" name="dayActive" value="<?php if(isset($_POST['dayActive'])) {echo htmlentities ($_POST['dayActive']);} ?>">
-<span class="error"><?php echo "$errActDate";?></span><br><br>
-
-Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset($_POST['monthDeactive'])) {echo htmlentities ($_POST['monthDeactive']);} ?>"> 
-/ <input size="2" name="dayDeactive" value="<?php if(isset($_POST['dayDeactive'])) {echo htmlentities ($_POST['dayDeactive']);} ?>">
-<span class="error"><?php echo "$errDeactDate";?></span> <br>
-</p>
+<p>Date Active(YYYY-MM-DD) <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
+<span class ="error"><?php echo "$errActDate";?></span><br>
+<p>Date Deactive(YYYY-MM-DD)<input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
+<span class ="error"><?php echo "$errDeactDate";?></span><br>
 
 <!-- Begin professor selection -->
 <table style="width:30%">
