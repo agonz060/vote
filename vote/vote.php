@@ -62,7 +62,7 @@ $(function () {
 	# Setup variables necessary to connect to database
 	$serverName = "localhost";
 	$userName = "root";
-	$pwd = "shaking99";
+	$pwd = "password";
 	$db = "Voting";	
 	$resultsAvailable = false;
 
