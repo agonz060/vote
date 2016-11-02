@@ -1,0 +1,3 @@
+if($row = $result->fetch_assoc()) {
+	echo "Name: " . $row["FirstName"];
+}
