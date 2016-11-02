@@ -1,8 +1,12 @@
+<?php session_start(); ?>
 <html>
 <head>
 <style>
 .error {color: #FF0000;}
 </style>
+
+<!-- Load javascript sources -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 
 <!-- Double click script that interacts with the list of professors displayed to user -->
 <script type="text/javascript">
@@ -35,17 +39,46 @@ function addToSelected() {
 	}
 };
 
+
+
 // Remove the selected professor from the list
 function removeFromSelected() {
 	var selected = document.getElementById("selected");
 	selected.remove(selected.selectedIndex);			
 };
+
+// Function for posting professor's comment to saveCmt.php without refreshing page
+$(document).ready(function() {
+	alert("here");
+	$("#saveCmt").click(function(e) {
+		var mail = "sucess@asap.net";
+		var txtCmt = $("#profCmtBox").val();
+		
+		$.post("saveCmt.php", {comment : txtCmt, email : mail},
+		function(response,status) {
+			$("#result").html("Comment saved");
+		});
+	});
+});
+
 </script>
+
+<!-- Check php comment for functionality -->
+<?php #This sets global variables ?>
+<?php 	
+	$_SESSION["title"] = "";
+	$_SESSION["actDate"] = "";
+	$_SESSION["deactDate"] = "";
+	$_SESSION["voteDescrip"] = "";
+	$_SESSION["votingProfs"] = "";
+	$_SESSION["profCmts"] = ""; 
+?>
+
 </head>
 
 <body>
 
-<!-- PHP begins -->
+<!-- PHP for server connection begins -->
 <?php
 	# Setup variables necessary to connect to database
 	$serverName = "localhost";
@@ -63,18 +96,10 @@ function removeFromSelected() {
 	}
 	
 	# Select first and last name of professor as well as the professor's title
-	$selectCmd = "SELECT FirstName, LastName, Title FROM Professors";
+	$selectCmd = "SELECT * FROM Professors";
 
 	# Execute command
 	$result = $conn->query($selectCmd);
-
-	# Output results from command
-	#if($result->num_rows > 0) {
-	#	echo "Results available";
-	#	$resultsAvailable = true;
-	#} else {
-	#	echo "0 results<br>";
-	#}
 
 	# Close connection to db
 	#$conn->close();
@@ -103,14 +128,14 @@ function removeFromSelected() {
 		if(empty($_POST["monthActive"]) || empty($_POST["dayActive"])) {
 			$errActDate = "* Invalid activation date";
 		} else {
-			$day = $_POST["dayActive"];
-			$month = $_POST["monthActive"]; 	
-			
+			$day = cleanInput($_POST["dayActive"]);
+			$month = cleanInput($_POST["monthActive"]); 	
+				
 			$validDay = isValidDate($day);
 			$validMonth = isValidDate($month);
-
+			
 			if($validDay && $validMonth) {
-				$validActDate = true;	
+				$actDate = $month + "/" + $day;	
 			} else {
 				$errDeactDate = getDateErrMsg($validDay,$validMonth);
 			}	
@@ -120,18 +145,24 @@ function removeFromSelected() {
 		if(empty($_POST["monthDeactive"]) || empty($_POST["dayDeactive"])) {
 			$errDeactDate = "* Invalid deactivation date";  
 		} else {
-			$day = $_POST["dayDeactive"];
-			$month = $_POST["monthDeactive"]; 	
+			$day = cleanInput($_POST["dayDeactive"]);
+			$month = cleanInput($_POST["monthDeactive"]); 	
 			
 			$validDay = isValidDate($day);
 			$validMonth = isValidDate($month);
 
 			if($validDay && $validMonth) {
-				$validDeactDate = true;	
+				$deactDate = $month + "/" + $day;
 			} else {
 				$errDeactDate = getDateErrMsg($validDay,$validMonth);
 			}
-		}	
+		}
+
+		# Process comment for selected professors
+		if(!empty($_POST["profComBox"])) {
+			$comment = $_POST["profComBox"];
+		}
+			
 	}
 
 	function cleanInput($data) {
@@ -161,6 +192,12 @@ function removeFromSelected() {
 		}
 	}
 ?>
+
+<!-- Testing -->
+<?php echo "Variables <br>"; ?>
+<?php echo "Act: $actDate <br> Deact: $deactDate <br>"; ?>
+<?php echo "Cmt: $comment <br>"; ?>
+<?php echo "Voting profs: $votingProfs <br>"; ?>
 
 <!-- HTML for page Voting page elements begins here --> 
 
@@ -199,8 +236,9 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 <!-- Begin professor selection -->
 <table style="width:30%">
 <tr>
-	<td align="center">Professors</td>
+	<td>Professors</td>
 	<td>Participating Professors</td>
+	<td>Comments</td>
 </tr>
 
 <tr>
@@ -211,15 +249,21 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 		# Variables used to store a professors information
 		$firstName = $lastName = $title = "";
 		$fullName = $selection = "";
-	
+		
 		# Store results from database into variables for displaying 
 		while($row = $result->fetch_assoc()) {
 			$firstName = $row["FirstName"];
 			$lastName = $row["LastName"];
 			$title = $row["Title"];
+			$email = $row["Email"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
-
+			
+			# Add professor to array of participating professors
+			$votingProfs = $_SESSION["votingProfs"];
+			$votingProfs[] = $email;
+			$_SESSION["votingProfs"] = $votingProfs;
+			
 			echo "<option value='$fullName'>".$selection."</option>";	
 		}
 	?>
@@ -228,8 +272,19 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 	
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
-	<select id="selected" size="20" ondblclick="removeFromSelected()">
+	<select id="selected" size="20">
 	</select>
+	</td>
+
+	<td>
+	<span class="error">
+	<p id="result" name="result"></p>
+	</span>
+	<form id="profCmt" name="profCmt">
+	<textarea id= "profCmtBox" name="profCmtBox" rows="3" cols="20"></textarea> 
+	<input type="button" value="Remove" onclick="removeFromSelected()">
+	<input type="button" id="saveCmt" name="saveCmt" value="Save">  	
+	</form>
 	</td>
 </tr>
 </table>
@@ -240,6 +295,7 @@ Date Deactive(MM/DD): <input size=2" name="monthDeactive" value="<?php if(isset(
 <input type="submit" value="Start">
 </p>
 </form>
+<!-- User input form ends here -->
 
 </body>
 </html>
