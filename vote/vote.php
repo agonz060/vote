@@ -62,7 +62,7 @@ $(function () {
 	# Setup variables necessary to connect to database
 	$serverName = "localhost";
 	$userName = "root";
-	$pwd = "password";
+	$pwd = "shaking99";
 	$db = "Voting";	
 	$resultsAvailable = false;
 
@@ -147,28 +147,6 @@ $(function () {
 		$data = htmlspecialchars($data);
 		return $data;
 	}
-	/*
-	function isValidDate($date) {
-		# Regex checks for a digit at the beginning and ending of input
-		$dateReg = "/^[0-9][0-9]$/";
-		$validDate = preg_match($dateReg,$date);
-		
-		if(!$validDate) {
-			return false;
-		} else { return true; }	
-	}
-	
-		
-	function getDateErrMsg($valDay, $valMonth) {
-		if(!$valDay && !$valMonth) {
-			return "* Invalid month & date";
-		} else if(!$valDay) {
-			return  "* Invalid day";
-		} else if(!$valMonth) {
-			return "* Invalid month";
-		}
-	}
-	*/
 ?>
 
 <!-- HTML for page Voting page elements begins here --> 
@@ -239,7 +217,7 @@ Description/Comments: <br><textarea name="voteDescription" form="votingInfo" row
 
 	<td>
 	<form>
-	<textarea name="profComBox" rows="3" cols="20"></textarea> 
+	<textarea name="profComBox" rows="20" cols="20"></textarea> 
 	<input type="button" value="Remove" onclick="removeFromSelected()">
 	<input type="button" value="Save">  	
 	</form>
