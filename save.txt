@@ -1,0 +1,14 @@
+if($row = $result->fetch_assoc()) {
+	echo "Name: " . $row["FirstName"];
+}
+        # Close connection to db
+        #$conn->close();
+?>
+
+f($row = $result->fetch_assoc()) {
+                        echo "<option value="$row["FirstName"]$row["LastName"]>"
+.$row["FirstName"] . " " . $row["LastName"] . " " . $row["Title"];
+                        echo "</option>";
+                }
+        ?> 
+
