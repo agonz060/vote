@@ -18,7 +18,6 @@ function addToSelected() {
 	// Check to the 'selected' list so that duplicates are not add to the list
 	var selectedProfs = document.getElementById("selected");
 	var professors = selectedProfs.options;
-	
 	var profFound = false;
 	for(var x=0; x < professors.length; x++) {
 		if(professors[x].value == profName)
@@ -34,50 +33,67 @@ function addToSelected() {
 		option.text = profName;
 		option.value = profName;
 		selectedProfs.add(option);
+
+		// Send professor name to php page for storage
+		$.post("add.php", {name : profName},
+			function(response,status) {
+		});
+  
 	} else {
 		alert(profName+" is already selected to participate.");
 	}
 };
-<<<<<<< HEAD
 
-
-
-=======
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
 // Remove the selected professor from the list
 function removeFromSelected() {
+	// Select highlighted professor from list for removal
 	var selected = document.getElementById("selected");
-	selected.remove(selected.selectedIndex);			
+	var name = selected.value;
+	
+	// Remove professor from 'Participating Professors' selection
+	selected.remove(selected.selectedIndex);
+	
+	// Post index to php file so that the appropiate professor can be removed
+	// from the list of participating professors
+	$.post("remove.php", {name : name}, 
+		function(response,status) {
+	}); 
 };
 
-<<<<<<< HEAD
-// Function for posting professor's comment to saveCmt.php without refreshing page
-$(document).ready(function() {
-	alert("here");
-	$("#saveCmt").click(function(e) {
-		var mail = "sucess@asap.net";
-		var txtCmt = $("#profCmtBox").val();
+// Function resets professor comment box and "Comment Saved" message
+// when a new participatig professor is selected
+function newSelection() {
+	document.getElementById("result").innerHTML = "";
+	var name = document.getElementById("selected").value;
+	
+	$.post("getCmt.php", { name : name }, 
+		function(response) {
+			$("#profCmtBox").html(response);
+		}
+	);
+	
 		
-		$.post("saveCmt.php", {comment : txtCmt, email : mail},
-		function(response,status) {
-			$("#result").html("Comment saved");
-		});
+}; 
+
+// These functions wait until the page has loaded before executing
+$(document).ready(function() {
+	// Function stores a comment for a selected professor on button click
+	// by passing along the comment and professors name to a saveCmt.php
+	$("#saveCmt").click(function(e) {
+		var txtCmt = $("#profCmtBox").val();
+		var selected = document.getElementById("selected");
+		var name = selected.value;
+		
+		if(txtCmt && name) {	
+			$.post("saveCmt.php", {name : name, comment : txtCmt},
+				function(response,status) {
+					$("#result").html("Comment saved");
+			});
+		}
 	});
 });
 
-</script>
 
-<!-- Check php comment for functionality -->
-<?php #This sets global variables ?>
-<?php 	
-	$_SESSION["title"] = "";
-	$_SESSION["actDate"] = "";
-	$_SESSION["deactDate"] = "";
-	$_SESSION["voteDescrip"] = "";
-	$_SESSION["votingProfs"] = "";
-	$_SESSION["profCmts"] = ""; 
-?>
-=======
 </script>
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -90,48 +106,31 @@ $(function () {
 });
 </script>
 
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
 
 </head>
 
-<body>
-
-<!-- PHP for server connection begins -->
-<?php
-	# Setup variables necessary to connect to database
-	$serverName = "localhost";
-	$userName = "root";
-	$pwd = "shaking99";
-	$db = "Voting";	
-	$resultsAvailable = false;
-
-	# Establish connection with db (using setting from variables above)
-	$conn = new mysqli($serverName, $userName, $pwd, $db);
-
-	# Check connection to db
-	if($conn->connect_error) {
-		echo "Connection error: " . $conn->connect_error . "<br>";
-	}
-	
-	# Select first and last name of professor as well as the professor's title
-	$selectCmd = "SELECT * FROM Professors";
-
-	# Execute command
-	$result = $conn->query($selectCmd);
-
-	# Close connection to db
-	#$conn->close();
-
+<!-- Check php comment for functionality -->
+<?php #This sets global variables 
+	$_SESSION["title"] = "";
+	$_SESSION["actDate"] = "";
+	$_SESSION["deactDate"] = "";
+	$_SESSION["voteDescrip"] = "";
+	$_SESSION["votingProfs"] = array();
+	$_SESSION["profCmts"] = array(); 
 ?>
+
+<!-- Connect to database to load professor information -->
+<?php require "loadProfs.php"; ?> 
 
 <!-- PHP that processes user input begins here -->
 <?php
-	date_default_timezone_set('America/Los_Angeles'); 
 	# Set voting variables
+	date_default_timezone_set('America/Los_Angeles'); 
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = "";
+	$tmp_dateDeact = $tmp_dateAct = "";
 	$errTitle = $errActDate = $errDeactDate = "";
-	$validTitle = $validMonth = $validDay = $validActDate = $validDeactDate = false;
+	$validTitle =  $validActDate = $validDeactDate = false;
 	
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -140,76 +139,57 @@ $(function () {
 			$errTitle = "* Title is required";
 		} else {
 			$title = cleanInput($_POST["title"]);
+			$_SESSION["title"] = $title;
 			$validTitle = true;
 		}
+
 		# Check for valid activation date input
 		if(empty($_POST["dateActive"])) {
 			$errActDate = "* Invalid Activation Date";
 		} else {
-<<<<<<< HEAD
-			$day = cleanInput($_POST["dayActive"]);
-			$month = cleanInput($_POST["monthActive"]); 	
-				
-			$validDay = isValidDate($day);
-			$validMonth = isValidDate($month);
-			
-			if($validDay && $validMonth) {
-				$actDate = $month + "/" + $day;	
-=======
 			$dateAct = $_POST["dateActive"];
 			$tmp_dateAct = new DateTime($dateAct);
 			list($year, $month, $day) = split('[-]',$dateAct);
 			if(checkdate($month,$day,$year)) {
-				$validActDate = true;	
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
+				$_SESSION["actDate"] = $dateAct;
+				$validActDate = true;
 			} else {
 				$errActDate = "Invalid Activation Date";
-			}	
+			}
 		}	
 	 	
 	 	# Check for valid deactivation date input
 		if(empty($_POST["dateDeactive"])) {
 			$errDeactDate = "* Invalid Deactivation Date";  
 		} else {
-<<<<<<< HEAD
-			$day = cleanInput($_POST["dayDeactive"]);
-			$month = cleanInput($_POST["monthDeactive"]); 	
-			
-			$validDay = isValidDate($day);
-			$validMonth = isValidDate($month);
-
-			if($validDay && $validMonth) {
-				$deactDate = $month + "/" + $day;
-			} else {
-				$errDeactDate = getDateErrMsg($validDay,$validMonth);
-			}
-		}
-
-		# Process comment for selected professors
-		if(!empty($_POST["profComBox"])) {
-			$comment = $_POST["profComBox"];
-		}
-			
-=======
 			$dateDeact = $_POST["dateDeactive"];
 			$tmp_dateDeact = new DateTime($dateDeact);
 			list($year,$month,$day) = split('[-]',$dateDeact);	
 			if(checkdate($month,$day,$year)) {
-				$validDeactDate = true;	
+				$_SESSION["deactDate"] = $dateDeact;
+				$validDeactDate = true; 
 			}
 			else {
 				$errDeactDate = "Invalid Deactivation Date";
 			}
 		}
-	 	if($tmp_dateDeact < $tmp_dateAct) {
+	 	
+		if($tmp_dateDeact < $tmp_dateAct) {
 			$errDeactDate = "Deactivation Date cannot come before Activation Date.";
+			$_SESSION["deactDate"] = "";
 		}		
+		
 		# Process comment for selected professors
-		if(!empty($_POST["profComBox"])) {
-			$comment = $_POST["profComBox"];
-			echo "Comment: $comment <br>";			
-		}	
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
+		if(!empty($_POST["voteDescription"])) {
+			$_SESSION["voteDescrip"] = $_POST["voteDescription"];
+		}
+			
+		echo "Title: ".$_SESSION["title"]."<br>";
+		echo "Descr: ".$_SESSION["voteDescrip"]."<br>";
+		echo "ActDate: ".$_SESSION["actDate"]."<br>";
+		echo "DeactDate: ".$_SESSION["deactDate"]."<br>";
+		echo "Participating: "; print_r($_SESSION["votingProfs"]);
+		echo "Prof. Cmts: "; print_r($_SESSION["profCmts"]);
 	}
 
 	function cleanInput($data) {
@@ -219,12 +199,6 @@ $(function () {
 		return $data;
 	}
 ?>
-
-<!-- Testing -->
-<?php echo "Variables <br>"; ?>
-<?php echo "Act: $actDate <br> Deact: $deactDate <br>"; ?>
-<?php echo "Cmt: $comment <br>"; ?>
-<?php echo "Voting profs: $votingProfs <br>"; ?>
 
 <!-- HTML for page Voting page elements begins here --> 
 
@@ -246,13 +220,15 @@ Title: <input type="text" name="title" value="<?php if(isset($_POST['title'])) {
 
 <!-- Descriptions/Comments about vote -->
 <p>
-Description/Comments: <br><textarea name="voteDescription" form="votingInfo" rows="5" cols="70"><?php echo "$description"; ?></textarea></br>
+Description: <br><textarea id= "voteDescription" name="voteDescription" form="votingInfo" rows="5" cols="70">
+<?php echo $_SESSION["voteDescrip"]; ?>
+</textarea>
 </p>
 
 <!-- Date vote becomes active/inactive -->
-<p>Date Active(YYYY-MM-DD) <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
+<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
 <span class ="error"><?php echo "$errActDate";?></span><br>
-<p>Date Deactive(YYYY-MM-DD)<input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
+<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
 <span class ="error"><?php echo "$errDeactDate";?></span><br>
 
 <!-- Begin professor selection -->
@@ -269,22 +245,16 @@ Description/Comments: <br><textarea name="voteDescription" form="votingInfo" row
 	<select id="profSel" size="20" ondblclick="addToSelected()">
 	<?php 
 		# Variables used to store a professors information
-		$firstName = $lastName = $title = "";
+		$firstName = $lastName = $title = $email = "";
 		$fullName = $selection = "";
 		
-		# Store results from database into variables for displaying 
+		# Store results from database for displaying 
 		while($row = $result->fetch_assoc()) {
 			$firstName = $row["FirstName"];
 			$lastName = $row["LastName"];
 			$title = $row["Title"];
-			$email = $row["Email"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
-			
-			# Add professor to array of participating professors
-			$votingProfs = $_SESSION["votingProfs"];
-			$votingProfs[] = $email;
-			$_SESSION["votingProfs"] = $votingProfs;
 			
 			echo "<option value='$fullName'>".$selection."</option>";	
 		}
@@ -294,26 +264,17 @@ Description/Comments: <br><textarea name="voteDescription" form="votingInfo" row
 	
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
-	<select id="selected" size="20">
+	<select id="selected" size="20" onclick="newSelection()">
 	</select>
 	</td>
 
 	<td>
-<<<<<<< HEAD
 	<span class="error">
 	<p id="result" name="result"></p>
 	</span>
-	<form id="profCmt" name="profCmt">
-	<textarea id= "profCmtBox" name="profCmtBox" rows="3" cols="20"></textarea> 
-	<input type="button" value="Remove" onclick="removeFromSelected()">
+	<textarea id="profCmtBox" name="profCmtBox" rows="3" cols="20"></textarea> 
+	<input type="button" id="remove" name="remove" value="Remove" onclick="removeFromSelected()">
 	<input type="button" id="saveCmt" name="saveCmt" value="Save">  	
-=======
-	<form>
-	<textarea name="profComBox" rows="20" cols="20"></textarea> 
-	<input type="button" value="Remove" onclick="removeFromSelected()">
-	<input type="button" value="Save">  	
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
-	</form>
 	</td>
 </tr>
 </table>
@@ -324,7 +285,6 @@ Description/Comments: <br><textarea name="voteDescription" form="votingInfo" row
 <input type="submit" value="Start">
 </p>
 </form>
-<!-- User input form ends here -->
 
 </body>
 </html>
