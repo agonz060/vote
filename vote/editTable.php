@@ -56,7 +56,9 @@
 							$dateModified
 						</td>
 						<td>
-							<button href='vote.php' class='button-edit pure-button' value='$row'>Edit</button>
+							<form method='post' id='editForm' action='editVote.php'>
+							<button href='vote.php' class='button-edit pure-button' name='editRow' value='$row'>Edit</button>
+							</form>
 							<button class='button-delete pure-button' value='$dateModified'>Delete</button> 	
 						</td>			
 					</tr>";
