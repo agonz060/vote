@@ -118,34 +118,9 @@ $(function () {
 	$_SESSION["votingProfs"] = array();
 	$_SESSION["profCmts"] = array(); 
 ?>
-<<<<<<< HEAD
-=======
-=======
-<!-- PHP for server connection begins -->
-<?php
-	# Setup variables necessary to connect to database
-	$serverName = "localhost";
-	$userName = "root";
-	$pwd = "Computer_Science99";
-	$db = "Voting";	
-	$resultsAvailable = false;
-
-	# Establish connection with db (using setting from variables above)
-	$conn = new mysqli($serverName, $userName, $pwd, $db);
-
-	# Check connection to db
-	if($conn->connect_error) {
-		echo "Connection error: " . $conn->connect_error . "<br>";
-	}
-	
-	# Select first and last name of professor as well as the professor's title
-	$selectCmd = "SELECT FirstName, LastName, Title FROM Professors";
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
-
 </head>
 
 <body>
->>>>>>> fa0f0de8dbefd876b50a28ca3f87579e19637319
 
 <!-- Connect to database to load professor information -->
 <?php require "loadProfs.php"; ?> 
@@ -278,9 +253,9 @@ Description: <br><textarea id= "voteDescription" name="voteDescription" form="vo
 		
 		# Store results from database for displaying 
 		while($row = $result->fetch_assoc()) {
-			$firstName = $row["FirstName"];
-			$lastName = $row["LastName"];
-			$title = $row["Title"];
+			$firstName = $row["fName"];
+			$lastName = $row["lName"];
+			$title = $row["title"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
 			

@@ -11,9 +11,9 @@
 		if($conn->connect_error) {
 			echo "Connection error: " . $conn->connect_error . "<br>";
 		}
-		$key = $_POST["dateModified"];	
+		$key = $_POST["poll_id"];	
 		echo $key;
-		$delCmd = "DELETE from Saved WHERE DateModified='".$key."'";
+		$delCmd = "DELETE from Saved WHERE poll_id='".$key."'";
 		$result = $conn->query($delCmd);
 	}
 	else {

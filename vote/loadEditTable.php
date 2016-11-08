@@ -11,7 +11,7 @@
 		echo "Connection error: " . $conn->connect_error . "<br>";
 	}
 	
-	$selectCmd = "Select * from Saved";
+	$selectCmd = "Select * from Polls where deactDate > CURDATE()";
 	
 	$result = $conn->query($selectCmd);
 ?>
