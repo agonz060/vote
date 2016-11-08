@@ -26,19 +26,24 @@ function addToSelected() {
 		}
 	}
 
-	// Add the professor to the 'selected' list 	
+	// Add the professor to the 'selected' list
+	// Keep track of selected professors so that comments can be 
+	// associated with a professor 	
 	if(!profFound) {
 		// Places the selected list in a variable so that options can be added to the list 
 		var option = document.createElement("option");
 		option.text = profName;
 		option.value = profName;
 		selectedProfs.add(option);
+	
+		// Create hidden input to store a voting professors's name and comment 
+ 		var prof = document.createElement("input");
+		prof.setAttribute("type", "hidden");
+		prof.setAttribute("id", profName);
+		prof.setAttribute("value", "");
 
-		// Send professor name to php page for storage
-		$.post("add.php", {name : profName},
-			function(response,status) {
-		});
-  
+		document.getElementById("votingInfo").append(prof);
+		 
 	} else {
 		alert(profName+" is already selected to participate.");
 	}
@@ -52,49 +57,42 @@ function removeFromSelected() {
 	
 	// Remove professor from 'Participating Professors' selection
 	selected.remove(selected.selectedIndex);
-	
-	// Post index to php file so that the appropiate professor can be removed
-	// from the list of participating professors
-	$.post("remove.php", {name : name}, 
-		function(response,status) {
-	}); 
+
+	// Remove professor from participation
+	document.getElementById(name).remove();	
 };
 
-// Function resets professor comment box and "Comment Saved" message
-// when a new participatig professor is selected
+// Function resets professor comment box or loads a professors comment
+//  and "Comment Saved" message when a new participating professor is selected
 function newSelection() {
 	document.getElementById("result").innerHTML = "";
 	var name = document.getElementById("selected").value;
+
+	// Load professor comment from hidden inputs
+	var prof = document.getElementById(name);
+	var cmt = prof.value;
 	
-	$.post("getCmt.php", { name : name }, 
-		function(response) {
-			$("#profCmtBox").html(response);
-		}
-	);
-	
-		
+	var cmtBox = document.getElementById("profCmtBox");
+	if(cmt) {
+		cmtBox.innerHTML = cmt;		
+	} else {
+		cmtBox.innerHTML = "";
+	}	
 }; 
 
-// These functions wait until the page has loaded before executing
-$(document).ready(function() {
-	// Function stores a comment for a selected professor on button click
-	// by passing along the comment and professors name to a saveCmt.php
-	$("#saveCmt").click(function(e) {
-		var txtCmt = $("#profCmtBox").val();
-		var selected = document.getElementById("selected");
-		var name = selected.value;
-		
-		if(txtCmt && name) {	
-			$.post("saveCmt.php", {name : name, comment : txtCmt},
-				function(response,status) {
-					$("#result").html("Comment saved");
-			});
-		}
-	});
-});
+// Store professors comment in a hidden field so the comment
+// can be posted 
+function saveProfCmt() {
+	var selected = document.getElementById("selected");
+	var name = selected.value;
 
-
+	var cmt = document.getElementById("profCmtBox");
+	if(name) {
+		document.getElementByName(name).value = cmt;
+	}
+};
 </script>
+<!-- End of javascript/jquery -->
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
@@ -111,41 +109,9 @@ $(function () {
 
 <!-- Check php comment for functionality -->
 <?php #This sets global variables 
-	$_SESSION["title"] = "";
-	$_SESSION["actDate"] = "";
-	$_SESSION["deactDate"] = "";
-	$_SESSION["voteDescrip"] = "";
-	$_SESSION["votingProfs"] = array();
-	$_SESSION["profCmts"] = array(); 
+	$pollId = "";
+	$profIds = array();
 ?>
-<<<<<<< HEAD
-=======
-=======
-<!-- PHP for server connection begins -->
-<?php
-	# Setup variables necessary to connect to database
-	$serverName = "localhost";
-	$userName = "root";
-	$pwd = "Computer_Science99";
-	$db = "Voting";	
-	$resultsAvailable = false;
-
-	# Establish connection with db (using setting from variables above)
-	$conn = new mysqli($serverName, $userName, $pwd, $db);
-
-	# Check connection to db
-	if($conn->connect_error) {
-		echo "Connection error: " . $conn->connect_error . "<br>";
-	}
-	
-	# Select first and last name of professor as well as the professor's title
-	$selectCmd = "SELECT FirstName, LastName, Title FROM Professors";
->>>>>>> a3f0e493ab66958be516729c6493da30765d03fb
-
-</head>
-
-<body>
->>>>>>> fa0f0de8dbefd876b50a28ca3f87579e19637319
 
 <!-- Connect to database to load professor information -->
 <?php require "loadProfs.php"; ?> 
@@ -153,21 +119,25 @@ $(function () {
 <!-- PHP that processes user input begins here -->
 <?php
 	# Set voting variables
-	date_default_timezone_set('America/Los_Angeles'); 
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = "";
 	$tmp_dateDeact = $tmp_dateAct = "";
 	$errTitle = $errActDate = $errDeactDate = "";
 	$validTitle =  $validActDate = $validDeactDate = false;
+	date_default_timezone_set('America/Los_Angeles'); 
 	
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
+		# Check for pollId
+		if(!empty($_POST["pollId"])) {
+			$pollId = $_POST["pollId"];
+		}
+	
 		# Check for title input; error if not provided
 		if(empty($_POST["title"])) {
 			$errTitle = "* Title is required";
 		} else {
 			$title = cleanInput($_POST["title"]);
-			$_SESSION["title"] = $title;
 			$validTitle = true;
 		}
 
@@ -179,7 +149,6 @@ $(function () {
 			$tmp_dateAct = new DateTime($dateAct);
 			list($year, $month, $day) = split('[-]',$dateAct);
 			if(checkdate($month,$day,$year)) {
-				$_SESSION["actDate"] = $dateAct;
 				$validActDate = true;
 			} else {
 				$errActDate = "Invalid Activation Date";
@@ -194,7 +163,11 @@ $(function () {
 			$tmp_dateDeact = new DateTime($dateDeact);
 			list($year,$month,$day) = split('[-]',$dateDeact);	
 			if(checkdate($month,$day,$year)) {
-				$_SESSION["deactDate"] = $dateDeact;
+				if($tmp_dateAct && $tmp_dateDeact < $tmp_dateAct) {
+					$errDeactDate = "Deactivation Date cannot come before Activation Date.";
+					$dateDeact = "";
+					$validDeactDate = false;
+				}		
 				$validDeactDate = true; 
 			}
 			else {
@@ -202,22 +175,11 @@ $(function () {
 			}
 		}
 	 	
-		if($tmp_dateDeact < $tmp_dateAct) {
-			$errDeactDate = "Deactivation Date cannot come before Activation Date.";
-			$_SESSION["deactDate"] = "";
-		}		
 		
 		# Process comment for selected professors
-		if(!empty($_POST["voteDescription"])) {
-			$_SESSION["voteDescrip"] = $_POST["voteDescription"];
+		if(!empty($_POST["description"])) {
+			$description = $_POST["description"];
 		}
-			
-		echo "Title: ".$_SESSION["title"]."<br>";
-		echo "Descr: ".$_SESSION["voteDescrip"]."<br>";
-		echo "ActDate: ".$_SESSION["actDate"]."<br>";
-		echo "DeactDate: ".$_SESSION["deactDate"]."<br>";
-		echo "Participating: "; print_r($_SESSION["votingProfs"]);
-		echo "Prof. Cmts: "; print_r($_SESSION["profCmts"]);
 	}
 
 	function cleanInput($data) {
@@ -248,8 +210,13 @@ Title: <input type="text" name="title" value="<?php if(isset($_POST['title'])) {
 
 <!-- Descriptions/Comments about vote -->
 <p>
-Description: <br><textarea id= "voteDescription" name="voteDescription" form="votingInfo" rows="5" cols="70">
-<?php echo $_SESSION["voteDescrip"]; ?>
+Description: <br><textarea id="description" name="description" rows="5" cols="70">
+<?php
+	if(isset($_POST["description"])) {
+		echo htmlentities ($_POST["description"]);
+	} 
+	# echo $description;
+ ?>
 </textarea>
 </p>
 
@@ -278,13 +245,19 @@ Description: <br><textarea id= "voteDescription" name="voteDescription" form="vo
 		
 		# Store results from database for displaying 
 		while($row = $result->fetch_assoc()) {
-			$firstName = $row["FirstName"];
-			$lastName = $row["LastName"];
-			$title = $row["Title"];
+			$profId = $row[$profId];
+			$firstName = $row["fName"];
+			$lastName = $row["lName"];
+			$title = $row["title"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
 			
-			echo "<option value='$fullName'>".$selection."</option>";	
+			echo "<option  value='$fullName'>".$selection."</option>";	
+			
+			// Store a mapping of professor names to professor id's 
+			// for quicker storage later on
+			$profId = array($fullName => $profId);
+			$profIds = array_merge($profIds, $profId);
 		}
 	?>
 	</select>
@@ -293,16 +266,54 @@ Description: <br><textarea id= "voteDescription" name="voteDescription" form="vo
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
 	<select id="selected" size="20" onclick="newSelection()">
+	<?php 
+		if(!empty($pollId)) {
+			// Select the first name and last name of all professors participating in the current poll
+			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN";
+			$selectCmd = $selectCmd." ON Professors.profId=Votes.profId WHERE Votes.pollId=$pollId";
+			$result = $conn->query($selectCmd);
+			
+			
+			// Execute sql command and loop through results	
+			while($row = result->fetch_assoc()) {
+				// Store basic professor information
+				$name = $row["fName"];
+				$name = $name. " ".$row["lName"];
+				
+				// Store professor comments using professors name as key
+				$prof = array($name => "");
+				$profCmts = array_merge($profCmts, $prof);
+
+				// Display voting professors name
+				echo "<option value='$name'>".$name."</option>";
+				
+			}
+			
+			// Select all the professors id's and comments associated with "pollId"
+			$selectCmd = "SELECT profId, comment FROM Votes WHERE Votes.pollId=$pollId";
+			$result = $conn->query($selectCmd);
+			
+			while($row = result->fetch_assoc()) {
+				$id = $row["profId"];
+				$cmt = $row["comment"];
+			
+				// Retreive professors name using the professors id	
+				// Then store comment associated with professor
+				$profName = array_search($id, $profIds); 
+			 	$profCmts[$profName] = $cmt;
+			} 
+		}
+	?>
 	</select>
 	</td>
-
+	
 	<td>
 	<span class="error">
 	<p id="result" name="result"></p>
 	</span>
 	<textarea id="profCmtBox" name="profCmtBox" rows="3" cols="20"></textarea> 
 	<input type="button" id="remove" name="remove" value="Remove" onclick="removeFromSelected()">
-	<input type="button" id="saveCmt" name="saveCmt" value="Save">  	
+	<input type="button" id="saveCmt" name="saveCmt" value="Save" onclick="saveProfCmt()">  	
 	</td>
 </tr>
 </table>
