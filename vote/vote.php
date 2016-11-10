@@ -91,6 +91,12 @@ function saveProfCmt() {
 		document.getElementByName(name).value = cmt;
 	}
 };
+
+// Function waits until entire webpage has loaded in order to begin
+// storing professor comments into input fields 
+$(document)ready(function() {
+	
+});
 </script>
 <!-- End of javascript/jquery -->
 
