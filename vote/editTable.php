@@ -32,6 +32,23 @@
 <body>
 <?php require "loadEditTable.php";
 ?>
+<?php
+	/* creating an associative array for profname and comment for each poll_id
+	$cmts=[];	
+	$selectCmd="Select V.prof_id,V.poll_id,V.comment,P.lName,P.fName from Votes as V inner join Professors as P on V.prof_id=P.prof_id";
+ 	$result= $conn->query($selectCmd);
+	while($row=$result->fetch_assoc()) {
+		$poll_id=$row["poll_id"];
+		$prof_id=$row["prof_id"];
+		$cmt=$row["comment"];
+		$lName=$row["lName"];
+		$fName=$row["fName"];
+		$fullname=$fName . " " . $lName;
+		$cmts[$poll_id][$fullname] = $cmt;
+	}
+	var_dump($cmts);
+	*/
+?>
 <table class="pure-table pure-table-bordered" align="center">
 	<thead>
 		<tr>
@@ -45,6 +62,8 @@
 	</thead>
 	<tbody>
 		<?php 
+			$selectCmd="Select * from Polls Where deactDate > CURDATE()";
+			$result = $conn->query($selectCmd);
 			while($row = $result->fetch_assoc()) {
 				$poll_id = $row["poll_id"];
 				$title = $row["title"];
@@ -69,8 +88,12 @@
 							$dateModified
 						</td>
 						<td>
-							<form method='post' id='editForm' action='editVote.php'>
-							<button href='vote.php' class='button-edit pure-button' name='editRow' value='$poll_id'>Edit</button>
+							<form method='post' id='editForm' action='vote.php'>
+								<button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
+								<input type='hidden' name='title' value='$title'>
+								<input type='hidden' name='description' value='$description'>
+								<input type='hidden' name='dateActive' value='$actDate'>
+								<input type='hidden' name='dateDeactive' value='$deactDate'>
 							</form>
 							<button class='button-delete pure-button' value='$poll_id'>Delete</button> 	
 						</td>			
