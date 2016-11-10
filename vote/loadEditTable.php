@@ -11,7 +11,4 @@
 		echo "Connection error: " . $conn->connect_error . "<br>";
 	}
 	
-	$selectCmd = "Select * from Saved";
-	
-	$result = $conn->query($selectCmd);
 ?>

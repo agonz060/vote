@@ -98,6 +98,20 @@ $(document)ready(function() {
 	
 });
 </script>
+<!-- load professors comment on change -->
+<script>
+/* Outputs comment for the selected professor in the commentt box on change
+$(function() {
+	$('#selected').change(function() {
+		var selected = $(this).find('option:selected');
+		var profName = selected.val();
+		var cmt = <?php echo htmlentities($pollId); ?> 
+		alert(cmt);
+		$('#profCmtBox').val(cmt);	
+	});
+});
+*/
+</script>
 <!-- End of javascript/jquery -->
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -117,7 +131,11 @@ $(function () {
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
+	$profCmts = array();
 ?>
+</head>
+
+<body>
 
 <!-- Connect to database to load professor information -->
 <?php require "loadProfs.php"; ?> 
@@ -135,8 +153,10 @@ $(function () {
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
 		# Check for pollId
-		if(!empty($_POST["pollId"])) {
-			$pollId = $_POST["pollId"];
+		# If pollId is set then it is an edit
+		# Initialize all values if edit
+		if(isset($_POST["poll_id"])) {
+			$pollId = $_POST["poll_id"];
 		}
 	
 		# Check for title input; error if not provided
@@ -153,7 +173,7 @@ $(function () {
 		} else {
 			$dateAct = $_POST["dateActive"];
 			$tmp_dateAct = new DateTime($dateAct);
-			list($year, $month, $day) = split('[-]',$dateAct);
+			list($year, $month, $day) = explode("-",$dateAct);
 			if(checkdate($month,$day,$year)) {
 				$validActDate = true;
 			} else {
@@ -167,7 +187,7 @@ $(function () {
 		} else {
 			$dateDeact = $_POST["dateDeactive"];
 			$tmp_dateDeact = new DateTime($dateDeact);
-			list($year,$month,$day) = split('[-]',$dateDeact);	
+			list($year,$month,$day) =explode("-",$dateDeact);	
 			if(checkdate($month,$day,$year)) {
 				if($tmp_dateAct && $tmp_dateDeact < $tmp_dateAct) {
 					$errDeactDate = "Deactivation Date cannot come before Activation Date.";
@@ -205,6 +225,7 @@ $(function () {
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
+<p><?php var_dump($_POST); ?></p>
 <form id="votingInfo" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 
 
@@ -251,7 +272,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 		
 		# Store results from database for displaying 
 		while($row = $result->fetch_assoc()) {
-			$profId = $row[$profId];
+			$profId = $row["prof_id"];
 			$firstName = $row["fName"];
 			$lastName = $row["lName"];
 			$title = $row["title"];
@@ -275,13 +296,13 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<?php 
 		if(!empty($pollId)) {
 			// Select the first name and last name of all professors participating in the current poll
-			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN";
-			$selectCmd = $selectCmd." ON Professors.profId=Votes.profId WHERE Votes.pollId=$pollId";
+			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN Professors";
+			$selectCmd = $selectCmd." ON Professors.prof_id=Votes.prof_id WHERE Votes.poll_id=$pollId";
 			$result = $conn->query($selectCmd);
 			
 			
 			// Execute sql command and loop through results	
-			while($row = result->fetch_assoc()) {
+			while($row = $result->fetch_assoc()) {
 				// Store basic professor information
 				$name = $row["fName"];
 				$name = $name. " ".$row["lName"];
@@ -296,18 +317,17 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			}
 			
 			// Select all the professors id's and comments associated with "pollId"
-			$selectCmd = "SELECT profId, comment FROM Votes WHERE Votes.pollId=$pollId";
+			$selectCmd = "SELECT prof_id, comment FROM Votes WHERE Votes.poll_id=$pollId";
 			$result = $conn->query($selectCmd);
-			
-			while($row = result->fetch_assoc()) {
-				$id = $row["profId"];
+			while($row = $result->fetch_assoc()) {
+				$id = $row["prof_id"];
 				$cmt = $row["comment"];
 			
 				// Retreive professors name using the professors id	
 				// Then store comment associated with professor
 				$profName = array_search($id, $profIds); 
 			 	$profCmts[$profName] = $cmt;
-			} 
+			}
 		}
 	?>
 	</select>
@@ -325,11 +345,11 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </table>
 
 <p>
-<a href="/vote/index.php "><input type="button" value="Cancel"></a>
+<a href="index.php "><input type="button" value="Cancel"></a>
 <input type="submit" value="Save">
 <input type="submit" value="Start">
 </p>
 </form>
-
+<p><?php var_dump($profCmts); ?></p>
 </body>
 </html>
