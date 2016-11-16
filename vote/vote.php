@@ -99,19 +99,18 @@ $(document).ready(function() {
 });
 </script>
 <!-- load professors comment on change -->
-<script>
-/* Outputs comment for the selected professor in the commentt box on change
+/*(<script>
 $(function() {
 	$('#selected').change(function() {
 		var selected = $(this).find('option:selected');
 		var profName = selected.val();
-		var cmt = <?php echo htmlentities($pollId); ?> 
+		var cmt = <?php print_r($profCmts); ?> 
 		alert(cmt);
-		$('#profCmtBox').val(cmt);	
+		//$('#profCmtBox').val(cmt);	
 	});
 });
-*/
 </script>
+*/
 <!-- End of javascript/jquery -->
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -294,7 +293,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<td>
 	<select id="selected" size="20" onclick="newSelection()">
 	<?php 
-		/*if(!empty($pollId)) {
+		if(!empty($pollId)) {
 			// Select the first name and last name of all professors participating in the current poll
 			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN Professors";
 			$selectCmd = $selectCmd." ON Professors.prof_id=Votes.prof_id WHERE Votes.poll_id=$pollId";
@@ -329,7 +328,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			 	$profCmts[$profName] = $cmt;
 			}
 		}
-		*/
+		
 	?>
 	</select>
 	</td>
