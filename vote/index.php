@@ -26,7 +26,7 @@
 <form action="vote.php">
 <button class="button-create pure-button">Create</button> 
 </form>
-<form action="editTable.php">
+<form action="edit/editTable.php">
 <button class="button-edit pure-button">Edit</button>
 </form>
 <form action="vote.php">

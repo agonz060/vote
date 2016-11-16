@@ -14,7 +14,7 @@ function addToSelected() {
 	// Get the name of the professor that was doubled clicked
  	var index = document.getElementById("profSel").selectedIndex;
 	var profName = document.getElementsByTagName("option")[index].value;
-	
+	alert("Prof:" + profName);	
 	// Check to the 'selected' list so that duplicates are not add to the list
 	var selectedProfs = document.getElementById("selected");
 	var professors = selectedProfs.options;
@@ -42,7 +42,7 @@ function addToSelected() {
 		prof.setAttribute("id", profName);
 		prof.setAttribute("value", "");
 
-		document.getElementById("votingInfo").append(prof);
+		document.getElementById("votingInfo").appendChild(prof);
 		 
 	} else {
 		alert(profName+" is already selected to participate.");
@@ -94,7 +94,7 @@ function saveProfCmt() {
 
 // Function waits until entire webpage has loaded in order to begin
 // storing professor comments into input fields 
-$(document)ready(function() {
+$(document).ready(function() {
 	
 });
 </script>
@@ -283,8 +283,8 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			
 			// Store a mapping of professor names to professor id's 
 			// for quicker storage later on
-			$profId = array($fullName => $profId);
-			$profIds = array_merge($profIds, $profId);
+			//$profId = array($fullName => $profId);
+			//$profIds = array_merge($profIds, $profId);
 		}
 	?>
 	</select>
@@ -294,7 +294,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<td>
 	<select id="selected" size="20" onclick="newSelection()">
 	<?php 
-		if(!empty($pollId)) {
+		/*if(!empty($pollId)) {
 			// Select the first name and last name of all professors participating in the current poll
 			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN Professors";
 			$selectCmd = $selectCmd." ON Professors.prof_id=Votes.prof_id WHERE Votes.poll_id=$pollId";
@@ -329,6 +329,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			 	$profCmts[$profName] = $cmt;
 			}
 		}
+		*/
 	?>
 	</select>
 	</td>
