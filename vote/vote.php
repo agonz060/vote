@@ -98,19 +98,7 @@ $(document).ready(function() {
 	
 });
 </script>
-<!-- load professors comment on change -->
-/*(<script>
-$(function() {
-	$('#selected').change(function() {
-		var selected = $(this).find('option:selected');
-		var profName = selected.val();
-		var cmt = <?php print_r($profCmts); ?> 
-		alert(cmt);
-		//$('#profCmtBox').val(cmt);	
-	});
-});
 </script>
-*/
 <!-- End of javascript/jquery -->
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -123,7 +111,6 @@ $(function () {
 });
 </script>
 
-
 </head>
 
 <!-- Check php comment for functionality -->
@@ -135,7 +122,6 @@ $(function () {
 </head>
 
 <body>
-
 <!-- Connect to database to load professor information -->
 <?php require "loadProfs.php"; ?> 
 
@@ -282,8 +268,8 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			
 			// Store a mapping of professor names to professor id's 
 			// for quicker storage later on
-			//$profId = array($fullName => $profId);
-			//$profIds = array_merge($profIds, $profId);
+			$profId = array($fullName => $profId);
+			$profIds = array_merge($profIds, $profId);
 		}
 	?>
 	</select>
@@ -325,7 +311,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 				// Retreive professors name using the professors id	
 				// Then store comment associated with professor
 				$profName = array_search($id, $profIds); 
-			 	$profCmts[$profName] = $cmt;
+				$profCmts[$profName] = $cmt;
 			}
 		}
 		
@@ -351,5 +337,15 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </p>
 </form>
 <p><?php var_dump($profCmts); ?></p>
+<script>
+$(document).ready(function() {
+        $('#selected').change(function() {
+                var selected = $(this).find('option:selected');
+                var profName = selected.val();
+		var cmt = <?php echo json_encode($profCmts) ?>;
+		$('#profCmtBox').val(cmt[profName]);
+        });
+});
+</script>
 </body>
 </html>
