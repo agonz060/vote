@@ -1,117 +1,9 @@
-<?php session_start(); ?>
 <html>
 <head>
 <style>
 .error {color: #FF0000;}
 </style>
 
-<!-- Load javascript sources -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-
-<!-- Double click script that interacts with the list of professors displayed to user -->
-<script type="text/javascript">
-function addToSelected() {
-	// Get the name of the professor that was doubled clicked
- 	var index = document.getElementById("profSel").selectedIndex;
-	var profName = document.getElementsByTagName("option")[index].value;
-	alert("Prof:" + profName);	
-	// Check to the 'selected' list so that duplicates are not add to the list
-	var selectedProfs = document.getElementById("selected");
-	var professors = selectedProfs.options;
-	var profFound = false;
-	for(var x=0; x < professors.length; x++) {
-		if(professors[x].value == profName)
-		{
-			profFound = true;
-		}
-	}
-
-	// Add the professor to the 'selected' list
-	// Keep track of selected professors so that comments can be 
-	// associated with a professor 	
-	if(!profFound) {
-		// Places the selected list in a variable so that options can be added to the list 
-		var option = document.createElement("option");
-		option.text = profName;
-		option.value = profName;
-		selectedProfs.add(option);
-	
-		// Create hidden input to store a voting professors's name and comment 
- 		var prof = document.createElement("input");
-		prof.setAttribute("type", "hidden");
-		prof.setAttribute("id", profName);
-		prof.setAttribute("value", "");
-
-		document.getElementById("votingInfo").appendChild(prof);
-		 
-	} else {
-		alert(profName+" is already selected to participate.");
-	}
-};
-
-// Remove the selected professor from the list
-function removeFromSelected() {
-	// Select highlighted professor from list for removal
-	var selected = document.getElementById("selected");
-	var name = selected.value;
-	
-	// Remove professor from 'Participating Professors' selection
-	selected.remove(selected.selectedIndex);
-
-	// Remove professor from participation
-	document.getElementById(name).remove();	
-};
-
-// Function resets professor comment box or loads a professors comment
-//  and "Comment Saved" message when a new participating professor is selected
-function newSelection() {
-	document.getElementById("result").innerHTML = "";
-	var name = document.getElementById("selected").value;
-
-	// Load professor comment from hidden inputs
-	var prof = document.getElementById(name);
-	var cmt = prof.value;
-	
-	var cmtBox = document.getElementById("profCmtBox");
-	if(cmt) {
-		cmtBox.innerHTML = cmt;		
-	} else {
-		cmtBox.innerHTML = "";
-	}	
-}; 
-
-// Store professors comment in a hidden field so the comment
-// can be posted 
-function saveProfCmt() {
-	var selected = document.getElementById("selected");
-	var name = selected.value;
-
-	var cmt = document.getElementById("profCmtBox");
-	if(name) {
-		document.getElementByName(name).value = cmt;
-	}
-};
-
-// Function waits until entire webpage has loaded in order to begin
-// storing professor comments into input fields 
-$(document).ready(function() {
-	
-});
-</script>
-</script>
-<!-- End of javascript/jquery -->
-
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<script src="http://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script>
-$(function () {
-	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
-	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
-});
-</script>
-
-</head>
 
 <!-- Check php comment for functionality -->
 <?php #This sets global variables 
@@ -119,7 +11,6 @@ $(function () {
 	$profIds = array();
 	$profCmts = array();
 ?>
-</head>
 
 <body>
 <!-- Connect to database to load professor information -->
@@ -213,10 +104,11 @@ $(function () {
 <p><?php var_dump($_POST); ?></p>
 <form id="votingInfo" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 
+<div id="votingProfs"></div>
 
 <!-- Title of current vote -->
 <p>
-Title: <input type="text" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
+Title: <input type="text" id="title" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
 <span class="error"><?php echo "$errTitle";?></span> <br>
 </p>
 
@@ -277,7 +169,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	
 	<!-- Selection displays list of double clicked (selected) professors -->
 	<td>
-	<select id="selected" size="20" onclick="newSelection()">
+	<select id="selected" size="20" >
 	<?php 
 		if(!empty($pollId)) {
 			// Select the first name and last name of all professors participating in the current poll
@@ -314,7 +206,6 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 				$profCmts[$profName] = $cmt;
 			}
 		}
-		
 	?>
 	</select>
 	</td>
@@ -332,11 +223,15 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 
 <p>
 <a href="index.php "><input type="button" value="Cancel"></a>
-<input type="submit" value="Save">
+<input type="button" value="Save" onclick="saveBallot()">
 <input type="submit" value="Start">
 </p>
 </form>
 <p><?php var_dump($profCmts); ?></p>
+
+<!-- Javascript/Json/Jquery begins here -->		
+<!-- Load javascript sources -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
 <script>
 $(document).ready(function() {
         $('#selected').change(function() {
@@ -344,8 +239,156 @@ $(document).ready(function() {
                 var profName = selected.val();
 		var cmt = <?php echo json_encode($profCmts) ?>;
 		$('#profCmtBox').val(cmt[profName]);
-        });
+	});
+
+	loadProfCmts();
+	storePollId();	
+	
+	function storePollId() {
+		var id = <?php echo $pollId ?>;
+		var pollId = document.createElement("input");
+		
+		pollId.setAttribute("type","hidden");
+		pollId.setAttribute("id", "pollId");
+		pollId.setAttribute("value",id);
+
+		document.getElementById("votingProfs").appendChild(pollId);	
+	};
+
+	function loadProfCmts() {
+		var cmts = <?php echo json_encode($profCmts) ?>;
+		var profs = <?php echo json_encode(array_keys($profCmts)) ?>;
+		var profsLen = profs.length;
+		var profName = "";
+
+		if(profsLen > 0) {
+			for(var x = 0; x < profsLen; ++x) {
+				profName = profs[x];
+				createProfCmtField(profName,cmts[profName]);	
+			}
+		}	
+	};
+	
+	function createProfCmtField(profName,cmt) {
+		// Create hidden input to store a voting professors's name and comment 
+ 		var prof = document.createElement("input");
+		prof.setAttribute("type", "hidden");
+		prof.setAttribute("id", profName);
+		prof.setAttribute("value", cmt);
+
+		document.getElementById("votingProfs").appendChild(prof);	 
+	};
+	
 });
 </script>
+
+
+<!-- Double click script that interacts with the list of professors displayed to user -->
+<script type="text/javascript">
+function addToSelected() {
+	// Get the name of the professor that was doubled clicked
+ 	var index = document.getElementById("profSel").selectedIndex;
+	var profName = document.getElementsByTagName("option")[index].value;
+	//alert("Prof:" + profName);	
+	
+	// Check to the 'selected' list so that duplicates are not add to the list
+	var selectedProfs = document.getElementById("selected");
+	var professors = selectedProfs.options;
+	var profFound = false;
+	for(var x=0; x < professors.length; x++) {
+		if(professors[x].value == profName)
+		{
+			profFound = true;
+		}
+	}
+
+	// Add the professor to the 'selected' list
+	// Keep track of selected professors so that comments can be 
+	// associated with a professor 	
+	if(!profFound) {
+		// Places the selected list in a variable so that options can be added to the list 
+		var option = document.createElement("option");
+		option.text = profName;
+		option.value = profName;
+		selectedProfs.add(option);
+
+		// Create input field to store any comments for the professor
+		createProfCmtField(profName,"");
+	} else {
+		alert(profName+" is already selected to participate.");
+	}
+};
+
+function saveBallot() {
+	var title = document.getElementById("title").value;
+	var description = document.getElementById("description").value;
+	var dateActive = document.getElementById("dateActive").value;
+	var dateDeactive = document.getElementById("dateDeactive").value;
+
+	var votingProfsDiv = document.getElementById("votingProfs");
+	var votingProfs = votingProfsDiv.getElementsByTagName("input");
+	
+	$.post("saveBallot.php", { title: title, description: description, 
+		dateActive: dateActive, dateDeactive: dateDeactive, votingProfs: votingProfs }
+		, function(data) { alert(data);	})
+		.fail(function() {
+			alert("error");
+		})
+			
+	//alert(Object.keys(votingProfs));
+
+	//for(var x=0; x < votingProfs.length; ++x) {
+	//	alert(votingProfs[x].value);
+	//}
+};
+
+function createProfCmtField(profName,cmt) {
+	// Create hidden input to store a voting professors's name and comment 
+ 	var prof = document.createElement("input");
+	prof.setAttribute("type", "hidden");
+	prof.setAttribute("id", profName);
+	prof.setAttribute("value", cmt);
+
+	document.getElementById("votingProfs").appendChild(prof);	 
+};
+
+// Remove the selected professor from the list
+function removeFromSelected() {
+	// Select highlighted professor from list for removal
+	var selected = document.getElementById("selected");
+	var name = selected.value;
+	
+	// Remove professor from 'Participating Professors' selection
+	selected.remove(selected.selectedIndex);
+
+	// Remove professor from participation
+	document.getElementById(name).remove();	
+};
+
+// Store professors comment in a hidden field so the comment
+// can be posted 
+function saveProfCmt() {
+	var selected = document.getElementById("selected");
+	var name = selected.value;
+
+	var cmt = document.getElementById("profCmtBox").value;
+	if(name) {
+		//alert("name: "+name+" comment: "+ cmt);
+		document.getElementById(name).value = cmt;
+	}
+};
+</script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+$(function () {
+	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
+	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
+});
+</script>
+<!-- End of javascript/jquery -->
+</head>
 </body>
 </html>

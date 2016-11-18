@@ -88,7 +88,7 @@
 							$dateModified
 						</td>
 						<td>
-							<form method='post' id='editForm' action='/vote/vote/vote.php'>
+							<form method='post' id='editForm' action='/vote/vote.php'>
 								<button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
 								<input type='hidden' name='title' value='$title'>
 								<input type='hidden' name='description' value='$description'>
