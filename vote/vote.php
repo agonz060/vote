@@ -224,7 +224,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </table>
 
 <p>
-<a href="index.php "><input type="button" value="Cancel"></a>
+<a href="/index.php "><input type="button" value="Cancel"></a>
 <input type="button" value="Save" onclick="savePoll()">
 <input type="submit" value="Start">
 </p>

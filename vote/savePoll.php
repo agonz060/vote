@@ -3,6 +3,7 @@
 	require 'event/connDB.php';
 
 	// poll data
+	$title = $descr = $actDate = $deactDate = "";
 	$pollData = $votingInfo = "";
 
 	// Check if data is set before accessing
@@ -23,8 +24,7 @@
 
 
 	if(isset($pollData["pollId"])) {
-		//$cmd = "UPDATE Polls SET title='"+$pollData['title']+"' description='"+$pollData['descr']+"'";
-		//$cmd += " actDate='"+$pollData['actDate']+"' deactDate='"+$pollData['deactDate']+"'";
+		// Check if poll already exists
 		$pollId = $pollData['pollId'];
 
 		$cmd = "Select * from Polls where poll_id='$pollId'";
@@ -32,16 +32,28 @@
 		$result = mysqli_query($conn, $cmd);
 		$row = $result->fetch_assoc();
 
+		// If poll exists, then update
 		if($row) {
-			$title = $row['title'];
-			echo "title: $title";
-		} else {
-			echo "no result returned from query";
+			$title = $pollData['title'];
+			$descr = $pollData['descr'];
+			$actDate = $pollData['actDate'];
+			$deactDate = $pollData['deactDate'];
+
+			$cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
+			$cmd += "deactDate='deactDate' WHERE poll_id='$pollId'";
+			$result = mysqli_query($conn, $cmd);
+			//$row = $result->fetch_assoc();
+
+			//print_r(array_keys($votingInfo));
+			
+			$keys = array_keys($votingInfo);
+			for($x = 0; $x < sizeof($keys); ++$x) {
+				if($keys[$x] != '0') {
+					echo "key($x) = $keys[$x]";
+				}
+			}
+
+
 		}
-
-
 	}
-	/*if($pollData["pollId"])
-	$selectCmd = """*/
-	//echo "Exiting savePoll.php";
 ?>
