@@ -23,7 +23,7 @@
 <!-- Display webpage title -->
 <h1 align="center"> BCOE Voting Management</h1>
 <hr>
-<form action="vote.php">
+<form action="vote/vote.php">
 <button class="button-create pure-button">Create</button> 
 </form>
 <form action="edit/editTable.php">

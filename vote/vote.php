@@ -360,7 +360,7 @@ function savePoll() {
 	});
 	
 	// Post data 
-	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo }
+	$.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo }
 		, function(data) { alert(data);	})
 		.fail(function() {
 			alert("error");
