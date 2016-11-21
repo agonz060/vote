@@ -14,7 +14,7 @@
 
 <body>
 <!-- Connect to database to load professor information -->
-<?php require "loadProfs.php"; ?> 
+<?php require "event/loadProfs.php"; ?> 
 
 <!-- PHP that processes user input begins here -->
 <?php
@@ -101,10 +101,10 @@
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
-<p><?php var_dump($_POST); ?></p>
-<form id="votingInfo" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+<!-- <p><?php var_dump($_POST); ?></p> -->
+<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 
-<div id="votingProfs"></div>
+<div id="votingInfo"></div>
 
 <!-- Title of current vote -->
 <p>
@@ -205,6 +205,8 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 				$profName = array_search($id, $profIds); 
 				$profCmts[$profName] = $cmt;
 			}
+			// Close connection to db
+			mysqli_close($conn);
 		}
 	?>
 	</select>
@@ -223,27 +225,29 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 
 <p>
 <a href="index.php "><input type="button" value="Cancel"></a>
-<input type="button" value="Save" onclick="saveBallot()">
+<input type="button" value="Save" onclick="savePoll()">
 <input type="submit" value="Start">
 </p>
 </form>
-<p><?php var_dump($profCmts); ?></p>
+<!-- <p><?php var_dump($profCmts); ?></p> -->
 
 <!-- Javascript/Json/Jquery begins here -->		
 <!-- Load javascript sources -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
 <script>
 $(document).ready(function() {
-        $('#selected').change(function() {
-                var selected = $(this).find('option:selected');
-                var profName = selected.val();
-		var cmt = <?php echo json_encode($profCmts) ?>;
-		$('#profCmtBox').val(cmt[profName]);
+    $('#selected').change(function() {
+            var selected = $(this).find('option:selected');
+            var profName = selected.val();
+			//var cmt = <?php echo json_encode($profCmts) ?>;
+			var cmt = $('input:hidden[id="'+profName+'"]').val();
+			$('#profCmtBox').val(cmt);
 	});
-
+        
 	loadProfCmts();
 	storePollId();	
 	
+
 	function storePollId() {
 		var id = <?php echo $pollId ?>;
 		var pollId = document.createElement("input");
@@ -252,7 +256,7 @@ $(document).ready(function() {
 		pollId.setAttribute("id", "pollId");
 		pollId.setAttribute("value",id);
 
-		document.getElementById("votingProfs").appendChild(pollId);	
+		document.getElementById("votingInfo").appendChild(pollId);	
 	};
 
 	function loadProfCmts() {
@@ -276,7 +280,7 @@ $(document).ready(function() {
 		prof.setAttribute("id", profName);
 		prof.setAttribute("value", cmt);
 
-		document.getElementById("votingProfs").appendChild(prof);	 
+		document.getElementById("votingInfo").appendChild(prof);	 
 	};
 	
 });
@@ -319,27 +323,48 @@ function addToSelected() {
 	}
 };
 
-function saveBallot() {
-	var title = document.getElementById("title").value;
-	var description = document.getElementById("description").value;
-	var dateActive = document.getElementById("dateActive").value;
-	var dateDeactive = document.getElementById("dateDeactive").value;
-
-	var votingProfsDiv = document.getElementById("votingProfs");
-	var votingProfs = votingProfsDiv.getElementsByTagName("input");
+function savePoll() {
+	//alert("in savePoll")
+	// Grab all input field data
+	var title = $('#title').val();
+	var description = $('#description').val();
+	var dateActive = $('#dateActive').val();
+	var dateDeactive = $('#dateDeactive').val();
+	// For the creation of votingInfo objects
 	
-	$.post("saveBallot.php", { title: title, description: description, 
-		dateActive: dateActive, dateDeactive: dateDeactive, votingProfs: votingProfs }
+	var _pollData = {'':''};
+	_pollData["title"] = title;
+	_pollData["descr"] = description;
+	_pollData["actDate"] = dateActive;
+	_pollData["deactDate"] = dateDeactive;
+
+	var _votingInfo = {'':''};
+	var id = '';
+	var val = '';
+
+	//alert("title: " + _title + " descr: " + _description + " dateAct: " + _dateActive + " Deactive: " + _dateDeactive)
+	
+	// Iterate through hidden input fields and store the input field into 
+	// an associative array for posting  
+	$('input:hidden').each(function() {
+		// Store all hidden input field data into an votingInfo object
+		id = $(this).attr("id");
+		val = $(this).val();
+		//alert("name: " + $(this).attr("id") + " cmt: " + $(this).val());
+
+		if(id == "pollId") {
+			_pollData[id] = val;
+		} else {
+			_votingInfo[id] = val;
+		}	
+	});
+	
+	// Post data 
+	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo }
 		, function(data) { alert(data);	})
 		.fail(function() {
 			alert("error");
-		})
-			
-	//alert(Object.keys(votingProfs));
-
-	//for(var x=0; x < votingProfs.length; ++x) {
-	//	alert(votingProfs[x].value);
-	//}
+		});		
 };
 
 function createProfCmtField(profName,cmt) {
@@ -349,7 +374,7 @@ function createProfCmtField(profName,cmt) {
 	prof.setAttribute("id", profName);
 	prof.setAttribute("value", cmt);
 
-	document.getElementById("votingProfs").appendChild(prof);	 
+	document.getElementById("votingInfo").appendChild(prof);	 
 };
 
 // Remove the selected professor from the list

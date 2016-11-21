@@ -1,42 +1,47 @@
-<?php session_start(); ?>
-<!-- Processes user input begins here -->
-<?php
-        # Set voting variables
-        date_default_timezone_set('America/Los_Angeles');
-        $day = $month = "";
-        $title = $description = $actDate = $deactDate = "";
-        $tmp_dateDeact = $tmp_dateAct = "";
-        $errTitle = $errActDate = $errDeactDate = "";
-        $validTitle =  $validActDate = $validDeactDate = false;
+<?php 
+	//echo "Entering savePoll.php";
+	require 'event/connDB.php';
 
-        # User input processing begins here
-        if($_SERVER["REQUEST_METHOD"] == "POST") {
-                # Check for title input; error if not provided
-      		if(!empty($_POST["title"])) {
-			$title = cleanInput($_POST["title"]);
+	// poll data
+	$pollData = $votingInfo = "";
+
+	// Check if data is set before accessing
+	if($_SERVER["REQUEST_METHOD"] == "POST") {
+		if(isset($_POST["pollData"])) {
+			$pollData = $_POST["pollData"];
+			//echo "pollData: "; print_r($pollData);
+			 //print_r(array_keys($pollData));
+			 //echo "pollId: " + $pollData['pollId'];
 		}
 
-		if(!empty($_POST["dateActive"])) {
-                	$dateAct = $_POST["dateActive"];
+		if(isset($_POST["votingInfo"])) {
+			$votingInfo = $_POST["votingInfo"];
+			//echo " votingInfo: "; print_r($votingInfo);
 		}
-		
-		if(!empty($_POST["dateDeactive"])) {
- 	               $dateDeact = $_POST["dateDeactive"];
- 		}
-	               
-		# Process comment for selected professors
-                if(!empty($_POST["voteDescription"])) {
-                        $description = $_POST["voteDescription"];
-                	
-		}
-        
 	}
 
-        function cleanInput($data) {
-                $data = trim($data);
-                $data = stripslashes($data);
-                $data = htmlspecialchars($data);
-                return $data;
-        }
-?>
 
+
+	if(isset($pollData["pollId"])) {
+		//$cmd = "UPDATE Polls SET title='"+$pollData['title']+"' description='"+$pollData['descr']+"'";
+		//$cmd += " actDate='"+$pollData['actDate']+"' deactDate='"+$pollData['deactDate']+"'";
+		$pollId = $pollData['pollId'];
+
+		$cmd = "Select * from Polls where poll_id='$pollId'";
+		//echo "cmd: $cmd";
+		$result = mysqli_query($conn, $cmd);
+		$row = $result->fetch_assoc();
+
+		if($row) {
+			$title = $row['title'];
+			echo "title: $title";
+		} else {
+			echo "no result returned from query";
+		}
+
+
+	}
+	/*if($pollData["pollId"])
+	$selectCmd = """*/
+	//echo "Exiting savePoll.php";
+?>
