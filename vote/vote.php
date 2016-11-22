@@ -359,9 +359,10 @@ function savePoll() {
 		}	
 	});
 	
-	// Post data 
-	$.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo }
-		, function(data) { alert(data);	})
+	// Post data
+	var reason = prompt("Why did you create/edit this page?"); 
+	$.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
+		, function(response,status) { alert(response,status);	})
 		.fail(function() {
 			alert("error");
 		});		

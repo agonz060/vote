@@ -27,6 +27,9 @@
 			$votingInfo = $_POST["votingInfo"];
 			//echo " votingInfo: "; print_r($votingInfo);
 		}
+		if(isset($_POST["reason"])) {
+			$reason = $_POST["reason"];
+		}
 	}
 	
 	// Get poll data
@@ -62,18 +65,25 @@
 
 		$cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 		$cmd .= "deactDate='$deactDate' WHERE poll_id='$pollId'";
-		echo "Update Polls cmd: $cmd";
+		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
 			
 		if(!$result) { echo "savePoll.php: could not update Polls table;"; }
-
+		
 	} else { // Create new Poll in database
 		$cmd = "INSERT INTO Polls(title,description,actDate,deactDate) VALUES('$title','$descr','$actDate','$deactDate')";
 		$result = mysqli_query($conn,$cmd);
-
+		//insert into Votes
 		if(!$result) { echo "savePoll.php: could not create new Poll"; }
 	}
-		
+	if(isset($pollId)) {
+		$profIds = array();
+		$cmd="Select prof_id from Votes where poll_id='$pollId'";
+		$result=mysqli_query($conn,$cmd);
+		while($row=$result->fetch_assoc()) {
+			array_push($profIds, $row["prof_id"]);
+		}
+	}	
 	if($votingInfo) {
 		$keys = array_keys($votingInfo);
 		for($x = 0; $x < sizeof($keys); ++$x) {
@@ -91,6 +101,8 @@
 				$result = mysqli_query($conn, $cmd);
 				if($row = $result->fetch_assoc()) {
 					$profId = $row["prof_id"];
+					//Keep track of which profIds need to be deleted from Votes 
+					$profIds = array_diff($profIds,array($profId));
 					// Execute cmd, save result, store cmt
 					//echo "profName: $profName";
 					//echo "profId: $profId";
@@ -120,6 +132,12 @@
 					}
 				}
 			}
+		}
+		//Deletes a removed participating prof from Votes 
+		if(!empty($profIds)) {
+			var_dump($profIds);	
+			$cmd="Delete from Votes where poll_id=$pollId AND prof_id IN ('".join("','", $profIds)."')";
+			$result=mysqli_query($conn, $cmd);	
 		}
 	}
 ?>

@@ -1,5 +1,5 @@
 <?php
-	if(isset($_POST["dateModified"])) {
+	if(isset($_POST["poll_id"])) {
 		$servername = "localhost";
 		$username = "root";
 		$pwd = "Computer_Science99";
@@ -12,11 +12,10 @@
 			echo "Connection error: " . $conn->connect_error . "<br>";
 		}
 		$key = $_POST["poll_id"];	
-		echo $key;
-		$delCmd = "DELETE from Saved WHERE poll_id='".$key."'";
+		$delCmd = "DELETE from Polls WHERE poll_id=$key";
 		$result = $conn->query($delCmd);
 	}
 	else {
-		echo "dateModified not set"; 
+		echo "poll_id not set"; 
 	}
 ?>
