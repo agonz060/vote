@@ -11,7 +11,9 @@
 	// Mysql queries
 	$updatePolls = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 	$updatePolls += "deactDate='deactDate' WHERE poll_id='$pollId'";	
-
+	
+	//Set timezone
+	date_default_timezone_set('America/Los_Angeles');
 
 
 	// Check if data is set before accessing
@@ -62,16 +64,17 @@
 		
 		$profName = "";
 		$cmt = "";
-
+		$history=":edit:" . "user" . ":" . date("Y-m-d") . ":" . $reason;
 		$cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
-		$cmd .= "deactDate='$deactDate' WHERE poll_id='$pollId'";
+		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history') WHERE poll_id='$pollId'";
 		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
 			
 		if(!$result) { echo "savePoll.php: could not update Polls table;"; }
 		
 	} else { // Create new Poll in database
-		$cmd = "INSERT INTO Polls(title,description,actDate,deactDate) VALUES('$title','$descr','$actDate','$deactDate')";
+		$history="create:" ."user" . ":" . date("Y-m-d") . ":" . $reason; 
+		$cmd = "INSERT INTO Polls(title,description,actDate,deactDate,history) VALUES('$title','$descr','$actDate','$deactDate','$history')";
 		$result = mysqli_query($conn,$cmd);
 		//insert into Votes
 		if(!$result) { echo "savePoll.php: could not create new Poll"; }
@@ -117,13 +120,12 @@
 					if($row) {
 						$cmd = "UPDATE Votes set comment='$cmt' WHERE prof_id='$profId' AND poll_id='$pollId'";
 						$result = mysqli_query($conn, $cmd);
-						
 						if(!$result) {
 						echo "savePoll.php: could not Update cmt for $profName";
 						}
 
 					} else {
-						$cmd = "INSERT INTO Votes(poll_id,prof_id,comment) VALUES ('$pollId','$profId','$cmt')";
+						$cmd = "INSERT INTO Votes(poll_id,prof_id,comment,editFlag) VALUES ('$pollId','$profId','$cmt',0)";
 						$result = mysqli_query($conn,$cmd);
 						
 						if(!$result) {
