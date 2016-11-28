@@ -1,0 +1,9 @@
+use Voting;
+
+CREATE TABLE Users (
+	user_id INT(11) NOT NULL AUTO_INCREMENT,
+	email VARCHAR(50) NOT NULL,
+	password VARCHAR(30) NOT NULL,
+	type VARCHAR(15) NOT NULL, 
+	PRIMARY KEY(user_id)
+);

@@ -14,7 +14,7 @@
 
 <body>
 <!-- Connect to database to load professor information -->
-<?php require "event/loadProfs.php"; ?> 
+<?php require "../event/loadProfs.php"; ?> 
 
 <!-- PHP that processes user input begins here -->
 <?php
@@ -224,7 +224,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </table>
 
 <p>
-<a href="/index.php "><input type="button" value="Cancel"></a>
+<a href="../index.php "><input type="button" value="Cancel"></a>
 <input type="button" value="Save" onclick="savePoll()">
 <input type="submit" value="Start">
 </p>
@@ -361,10 +361,10 @@ function savePoll() {
 	
 	// Post data
 	var reason = prompt("Why did you create/edit this page?"); 
-	$.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
-		, function(response,status) { alert(response,status);	})
+	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
+		, function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
 		.fail(function() {
-			alert("error");
+			alert("vote.php: error posting to savePoll.php");
 		});		
 };
 
