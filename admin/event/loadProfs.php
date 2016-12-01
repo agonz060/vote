@@ -17,7 +17,7 @@
 
         # Select first and last name of professor as well as the professor's title
         #$selectCmd = "SELECT fName, lName, title FROM Professors";
-        $selectCmd = "SELECT prof_id, fName, lName, title FROM Professors";
+        $selectCmd = "SELECT user_id, fName, lName, type FROM Users";
 
         # Execute command
         $result = $conn->query($selectCmd);

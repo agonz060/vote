@@ -12,7 +12,8 @@
 	$updatePolls = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 	$updatePolls += "deactDate='deactDate' WHERE poll_id='$pollId'";	
 
-
+	//Set Timezone
+	date_default_timezone_set('America/Los_Angeles');
 
 	// Check if data is set before accessing
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -62,26 +63,29 @@
 		
 		$profName = "";
 		$cmt = "";
-
+		$history=":edit:" . "user" . ":" . date("Y-m-d") . ":" . $reason;
 		$cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
-		$cmd .= "deactDate='$deactDate' WHERE poll_id='$pollId'";
+		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history') WHERE poll_id='$pollId'";	
 		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
 			
 		if(!$result) { echo "savePoll.php: could not update Polls table;"; }
 		
 	} else { // Create new Poll in database
-		$cmd = "INSERT INTO Polls(title,description,actDate,deactDate) VALUES('$title','$descr','$actDate','$deactDate')";
+		$history="create:" ."user" . ":" . date("Y-m-d") . ":" . $reason; 
+		$cmd = "INSERT INTO Polls(title,description,actDate,deactDate,history,lName,pollType,dept,effDate)";
+		$cmd .= "VALUES('$title','$descr','$actDate','$deactDate','$history','Zhen','Promotion','Computer Engineering','2017-07-1')";
 		$result = mysqli_query($conn,$cmd);
+		$newPollId=mysqli_insert_id($conn);
 		//insert into Votes
 		if(!$result) { echo "savePoll.php: could not create new Poll"; }
 	}
 	if(isset($pollId)) {
 		$profIds = array();
-		$cmd="Select prof_id from Votes where poll_id='$pollId'";
+		$cmd="Select user_id from Voters where poll_id='$pollId'";
 		$result=mysqli_query($conn,$cmd);
 		while($row=$result->fetch_assoc()) {
-			array_push($profIds, $row["prof_id"]);
+			array_push($profIds, $row["user_id"]);
 		}
 	}	
 	if($votingInfo) {
@@ -93,14 +97,13 @@
 				$profNamePieces = explode(" ",$keys[$x]); 
 				$fName = $profNamePieces[0];
 				$lName = $profNamePieces[1];
-
 				// check if professor is already voting in the current poll
-				$cmd = "SELECT prof_id from Professors WHERE fName='$fName' AND lName='$lName'";
+				$cmd = "SELECT user_id from Users WHERE fName='$fName' AND lName='$lName'";
 				//echo "cmd: $cmd"; 
 
 				$result = mysqli_query($conn, $cmd);
 				if($row = $result->fetch_assoc()) {
-					$profId = $row["prof_id"];
+					$profId = $row["user_id"];
 					//Keep track of which profIds need to be deleted from Votes 
 					$profIds = array_diff($profIds,array($profId));
 					// Execute cmd, save result, store cmt
@@ -110,12 +113,12 @@
 					
 					$cmt = $votingInfo[$profName];
 					//echo "user: $profName cmt: $cmt";
-					$cmd = "SELECT * FROM Votes WHERE prof_id='$profId'";
+					$cmd = "SELECT * FROM Voters WHERE user_id='$profId' AND poll_id='$pollId'";
 					$result = mysqli_query($conn,$cmd);
 					$row = $result->fetch_assoc();
 
 					if($row) {
-						$cmd = "UPDATE Votes set comment='$cmt' WHERE prof_id='$profId' AND poll_id='$pollId'";
+						$cmd = "UPDATE Voters set comment='$cmt' WHERE user_id='$profId' AND poll_id='$pollId'";
 						$result = mysqli_query($conn, $cmd);
 						
 						if(!$result) {
@@ -123,7 +126,10 @@
 						}
 
 					} else {
-						$cmd = "INSERT INTO Votes(poll_id,prof_id,comment) VALUES ('$pollId','$profId','$cmt')";
+						echo "user_id: " . $profId . "\n";
+						echo "poll_id: " . $newPollId . "\n";
+						echo "comment: " . $cmt . "\n";
+						$cmd = "INSERT INTO Voters(user_id,poll_id,comment,voteFlag) VALUES ('$profId','$newPollId','$cmt',0)";
 						$result = mysqli_query($conn,$cmd);
 						
 						if(!$result) {
@@ -135,8 +141,8 @@
 		}
 		//Deletes a removed participating prof from Votes 
 		if(!empty($profIds)) {
-			var_dump($profIds);	
-			$cmd="Delete from Votes where poll_id=$pollId AND prof_id IN ('".join("','", $profIds)."')";
+			//var_dump($profIds);	
+			$cmd="Delete from Voters where poll_id=$pollId AND user_id IN ('".join("','", $profIds)."')";
 			$result=mysqli_query($conn, $cmd);	
 		}
 	}

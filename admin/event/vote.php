@@ -101,7 +101,7 @@
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
-<!-- <p><?php var_dump($_POST); ?></p> -->
+<p><?php var_dump($_POST); ?></p> 
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 
 <div id="votingInfo"></div>
@@ -149,10 +149,10 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 		
 		# Store results from database for displaying 
 		while($row = $result->fetch_assoc()) {
-			$profId = $row["prof_id"];
+			$profId = $row["user_id"];
 			$firstName = $row["fName"];
 			$lastName = $row["lName"];
-			$title = $row["title"];
+			$title = $row["type"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
 			
@@ -173,8 +173,8 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<?php 
 		if(!empty($pollId)) {
 			// Select the first name and last name of all professors participating in the current poll
-			$selectCmd = "SELECT Professors.fName, Professors.lName FROM Votes INNER JOIN Professors";
-			$selectCmd = $selectCmd." ON Professors.prof_id=Votes.prof_id WHERE Votes.poll_id=$pollId";
+			$selectCmd = "SELECT Users.fName, Users.lName FROM Voters INNER JOIN Users";
+			$selectCmd = $selectCmd." ON Users.user_id=Voters.user_id WHERE Voters.poll_id=$pollId";
 			$result = $conn->query($selectCmd);
 			
 			
@@ -194,10 +194,10 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 			}
 			
 			// Select all the professors id's and comments associated with "pollId"
-			$selectCmd = "SELECT prof_id, comment FROM Votes WHERE Votes.poll_id=$pollId";
+			$selectCmd = "SELECT user_id, comment FROM Voters WHERE Voters.poll_id=$pollId";
 			$result = $conn->query($selectCmd);
 			while($row = $result->fetch_assoc()) {
-				$id = $row["prof_id"];
+				$id = $row["user_id"];
 				$cmt = $row["comment"];
 			
 				// Retreive professors name using the professors id	
@@ -229,7 +229,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 <input type="submit" value="Start">
 </p>
 </form>
-<!-- <p><?php var_dump($profCmts); ?></p> -->
+<p><?php var_dump($profCmts); ?></p>
 
 <!-- Javascript/Json/Jquery begins here -->		
 <!-- Load javascript sources -->
@@ -360,6 +360,8 @@ function savePoll() {
 	});
 	
 	// Post data
+	console.log(_votingInfo );
+	console.log( _pollData );
 	var reason = prompt("Why did you create/edit this page?"); 
 	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
 		, function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})

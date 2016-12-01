@@ -55,6 +55,10 @@
 				$dateModified = $row["dateModified"];
 				$actDate = $row["actDate"];
 				$deactDate = $row["deactDate"];
+				$lName=$row["lName"];
+				$pollType=$row["pollType"];
+				$dept=$row["dept"];
+				$effDate=$row["effDate"];
 				echo "<tr>
 						<td>
 							$title
@@ -78,6 +82,10 @@
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>
 								<input type='hidden' name='dateDeactive' value='$deactDate'>
+								<input type='hidden' name='lName' value='$lName'>
+								<input type='hidden' name='pollType' value='$pollType'>
+								<input type='hidden' name='dept' value='$dept'>
+								<input type='hidden' name='effDate' value='$effDate'>
 							</form>
 							<button class='button-delete pure-button' value='$poll_id'>Delete</button> 	
 						</td>			
