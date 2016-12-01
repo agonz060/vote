@@ -21,8 +21,8 @@
 	# Set voting variables
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = "";
-	$tmp_dateDeact = $tmp_dateAct = "";
-	$errTitle = $errActDate = $errDeactDate = "";
+	$tmp_dateDeact = $tmp_dateAct = $tmp_dateEff= "";
+	$errTitle = $errEffDate= $errActDate = $errDeactDate = "";
 	$validTitle =  $validActDate = $validDeactDate = false;
 	date_default_timezone_set('America/Los_Angeles'); 
 	
@@ -76,7 +76,20 @@
 				$errDeactDate = "Invalid Deactivation Date";
 			}
 		}
-	 	
+
+		# Check for valid Effective Date
+		if(empty($_POST["dateEff"])) {
+			$errEffDate = "* Invalid Effective Date";
+		} else {
+			$dateEff = $_POST["dateEff"];
+			$tmp_dateEff = new DateTime($dateEff);
+			list($year, $month, $day) = explode("-",$dateEff);
+			if(checkdate($month,$day,$year)) {
+				$validEffDate = true;
+			} else {
+				$errEffDate = "Invalid Effective Date";
+			}
+		}
 		
 		# Process comment for selected professors
 		if(!empty($_POST["description"])) {
@@ -127,9 +140,24 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 <!-- Date vote becomes active/inactive -->
 <p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
 <span class ="error"><?php echo "$errActDate";?></span><br>
-<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
+<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
 <span class ="error"><?php echo "$errDeactDate";?></span><br>
-
+<p>Effective Date <input type="text" id="dateEff" name="dateEff" value="<?php if(isset($_POST['dateEff'])) {echo htmlentities ($_POST['dateEff']);} ?>" ></p>
+<span class ="error"><?php echo "$errEffDate";?></span><br>
+<p>Poll Type: 
+<select id="pollType" name="pollType" class="selector">
+	<option>Career Review</option>
+	<option>Merit</option>
+	<option>Promotion</option>
+	<option>Appointment</option>
+</select>
+</p>
+<p>Department: 
+<select id="dept" name="dept" class="selector">
+	<option>Electrical Engineering</option>
+	<option>Computer Engineering</option>
+</select>
+</p>
 <!-- Begin professor selection -->
 <table style="width:30%">
 <tr>
@@ -330,6 +358,9 @@ function savePoll() {
 	var description = $('#description').val();
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
+	var dateEff = $('#dateEff').val();
+	var pollType = $('#classType option:selected').text();	
+	var dept = $('#dept option:selected').text();	
 	// For the creation of votingInfo objects
 	
 	var _pollData = {'':''};
@@ -337,7 +368,9 @@ function savePoll() {
 	_pollData["descr"] = description;
 	_pollData["actDate"] = dateActive;
 	_pollData["deactDate"] = dateDeactive;
-
+	_pollData["dateEff"] = dateEff;
+	_pollData["pollType"] = pollType;
+	_pollData["dept"] = dept;
 	var _votingInfo = {'':''};
 	var id = '';
 	var val = '';
@@ -414,6 +447,7 @@ function saveProfCmt() {
 $(function () {
 	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
 	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
+	$( "#dateEff" ).datepicker( {dateFormat: 'yy-mm-dd' });
 });
 </script>
 <!-- End of javascript/jquery -->
