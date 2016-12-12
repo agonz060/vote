@@ -1,7 +1,7 @@
 <?php session_start(); ?>
 <?php 
     //echo "in login.php"; 
-    include 'event/connDB.php';
+    require 'connDB.php';
 
     // Remove any specail characters to prevent mysql injection
     $email = mysqli_real_escape_string($conn, $_POST['email']);
@@ -23,7 +23,7 @@
 			
 	if($verified) {
 	    $_SESSION['uId'] = $row['user_id'];
-            if ($row['type'] == "admin") {
+            if (strtolower($row['type']) == "admin" ) {
                 $_SESSION['uType'] = 1;
             } else { $_SESSION['uType'] = 0; }
 	} else { 

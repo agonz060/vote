@@ -1,3 +1,9 @@
+<?php session_start(); ?>
+<head>
+<style>
+    .error {color: #FF0000;}
+</style>
+</head>
 <body>
 <!-- Start PHP -->
 <?php
@@ -88,16 +94,24 @@ Last Name: <input type="text" id="lastName">
 <span id="lNameError" class="error"></span>
 <br><br>
 
-E-mail: <input type="text" id="email">
-<span id="emailError" class="error"> </span>
-<br><br>
-
 <!-- Select title -->
 Title: 
 <input type="radio" id="assistant" value="Assistant">Assistant Professor
 <input type="radio" id="associate" value="Associate">Associate Professor
 <input type="radio" id="full" value="Full">Full Professor
 <span id="titleError" class="error"></span>
+<br><br>
+
+E-mail: <input type="text" id="email">
+<span id="emailError" class="error"> </span>
+<br><br>
+
+Password: <input type="password" id="pass1">
+<span id="passError1" class="error"></span>
+<br><br>
+
+Re-enter password: <input type="password" id="pass2">
+<span id="passError2" class="error"></span>
 <br><br>
 
 <!-- Submit information if all required input is valid -->
@@ -115,27 +129,106 @@ $("#createUser").click(function() {
     var _lName = $("#lastName").val();
     var _email = $("#email").val();
     var _title = $("input:checked").val();
-    
+    var _pass1 = $("#pass1").val();
+    var _pass2 = $("#pass2").val();
+    var tmpPass1 = _pass1.toLowerCase();
+    var tmpPass2 = _pass2.toLowerCase();
+    var error = 0;
+
+    // Check for valid user input
     if(!(_fName) || _fName.length === 0) {
+        error = 1;
         $("#fNameError").text("* First name required");        
-    } else if(!(_lName) || _lName.length === 0) {
-        $("#lNameError").text("* Invalid last name");
-    } else if(!(_email) ||_email.length === 0) {
-        $("#emailError").text("* Email required");
-    } else if(!(_title) || _title.length === 0) {
-        $("#titleError").text("* Title selection required");
-    } else {
-        $.post("event/addUser.php", {fName: _fName, lName: _lName, email: _email, title: _title},
-            function(data) {
-                if(data) { alert(data); }       
-        });
-    }
+    } else { $("#fNameError").text(""); }
     
+    if(!(_lName) || _lName.length === 0) {
+        error = 1;
+        $("#lNameError").text("* Invalid last name");
+    } else { $("#lNameError").text(""); }
+    
+    if(!(_email) ||_email.length === 0) {
+        error = 1;
+        $("#emailError").text("* Email required");
+    } else { $("#emailError").text(""); }
+    
+    if(!(_title) || _title.length === 0) {
+        error = 1;
+        $("#titleError").text("* Title selection required");
+    } else { $("#titleError").text(""); }
+    
+    if(!(_pass1 || _pass2) || _pass1.length === 0 || _pass2.length === 0) {
+        error = 1;
+        $("#passError1").text("* Password required");
+        $("#passError2").text("**");
+    } else { 
+        $("#passError1").text("");
+        $("#passError2").text(""); 
+    }
+
+    if(tmpPass1.localeCompare(tmpPass2) != 0) {
+        error = 1;
+        $("#passError1").text("* Passwords do not match");
+        $("#passError2").text("**");
+    } else {
+        $("#passError1").text("");
+        $("#passError2").text(""); 
+    }
+
+    if(error === 0) {
+        $.post("addUser.php", {fName: _fName, lName: _lName, email: _email, title: _title, pass: _pass1},
+                function(data) {
+                    if(data) { alert(data); }       
+        });
+        
+        // Post variables
+        var dbErrorMsg = "";
+        var dbError = <?php if(isset($_SESSION['dbError'])) { echo 1;  } else { echo 0; } ?>;
+        var userExists = <?php if(isset($_SESSION['userExists'])) { echo json_encode($_SESSION['userExists']); } ?>;
+        var fNameErr = <?php if(isset($_SESSION['fNameErr'])) { echo json_encode($_SESSION['fNameErr']); }?>;
+        var lNameErr = <?php if(isset($_SESSION['lNameErr'])) { echo json_encode($_SESSION['lNameErr']); }?>;
+        var emailErr = <?php if(isset($_SESSION['emailErr'])) { echo json_encode($_SESSION['emailErr']); }?>;
+        var errorMsg = "";
+
+        // Display error then reset session variable value
+        if(dbError == 1) {
+            dbErrorMsg = <?php echo json_encode($_SESSION['dbError']); ?>;
+            alert(<?php echo $_SESSION['dbError']; ?>);
+            <?php $_SESSION['dbError'] = ""; ?>
+        }
+        
+        // Notify user account information is already stored in database
+        if(userExists == 1) {
+            alert("A user was found matching the information provided. Please cancel and log into the account.");
+            <?php $_SESSION['userExists'] = 0; ?>
+        } else {
+            // Output errors 
+            if(fNameErr == 1) {
+                errorMsg = "<?php if(isset($_SESSION['fNameErrMsg'])) { echo json_encode($_SESSION['fNameErrMsg']); }?>";
+                $("#fNameError").text(errorMsg);
+                <?php $_SESSION['fNameErr'] = 0; ?>
+            }
+        
+            if(lNameErr == 1) {
+                errorMsg = "<?php if(isset($_SESSION['lNameErrMsg'])) { echo json_encode($_SESSION['lNameErrMsg']); }?>";
+                $("#lNameError").text(errorMsg);
+                <?php $_SESSION['lNameErr'] = 0; ?>
+            }
+        
+            if(emailErr == 1) {
+                errorMsg = "<?php if(isset($_SESSION['emailErrMsg'])) { echo json_encode($_SESSION['emailErrMsg']); }?>";
+                $("#emailError").text(errorMsg);
+                <?php $_SESSION['emailErr'] = 0; ?>
+            }
+
+        }
+    }
+
 });
 
 $("#cancel").click(function() {
     window.location.href = "../index.php";
 });
-</script>
 
+<!-- Scripts end here -->
+</script>
 </body>
