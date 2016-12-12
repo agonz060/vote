@@ -73,7 +73,7 @@ function cleanInput($data) {
 <!-- End PHP -->
 
 <!-- Title -->
-<h1 align="center">Add User</h1>
+<h1 align="center">User Registration</h1>
 <hr><br>
 
 <!-- Begin form -->

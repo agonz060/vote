@@ -31,24 +31,24 @@ Comments not discussed at the meeting will not be reflected in the department le
 <div>
 <p> 
 I cast my vote regarding the recomendation for
-<select class="selector">
+<select id="lastName" class="selector">
 	<option>Last Name</option>
 	<option>Trump</option>
 </select>'s 5<sup>th</sup>-Year Quinquennial Review in the 
-<input size="15" type="text" name="Dept" id="Dept" value=""/> Department
+<input size="15" type="text" name="dept" id="dept" value=""/> Department
 , effective <input size="10" type="text" name="effDate" id="effDate"/>.</br>
 </p>
-Satisfactory: <input type="radio" name="vote" id="satisfactory" value="0"></br>  
+Satisfactory: <input type="radio" id="vote" name="satisfactory" value="0"></br>  
 <p id="satPreface" name="satPreface" class="preface" style="display:none">
 (Please state qualifications below. A Satisfactory with qualification(s) vote can not be cast unless reasons for qualification(s)
 are discussed at the department meeting)</br>
 </p>
 <textarea id="qualifications" name="qualifications" row="8" style="width:100%; display:none" value=""></textarea>
-Unsatisfactory: <input type="radio" name="vote" id="unsatisfactory" value="1"></br>
-Abstain: <input type="radio" name="vote" id="abstain" value="2"></br>
+Unsatisfactory: <input type="radio" id="vote" name="unsatisfactory" value="1"></br>
+Abstain: <input type="radio" id="vote" name="abstain" value="2"></br>
 <hr/>
 Comments:</br>
-<textarea id="comments" name="comments" rows="8" style="width:100%"></textarea>
+<textarea id="comment" name="comment" rows="8" style="width:100%"></textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -67,7 +67,7 @@ $(function() {
 });
 
 $(function() {
-	$("input[type='radio'][name='vote']").change(function() {
+	$("input[type='radio'][id='vote']").change(function() {
 		if(this.value == 0) {
 			$('#qualifications').show();
 			$('#qualifications').prop('required',true);

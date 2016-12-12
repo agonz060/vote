@@ -1,4 +1,5 @@
 <?php session_start(); ?>
+<?php echo "HELOO WORLD"; ?>
 <table width="300" border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
  	<tr>
 		<form  method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
