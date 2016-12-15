@@ -1,4 +1,5 @@
 <?php session_start(); ?>
+
 <head>
 <style>
     .error {color: #FF0000;}
@@ -8,14 +9,16 @@
 <!-- Start PHP -->
 <?php
 
+require 'connDB.php';
+
 #<!-- Define variables -->
-$rewiredfirstName = $lastName = $email = $title = "";
-$errFirstName = $errLastName = $errEmail = $errTitle = "";
-$validFirstName = $validLastName = $validEmail = $validTitle = false;
+$firstName = $lastName = $email = $title = $pass1 = $pass2 = "";
+$errFirstName = $errLastName = $errEmail = $errTitle = $errPass1 = $errPass2 = "";
+$validFirstName = $validLastName = $validEmail = $validTitle = $validPass = false;
 
 #Set appropiate error messages if an input field is left empty 
 if($_SERVER["REQUEST_METHOD"] == "POST") {
-		# Check for correct email format
+		# Check for correct name format
 	if(empty($_POST["firstName"])){
 	  	$errFirstName = "* First name is required";
 	} else {
@@ -23,11 +26,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 		
 		# Name should only contain letters and space character
 		if(!preg_match("/^[a-zA-Z ]*$/", $firstName)) {
-			$errFirstName = "Only letters and white space allowed";		
-		}
-		
-		# First name is valid 
-		$validFirstName = true; 
+			$errFirstName = "* Only letters and white space allowed";		
+		} else { 
+		    # First name is valid 
+		    $validFirstName = true;
+                }
 	}
 
 	if(empty($_POST["lastName"])) {
@@ -37,11 +40,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 		
 		# Name should only contain letters and space character
  		if(!preg_match("/^[a-zA-Z ]*$/", $lastName)) {
-			$errLastName = "Only letters and white space allowed";
-		}
-		
-		#Last name is valid
-		$validLastName = true;
+			$errLastName = "* Only letters and white space allowed";
+		} else {
+		    #Last name is valid
+		    $validLastName = true;
+                }
 	}
 
 	if(empty($_POST["email"])) {
@@ -64,6 +67,34 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 		$title = $_POST["title"];
 		$validTitle = true;
 	}
+        
+        if(empty($_POST['pass1'])) {
+            $errPass1 = "* Password required";
+        } 
+
+        if(empty($_POST['pass2'])) {
+            $errPass2 = "** requried";
+        }
+
+        if(!empty($_POST['pass1'] && $_POST['pass2'])) {
+            $tmp1 = strtolower(cleanInput($_POST['pass1'])); 
+            $tmp2 = strtolower(cleanInput($_POST['pass2']));
+
+            if($tmp1 === $tmp2) {
+                $validPass = true;
+            } else {
+                $errPass1 = "* Passwords do not match";
+                $errPass2 = "**";
+            }
+        }
+
+        if($validFirstName && $validLastName &&  $validEmail && $validTitle && $validPass) {
+           $selectCmd = "SELECT * FROM Users WHERE email='$email'";
+
+           $result = $conn->query($selectCmd);
+
+           if
+        }
 }
 
 #<!-- Input validation for security reasons: removes special characters that could -->
@@ -84,14 +115,15 @@ function cleanInput($data) {
 
 <!-- Begin form -->
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<div id="errorDiv"><?php echo "$errorDivMsg"; ?></div>
 
 <!-- Enter name and email -->
-First Name: <input type="text" id="firstName">
-<span id="fNameError" class="error"></span>
+First Name: <input type="text" id="firstName" value="<?php if(isset($_POST['firstName'])) { echo htmlentities($_POST['firstName']); }?>">
+<span id="fNameError" class="error"><?php echo "$errFirstName";?></s$validTitle &&pan>
 <br><br>
 
-Last Name: <input type="text" id="lastName">
-<span id="lNameError" class="error"></span>
+Last Name: <input type="text" id="lastName" value="<?php if(isset($_POST['lastName'])) { echo htmlentities($_POST['lastName']); }?>">
+<span id="lNameError" class="error"><?php echo "$errLastName";?></span>
 <br><br>
 
 <!-- Select title -->
@@ -99,19 +131,19 @@ Title:
 <input type="radio" id="assistant" value="Assistant">Assistant Professor
 <input type="radio" id="associate" value="Associate">Associate Professor
 <input type="radio" id="full" value="Full">Full Professor
-<span id="titleError" class="error"></span>
+<span id="titleError" class="error"><?php echo "$errTitle";?></span>
 <br><br>
 
-E-mail: <input type="text" id="email">
-<span id="emailError" class="error"> </span>
+E-mail: <input type="text" id="email" value="<?php if(isset($_POST['email'])) { echo htmlentities($_POST['email']); }?>">
+<span id="emailError" class="error"><?php echo "$errEmail";?></span>
 <br><br>
 
-Password: <input type="password" id="pass1">
-<span id="passError1" class="error"></span>
+Password: <input type="password" id="pass1" value="<?php if(isset($_POST['pass1'])) { echo htmlentities($_POST['pass1']); }?>">
+<span id="passError1" class="error"><?php echo "$errPass1";?></span>
 <br><br>
 
-Re-enter password: <input type="password" id="pass2">
-<span id="passError2" class="error"></span>
+Re-enter password: <input type="password" id="pass2" value="<?php if(isset($_POST['pass2'])) { $_POST['pass2']; }?>">
+<span id="passError2" class="error"><?php echo "$errPass2";?></span>
 <br><br>
 
 <!-- Submit information if all required input is valid -->
@@ -123,108 +155,9 @@ Re-enter password: <input type="password" id="pass2">
 
 <!-- Scripts begin here -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-<script>
-$("#createUser").click(function() {
-    var _fName = $('#firstName').val();	
-    var _lName = $("#lastName").val();
-    var _email = $("#email").val();
-    var _title = $("input:checked").val();
-    var _pass1 = $("#pass1").val();
-    var _pass2 = $("#pass2").val();
-    var tmpPass1 = _pass1.toLowerCase();
-    var tmpPass2 = _pass2.toLowerCase();
-    var error = 0;
+<script type="text/javascript">
 
-    // Check for valid user input
-    if(!(_fName) || _fName.length === 0) {
-        error = 1;
-        $("#fNameError").text("* First name required");        
-    } else { $("#fNameError").text(""); }
-    
-    if(!(_lName) || _lName.length === 0) {
-        error = 1;
-        $("#lNameError").text("* Invalid last name");
-    } else { $("#lNameError").text(""); }
-    
-    if(!(_email) ||_email.length === 0) {
-        error = 1;
-        $("#emailError").text("* Email required");
-    } else { $("#emailError").text(""); }
-    
-    if(!(_title) || _title.length === 0) {
-        error = 1;
-        $("#titleError").text("* Title selection required");
-    } else { $("#titleError").text(""); }
-    
-    if(!(_pass1 || _pass2) || _pass1.length === 0 || _pass2.length === 0) {
-        error = 1;
-        $("#passError1").text("* Password required");
-        $("#passError2").text("**");
-    } else { 
-        $("#passError1").text("");
-        $("#passError2").text(""); 
-    }
-
-    if(tmpPass1.localeCompare(tmpPass2) != 0) {
-        error = 1;
-        $("#passError1").text("* Passwords do not match");
-        $("#passError2").text("**");
-    } else {
-        $("#passError1").text("");
-        $("#passError2").text(""); 
-    }
-
-    if(error === 0) {
-        $.post("addUser.php", {fName: _fName, lName: _lName, email: _email, title: _title, pass: _pass1},
-                function(data) {
-                    if(data) { alert(data); }       
-        });
-        
-        // Post variables
-        var dbErrorMsg = "";
-        var dbError = <?php if(isset($_SESSION['dbError'])) { echo 1;  } else { echo 0; } ?>;
-        var userExists = <?php if(isset($_SESSION['userExists'])) { echo json_encode($_SESSION['userExists']); } ?>;
-        var fNameErr = <?php if(isset($_SESSION['fNameErr'])) { echo json_encode($_SESSION['fNameErr']); }?>;
-        var lNameErr = <?php if(isset($_SESSION['lNameErr'])) { echo json_encode($_SESSION['lNameErr']); }?>;
-        var emailErr = <?php if(isset($_SESSION['emailErr'])) { echo json_encode($_SESSION['emailErr']); }?>;
-        var errorMsg = "";
-
-        // Display error then reset session variable value
-        if(dbError == 1) {
-            dbErrorMsg = <?php echo json_encode($_SESSION['dbError']); ?>;
-            alert(<?php echo $_SESSION['dbError']; ?>);
-            <?php $_SESSION['dbError'] = ""; ?>
-        }
-        
-        // Notify user account information is already stored in database
-        if(userExists == 1) {
-            alert("A user was found matching the information provided. Please cancel and log into the account.");
-            <?php $_SESSION['userExists'] = 0; ?>
-        } else {
-            // Output errors 
-            if(fNameErr == 1) {
-                errorMsg = "<?php if(isset($_SESSION['fNameErrMsg'])) { echo json_encode($_SESSION['fNameErrMsg']); }?>";
-                $("#fNameError").text(errorMsg);
-                <?php $_SESSION['fNameErr'] = 0; ?>
-            }
-        
-            if(lNameErr == 1) {
-                errorMsg = "<?php if(isset($_SESSION['lNameErrMsg'])) { echo json_encode($_SESSION['lNameErrMsg']); }?>";
-                $("#lNameError").text(errorMsg);
-                <?php $_SESSION['lNameErr'] = 0; ?>
-            }
-        
-            if(emailErr == 1) {
-                errorMsg = "<?php if(isset($_SESSION['emailErrMsg'])) { echo json_encode($_SESSION['emailErrMsg']); }?>";
-                $("#emailError").text(errorMsg);
-                <?php $_SESSION['emailErr'] = 0; ?>
-            }
-
-        }
-    }
-
-});
-
+// Redirect user to login page
 $("#cancel").click(function() {
     window.location.href = "../index.php";
 });

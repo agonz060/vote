@@ -53,9 +53,9 @@ $(document).ready(function() {
                     }
             });
         }
-        var id = "<?php if(isset($_SESSION['uId'])) { echo 1; } else { echo -1; } ?>"
+        var id = <?php if(isset($_SESSION['uId'])) { echo 1; } else { echo -1; } ?>;
         if (id > 0) {
-            var type = "<?php echo $_SESSION['uType']; ?>"
+            var type = <?php if(isset($_SESSION['uType'])) { echo json_encode($_SESSION['uType']); }?>;
             if(type == "0") {
                 $(document).load("user/index.php");
             } else { $(document).load("admin/index.php"); }

@@ -16,11 +16,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = cleanInput($_POST["email"]);
     $title = cleanInput($_POST["title"]);
     $pass = cleanInput($_POST["pass"]);
+    
+    echo "F: $firstName L: $lastName E: $email T: $title P: $pass";
 
     # Name should only contain letters and space character
     if(!preg_match("/^[a-zA-Z ]*$/", $firstName)) {
         $_SESSION["fNameErr"] = 1;
-        $_SESSION["fNameErrMsg"] = " * Only letters and white space allowed";
     } else {
         # First name is valid 
 	$validFirstName = true; 
@@ -55,8 +56,12 @@ function cleanInput($data) {
 	return $data;
 }
 
+echo "before validity checks";
+
 # Check for existing user if all user data is valid
 if($validEmail && $validFirstName && $validLastName) {
+    echo "inside valid block";
+
     $selectUserCmd = "SELECT * FROM Users WHERE fName='$firstName' and lName='$lastName'";
    
     # Execute selection command
@@ -64,11 +69,15 @@ if($validEmail && $validFirstName && $validLastName) {
 
     # Check for successful sql execution
     if(!$results) {
-        $_SESSIONS["dbError"] = "Error in addUser.php: could not connect to database";
+        echo "in !results";
+        $_SESSIONS["dbError"] = 1;
     } else {
         # Number of rows returned = 0 if user information not found, 
         # otherwise, returns >= 1
+        echo "Num rows: ".$results->num_rows;
         if($results->num_rows == 0) {
+            echo "User does not exist";
+
             # Format names to include proper puncuation
             $firstName[0] = strtoupper($firstName[0]);
             $lastName[0] = strtoupper($lastName[0]);
@@ -85,17 +94,17 @@ if($validEmail && $validFirstName && $validLastName) {
             # Check for error when executing mysql command that inserts user
             if($results) {
                 echo "Success: user added";
-                $_SESSION["regComplete"] = 1;
+                $_SESSION['userCreated'] = 1;
             } else {
-                echo "Error executing addUserCmd";
-                $_SESSION["regComplete"] = 0;
-                $_SESSION["regErr"] = "Error in addUser.php: could not execute addUserCmd";
+                $_SESSION['userCreated'] = 0;
             }
         } else {
+            echo "in user exists";
             $_SESSION["userExists"] = 1;
         }
     }
 }
 
-# End php
+# Call function session_write_close() before exiting file
+session_write_close();
 ?>
