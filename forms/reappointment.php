@@ -34,12 +34,12 @@ Comments not discussed at the meeting will not be reflected in the department le
 <div>
 <p> 
 I cast my vote regarding the recomendation for Professor
-<select class="selector">
+<select id="lastName" class="selector">
 	<option>Last Name</option>
 	<option>Trump</option>
 </select>'s 
-Reappointment File in the Department of <input size="15" type="text" name="Dept" id="Dept" value=""/>
-, effective <input size="10" type="text" name="effDate" id="effDate"/>. 
+Reappointment File in the Department of <input size="15" type="text" name="dept" id="dept" value=""/>
+, effective <input size="10" type="text" name="effDate" id="effDate"/>.<br> 
 <i>Please note that a vote against reappointment may result in the Chancellor's final decision not to
 reappoint with a terminal notice being given to the candidate.</i></br>
 </p>
@@ -48,7 +48,7 @@ Opposed: <input type="radio" name="vote" id="vote" value="1">&nbsp;&nbsp;&nbsp;
 Abstain: <input type="radio" name="vote" id="vote" value="2"></br>
 <hr/>
 Comments:</br>
-<textarea rows="8" style="width:100%"></textarea>
+<textarea id="comment" rows="8" style="width:100%"></textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -56,6 +56,8 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
 <p>
+<input type="button" value="Cancel">
+<input type="button" value="Save">
 <input type="button" value="Submit">
 </form>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">

@@ -32,13 +32,13 @@ Comments not discussed at the meeting will not be reflected in the department le
 <div>
 <p> 
 Merit, Promotions, or Fith-year appraisal for 
-<select class="selector">
+<select id="lastName" class="selector">
 	<option>Last Name</option>
 	<option>Trump</option>
 </select>'s 
 </p>
 Confidential comments regarding Merrit, Promotions or Fifth-year appraisals</br>
-<textarea rows="8" style="width:100%"></textarea>
+<textarea id="comment" rows="8" style="width:100%"></textarea>
 </div>
 <hr/>
 <p> Comments must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -46,6 +46,8 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
 <p>
+<input id="cancel" type="button" value="Cancel">
+<input id="save" type="button" value="Save">
 <input type="button" value="Submit">
 </form>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -54,6 +56,13 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <script>
 $(function() {
 	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
+        
+        $("#save").click(function() {
+            var _lastName = $("#lastName").val();
+            var _comment = $("#comment").val();
+
+            alert("last: " + _lastName + " cmt: " + _comment);
+        });
 });
 </script>
 </body>

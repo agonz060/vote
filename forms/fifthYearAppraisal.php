@@ -31,24 +31,24 @@ Comments not discussed at the meeting will not be reflected in the department le
 <div>
 <p> 
 I cast my vote regarding the recomendation for
-<select class="selector">
+<select id="lastName" class="selector">
 	<option>Last Name</option>
 	<option>Trump</option>
 </select>'s 5<sup>th</sup>-Tear Appraisal in the 
-<input size="15" type="text" name="Dept" id="Dept" value=""/> Department
+<input size="15" type="text" name="dept" id="dept" value=""/> Department
 , effective <input size="10" type="text" name="effDate" id="effDate"/>.</br>
 </p>
-Positive: <input type="radio" name="vote" id="positive" value="0"></br>
-<p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote ca not be cast unless
+Positive: <input type="radio" id="vote" name="positive" value="0"></br>
+<p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote cannot be cast unless
 reasons for qualification(s) are discussed at the department meeting)</br></p>
 <textarea id="qualifications" name="qualifications" row="8" style="width:100%; display:none" value=""></textarea>
-Opposed: <input type="radio" name="vote" id="opposed" value="1"></br>
-Abstain: <input type="radio" name="vote" id="abstain" value="2"></br>
+Opposed: <input type="radio" id="vote" name="opposed" value="1"></br>
+Abstain: <input type="radio" id="vote" name="abstain" value="2"></br>
 <hr/>
 <strong>TEACHING</strong> (Please list positive and negative aspects):</br>
 <textarea id="teaching" name="teaching" rows="8" style="width:100%"></textarea>
-<strong>REASEARCH</strong> (Please list positive and negative aspects):</br>
-<textarea id="reasearch" name="research"rows="8" style="width:100%"></textarea>
+<strong>RESEARCH</strong> (Please list positive and negative aspects):</br>
+<textarea id="research" name="research"rows="8" style="width:100%"></textarea>
 <strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):</br>
 <textarea id="pubService" name="pubService" rows="8" style="width:100%"></textarea>
 </div>
