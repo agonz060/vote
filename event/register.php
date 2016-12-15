@@ -93,7 +93,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 
            $result = $conn->query($selectCmd);
 
-           if
+           if(!$result) {
+                $errorDivMsg = "register.php: error accessing database";
+           } else {
+
+           }
         }
 }
 
