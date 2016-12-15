@@ -2,10 +2,11 @@
 	//echo "Entering savePoll.php";
 	require 'connDB.php';
 
-	// Poll data
+	// Ballot data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
+        $dateEff = $pollType = $dept = ""
 	
-	// Voting info
+	// Ballot details
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
 	
 	// Mysql queries
@@ -95,8 +96,10 @@
 				// Get first name and last name of professor
 				$profName = $keys[$x];
 				$profNamePieces = explode(" ",$keys[$x]); 
-				$fName = $profNamePieces[0];
+				
+                                $fName = $profNamePieces[0];
 				$lName = $profNamePieces[1];
+
 				// check if professor is already voting in the current poll
 				$cmd = "SELECT user_id from Users WHERE fName='$fName' AND lName='$lName'";
 				//echo "cmd: $cmd"; 
@@ -122,12 +125,11 @@
 						$result = mysqli_query($conn, $cmd);
 						
 						if(!$result) {
-						echo "savePoll.php: could not Update cmt for $profName";
+				                    echo "savePoll.php: could not Update cmt for $profName";
 						}
 
 					} else {
 						echo "user_id: " . $profId . "\n";
-						echo "poll_id: " . $newPollId . "\n";
 						echo "comment: " . $cmt . "\n";
 						$cmd = "INSERT INTO Voters(user_id,poll_id,comment,voteFlag) VALUES ('$profId','$newPollId','$cmt',0)";
 						$result = mysqli_query($conn,$cmd);
