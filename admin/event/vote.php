@@ -19,9 +19,9 @@
 
 	# Set voting variables
 	$day = $month = "";
-	$title = $description = $actDate = $deactDate = "";
-	$tmp_dateDeact = $tmp_dateAct = $tmp_dateEff= "";
-	$errTitle = $errEffDate= $errActDate = $errDeactDate = "";
+	$title = $description = $actDate = $deactDate = $profName = $effDate = "";
+	$tmp_dateDeact = $tmp_dateAct = $tmp_effDate = "";
+	$errTitle = $errEffDate= $errActDate = $errDeactDate = $errProfName = "";
 	$validTitle =  $validActDate = $validDeactDate = false;
 	date_default_timezone_set('America/Los_Angeles'); 
 	
@@ -77,12 +77,12 @@
 		}
 
 		# Check for valid Effective Date
-		if(empty($_POST["dateEff"])) {
+		if(empty($_POST["effDate"])) {
 			$errEffDate = "* Invalid Effective Date";
 		} else {
-			$dateEff = $_POST["dateEff"];
-			$tmp_dateEff = new DateTime($dateEff);
-			list($year, $month, $day) = explode("-",$dateEff);
+			$effDate = $_POST["effDate"];
+			$tmp_effDate = new DateTime($effDate);
+			list($year, $month, $day) = explode("-",$effDate);
 			if(checkdate($month,$day,$year)) {
 				$validEffDate = true;
 			} else {
@@ -94,6 +94,12 @@
 		if(!empty($_POST["description"])) {
 			$description = $_POST["description"];
 		}
+
+                # Check for professor's name
+                if(!empty($_POST["profName"])) {
+                    $profName = $_POST["profName"];
+                } else { $errProfName = "* name required"; }
+
 	}
 
 	function cleanInput($data) {
@@ -144,8 +150,13 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 <span id="dateDeactErr" class ="error"><?php echo "$errDeactDate";?></span><br>
 </p>
 
-<p>Effective Date <input type="text" id="dateEff" name="dateEff" value="<?php if(isset($_POST['dateEff'])) {echo htmlentities ($_POST['dateEff']);} ?>" >
+<p>Effective Date <input type="text" id="effDate" name="effDate" value="<?php if(isset($_POST['effDate'])) {echo htmlentities ($_POST['effDate']);} ?>" >
 <span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
+</p>
+<p>
+Professors Name:
+<input type="text" id="profName" value="<?php if(isset($_POST['profName'])) { echo htmlentities($_POST['profName']); }?>">
+<span id="profNameErr" class="error"><?php echo "$errProfName";?></span><br>
 </p>
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
@@ -362,11 +373,13 @@ function savePoll() {
 	var description = $('#description').val();
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
-	var dateEff = $('#dateEff').val();
+        var profName = $('#profName').val();
+	var effDate = $('#effDate').val();
 	var pollType = $('#pollType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
-	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
-        var validPollType = validDept = validData = 0;
+	
+        var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
+        var validName = validPollType = validDept = validData = 0;
         
         if(!title || title.length == 0) {
             $("#titleErr").text("* Title required");
@@ -380,9 +393,9 @@ function savePoll() {
             $("#dateDeactErr").text("* Date required");
         } else { validDeactDate = 1; }
 
-        if(!dateEff || dateEff.length == 0) {
-            $("#dateEffErr").text("* Date required");
-        } else { validDateEff = 1; } 
+        if(!effDate || effDate.length == 0) {
+            $("#effDateErr").text("* Date required");
+        } else { validEffDate = 1; } 
 
         if(!pollType || pollType.length == 0) {
             $("#pollTypeErr").text("* Poll type required");
@@ -391,22 +404,29 @@ function savePoll() {
         if(!dept || dept.length == 0) {
             $("#deptErr").text("* Department required");
         } else { validDept = 1; } 
-        
-        if(validTitle && validActDate && validDeactDate && validDateEff && validPollType && validDept) {
-            validData = 1;
+       
+        if(!profName || profName.length == 0) {
+            $('#profNameErr').text('* Name required');
+        } else { validName = 1; }
+
+        if(validTitle && validActDate && validDeactDate && validEffDate && validPollType && validDept) {
+            if(validName) {
+                validData = 1;
+            }
         }
 
-        // For the creation of votingInfo objects
-	var _pollData = {'':''};
-	_pollData["title"] = title;
-	_pollData["descr"] = description;
-	_pollData["actDate"] = dateActive;
-	_pollData["deactDate"] = dateDeactive;
-	_pollData["dateEff"] = dateEff;
-	_pollData["pollType"] = pollType;
-	_pollData["dept"] = dept;
-	
-        var _votingInfo = {'':''};
+        // Create pollData object
+        var _pollData = { title: title,
+                            descr: description,
+                            actDate: dateActive,
+                            deactDate: dateDeactive,
+                            effDate: effDate,
+                            pollType: pollType,
+                            dept: dept,
+                            lName: profName };
+        
+
+        var _votingInfo = { };
 	var id = '';
 	var val = '';
 
@@ -431,9 +451,10 @@ function savePoll() {
 	console.log(_votingInfo );
 	console.log( _pollData );
 
+        // Store data in database if all required information is valid
         if(validData == 1) {
-            var reason = prompt("Why did you create/edit this page?"); 
-            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
+            var _reason = prompt("Why did you create/edit this page?"); 
+            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
                     , function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
                     .fail(function() {
                             alert("vote.php: error posting to savePoll.php");
@@ -485,10 +506,9 @@ function saveProfCmt() {
 $(function () {
 	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
 	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
-	$( "#dateEff" ).datepicker( {dateFormat: 'yy-mm-dd' });
+	$( "#effDate" ).datepicker( {dateFormat: 'yy-mm-dd' });
 });
 </script>
 <!-- End of javascript/jquery -->
-</head>
 </body>
 </html>
