@@ -49,10 +49,11 @@
         if(isset($_POST["comment"])) {
             $comment = $_POST["comment"];
         }
+    }
 ?>
 
 
-<form style="width:70%; margin: 0 auto" method="post" action=<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form style="width:70%; margin: 0 auto" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <h2 align="center">Faculty Confidential Advisory To Vote To The Chair</h2>
 <div>
 <p class="preface">
@@ -74,10 +75,10 @@ meeting at the Chair's discretion. .....This is in addition to the above
 Comments not discussed at the meeting will not be reflected in the department letter.
 </p>
 </div>
-<hr/>
+<hr>
 <div>
 <p> 
-I cast my vote regarding the recomendation for <?php echo "$lastNames's $pollType from $profTitle,"; ?>
+I cast my vote regarding the recomendation for <?php echo "$lastName's $pollType from $profTitle,"; ?>
 Step
 <select class="selector" id="fromLevel" name="fromLevel">
 	<option>I</option>
@@ -97,11 +98,11 @@ Step
 In Favor: <input type="radio" name="vote" id="vote" value="0">&nbsp;&nbsp;&nbsp;  
 Opposed: <input type="radio" name="vote" id="vote" value="1">&nbsp;&nbsp;&nbsp;
 Abstain: <input type="radio" name="vote" id="vote" value="2"></br>
-<hr/>
-Comments:</br>
+<hr>
+Comments:<br>
 <textarea id="comment" name= "comment" rows="8" style="width:100%"><?php if(isset($comment)) { echo "$comment"; } ?></textarea>
 </div>
-<hr/>
+<hr>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
 department FAO within <strong><u>TWO DAYS</u></strong> following the department meeting.
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
