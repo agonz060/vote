@@ -5,7 +5,6 @@
 </style>
 
 
-<!-- Check php comment for functionality -->
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
@@ -13,10 +12,11 @@
 ?>
 
 <body>
+<!-- Connect to database to load professor information -->
+<!-- <?php require "../event/loadProfs.php"; ?> -->
+
 <!-- PHP that processes user input begins here -->
 <?php
-        require 'connDB.php';
-
 	# Set voting variables
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = "";
@@ -121,7 +121,7 @@
 <!-- Title of current vote -->
 <p>
 Title: <input type="text" id="title" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
-<span id="titleErr" class="error"><?php echo "$errTitle";?></span> <br>
+<span class="error"><?php echo "$errTitle";?></span> <br>
 </p>
 
 <!-- Descriptions/Comments about vote -->
@@ -137,16 +137,12 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </p>
 
 <!-- Date vote becomes active/inactive -->
-<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ><span id="dateActErr" class ="error"><?php echo "$errActDate";?></span><br>
-</p>
-
-<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" >
-<span id="dateDeactErr" class ="error"><?php echo "$errDeactDate";?></span><br>
-</p>
-
-<p>Effective Date <input type="text" id="dateEff" name="dateEff" value="<?php if(isset($_POST['dateEff'])) {echo htmlentities ($_POST['dateEff']);} ?>" >
-<span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
-</p>
+<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
+<span class ="error"><?php echo "$errActDate";?></span><br>
+<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
+<span class ="error"><?php echo "$errDeactDate";?></span><br>
+<p>Effective Date <input type="text" id="dateEff" name="dateEff" value="<?php if(isset($_POST['dateEff'])) {echo htmlentities ($_POST['dateEff']);} ?>" ></p>
+<span class ="error"><?php echo "$errEffDate";?></span><br>
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
 	<option>Career Review</option>
@@ -173,11 +169,7 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<td>
 	<!-- Selection displays the names and titles of professors -->
 	<select id="profSel" size="20" ondblclick="addToSelected()">
-	<?php
-                $selectCmd = "SELECT user_id, fName, lName, type FROM Users";
-
-                $result = $conn->query($selectCmd);
-
+	<?php 
 		# Variables used to store a professors information
 		$firstName = $lastName = $title = $email = "";
 		$fullName = $selection = "";
@@ -284,7 +276,11 @@ $(document).ready(function() {
 	
 
 	function storePollId() {
-		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; } ?>;
+		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; }?>;
+		if(id == -1) {
+			alert("vote.php: poll id not set");
+		}
+
 		var pollId = document.createElement("input");
 		
 		pollId.setAttribute("type","hidden");
@@ -326,14 +322,17 @@ $(document).ready(function() {
 <script type="text/javascript">
 function addToSelected() {
 	// Get the name of the professor that was doubled clicked
-        var profName = $("#profSel").val();
+ 	var index = document.getElementById("profSel").selectedIndex;
+	var profName = document.getElementsByTagName("option")[index].value;
+	//alert("Prof:" + profName);	
 	
 	// Check to the 'selected' list so that duplicates are not add to the list
 	var selectedProfs = document.getElementById("selected");
 	var professors = selectedProfs.options;
 	var profFound = false;
 	for(var x=0; x < professors.length; x++) {
-		if(professors[x].value == profName) {
+		if(professors[x].value == profName)
+		{
 			profFound = true;
 		}
 	}
@@ -363,41 +362,10 @@ function savePoll() {
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
 	var dateEff = $('#dateEff').val();
-	var pollType = $('#pollType option:selected').text();	
+	var pollType = $('#classType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
+	// For the creation of votingInfo objects
 	
-	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
-	var validPollType = validDept = validData = 0;
-        
-        if(!title || title.length == 0) {
-            $("#titleErr").text("* Title required");
-        } else { validTitle = 1; }
-
-        if(!dateActive || dateActive.length == 0) {
-            $("#dateActErr").text("* Date required");
-        } else { validActDate = 1; }
-
-        if(!dateDeactive || dateDeactive.length == 0) {
-            $("#dateDeactErr").text("* Date required");
-        } else { validDeactDate = 1; }
-
-        if(!dateEff || dateEff.length == 0) {
-            $("#dateEffErr").text("* Date required");
-        } else { validDateEff = 1; } 
-
-        if(!pollType || pollType.length == 0) {
-            $("#pollTypeErr").text("* Poll type required");
-        } else { validPollType = 1; } 
-
-        if(!dept || dept.length == 0) {
-            $("#deptErr").text("* Department required");
-        } else { validDept = 1; } 
-        
-        if(validTitle && validActDate && validDeactDate && validDateEff && validPollType && validDept) {
-            validData = 1;
-        }
-
-        // For the creation of votingInfo objects
 	var _pollData = {'':''};
 	_pollData["title"] = title;
 	_pollData["descr"] = description;
@@ -406,8 +374,7 @@ function savePoll() {
 	_pollData["dateEff"] = dateEff;
 	_pollData["pollType"] = pollType;
 	_pollData["dept"] = dept;
-	
-        var _votingInfo = {'':''};
+	var _votingInfo = {'':''};
 	var id = '';
 	var val = '';
 
@@ -431,15 +398,12 @@ function savePoll() {
 	// Post data
 	console.log(_votingInfo );
 	console.log( _pollData );
-
-        if(validData == 1) {
-            var reason = prompt("Why did you create/edit this page?"); 
-            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
-                    , function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
-                    .fail(function() {
-                            alert("vote.php: error posting to savePoll.php");
-                    });
-        }
+	var reason = prompt("Why did you create/edit this page?"); 
+	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
+		, function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
+		.fail(function() {
+			alert("vote.php: error posting to savePoll.php");
+		});		
 };
 
 function createProfCmtField(profName,cmt) {

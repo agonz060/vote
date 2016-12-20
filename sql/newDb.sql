@@ -1,6 +1,6 @@
 use Voting;
 
-drop table Users;
+DROP TABLE IF EXISTS Users, Vote_Data, Voters;
 
 Create table Users (
   user_id int NOT NULL AUTO_INCREMENT,
@@ -12,8 +12,6 @@ Create table Users (
   PRIMARY KEY(user_id)
 );
 
-drop table Vote_Data;
-
 Create table Vote_Data (
   user_id int NOT NULL,
   poll_id int NOT NULL,
@@ -23,8 +21,6 @@ Create table Vote_Data (
   voteCmt varchar(255),
   PRIMARY KEY(user_id,poll_id)
 );
-
-drop table Voters;
 
 Create table Voters (
   user_id int NOT NULL,
