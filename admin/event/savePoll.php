@@ -25,53 +25,53 @@
 		if(isset($_POST["votingInfo"])) {
 			$votingInfo = $_POST["votingInfo"];
 			//echo " votingInfo: "; print_r($votingInfo);
-		} else { echo "savePoll.php: error votingInfo not set"; }
+		} //else { echo "savePoll.php: error votingInfo not set"; }
 	        
-            if(isset($_POST["reason"])) {
-                $reason = $_POST["reason"];
-            } else { echo "savePoll.php: error reason not set"; }
-        }
+        if(isset($_POST["reason"])) {
+            $reason = $_POST["reason"];
+        } else { echo "savePoll.php: error reason not set"; }
+    }
     
-        if(isset($pollData['title'])) {
-            $title = $pollData['title'];
-        } else { echo "savePoll.php: title not set\n"; }
+    if(isset($pollData['title'])) {
+        $title = $pollData['title'];
+    } else { echo "savePoll.php: title not set\n"; }
 
-        if(isset($pollData['descr'])) {
-            $descr = $pollData['descr'];
-        } else { echo "savePoll.php: description not set\n"; }
-
-
-        if(isset($pollData['actDate'])) {
-            $actDate = $pollData['actDate'];
-        } else { echo "savePoll.php: activation date not set\n"; }
+    if(isset($pollData['descr'])) {
+        $descr = $pollData['descr'];
+    } else { echo "savePoll.php: description not set\n"; }
 
 
-        if(isset($pollData['deactDate'])) {
-            $deactDate = $pollData['deactDate'];
-        } else { echo "savePoll.php: deactivation date not set\n"; }
-
-        if($pollData['effDate']) {
-            $effDate = $pollData['effDate'];
-        }
-
-        if(isset($pollData['pollType'])) {
-            $pollType = $pollData['pollType'];
-        } else { echo "savePoll.php: poll type not set\n"; }
+    if(isset($pollData['actDate'])) {
+        $actDate = $pollData['actDate'];
+    } else { echo "savePoll.php: activation date not set\n"; }
 
 
-        if(isset($pollData['name'])) {
-            $name = $pollData['name'];
-        } else { echo "savePoll.php: professor name not set\n"; }
+    if(isset($pollData['deactDate'])) {
+        $deactDate = $pollData['deactDate'];
+    } else { echo "savePoll.php: deactivation date not set\n"; }
+
+    if($pollData['effDate']) {
+        $effDate = $pollData['effDate'];
+    }
+
+    if(isset($pollData['pollType'])) {
+        $pollType = $pollData['pollType'];
+    } else { echo "savePoll.php: poll type not set\n"; }
 
 
-        if(isset($pollData['dept'])) {
-            $dept = $pollData['dept'];
-        } else { echo "savePoll.php: department not set\n"; }
+    if(isset($pollData['name'])) {
+        $name = $pollData['name'];
+    } else { echo "savePoll.php: professor name not set\n"; }
 
 
-        if(isset($pollData['pollId'])) {
-            $pollId= $pollData['pollId'];
-        } else { echo "savePoll.php: poll ID not set\n"; }
+    if(isset($pollData['dept'])) {
+        $dept = $pollData['dept'];
+    } else { echo "savePoll.php: department not set\n"; }
+
+
+    if(isset($pollData['pollId'])) {
+        $pollId= $pollData['pollId'];
+    } else { echo "savePoll.php: poll ID not set\n"; }
 
         //echo "\none\n";
 
@@ -184,42 +184,44 @@
            }
         } else { echo "savePoll.php: error executing getProfsCmd\n"; }
         
-        // Add professors to current poll by inserting prof's 
-        // id and comment into the Voters table
-        foreach($profNames as $name) {
-            // Get user id of each professor 
-            //echo 'Name:'.$name."\n" ;
-            $nameSplit = explode(' ',$name);
-            $fName = $nameSplit[0];
-            $lName = $nameSplit[1];
-            
-            $selectCmd = "SELECT user_id FROM Users WHERE fName='$fName' and lName='$lName'";
-            $result = mysqli_query($conn,$selectCmd);
-            
-            if($result) {
-                $row = $result->fetch_assoc();
-                $id = $row['user_id'];
+        if($profNames) {
+            // Add professors to current poll by inserting prof's 
+            // id and comment into the Voters table
+            foreach($profNames as $name) {
+                // Get user id of each professor 
+                //echo 'Name:'.$name."\n" ;
+                $nameSplit = explode(' ',$name);
+                $fName = $nameSplit[0];
+                $lName = $nameSplit[1];
                 
-                if(!$id) { echo "savePoll.php: error getting user_id"; }
-
-                $cmt = $votingInfo[$name];
+                $selectCmd = "SELECT user_id FROM Users WHERE fName='$fName' and lName='$lName'";
+                $result = mysqli_query($conn,$selectCmd);
                 
-                // Voter already part of current vote then UPDATE voters data 
-                if(in_array($id, $voters)) {
-                    //echo 'update voter: '.$id." comment\n";
-                    $updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
-                } else { // Voter is new to poll, i.e INSERT voter into poll
-                    //echo "inserting new voter: $id into Voters table\n";
-                    //echo "voters: ";print_r($voters);
-
-                    $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, comment, voteFlag) ";
-                    $addToPollCmd .= "VALUES('$id','$pollId','$cmt','0')";
-                    $result = mysqli_query($conn,$addToPollCmd);
+                if($result) {
+                    $row = $result->fetch_assoc();
+                    $id = $row['user_id'];
                     
-                    if(!$result) { echo "savePoll.php: could not insert user_id='$id'\n"; }
-                }
+                    if(!$id) { echo "savePoll.php: error getting user_id"; }
 
-            } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
-        }    
+                    $cmt = $votingInfo[$name];
+                    
+                    // Voter already part of current vote then UPDATE voters data 
+                    if(in_array($id, $voters)) {
+                        //echo 'update voter: '.$id." comment\n";
+                        $updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
+                    } else { // Voter is new to poll, i.e INSERT voter into poll
+                        //echo "inserting new voter: $id into Voters table\n";
+                        //echo "voters: ";print_r($voters);
+
+                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, comment, voteFlag) ";
+                        $addToPollCmd .= "VALUES('$id','$pollId','$cmt','0')";
+                        $result = mysqli_query($conn,$addToPollCmd);
+                        
+                        if(!$result) { echo "savePoll.php: could not insert user_id='$id'\n"; }
+                    }
+
+                } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
+            }    
+        }
     }
 ?>

@@ -20,7 +20,7 @@
 	# Set voting variables
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = $profName = $effDate = "";
-	$tmp_dateDeact = $tmp_dateAct = $tmp_effDate = "";
+	$pollType = $dept = $tmp_dateDeact = $tmp_dateAct = $tmp_effDate = "";
 	$errTitle = $errEffDate= $errActDate = $errDeactDate = $errProfName = "";
 	$validTitle =  $validActDate = $validDeactDate = false;
 	date_default_timezone_set('America/Los_Angeles'); 
@@ -52,7 +52,7 @@
 			if(checkdate($month,$day,$year)) {
 				$validActDate = true;
 			} else {
-				$errActDate = "Invalid Activation Date";
+				$errActDate = "* Invalid Activation Date";
 			}
 		}	
 	 	
@@ -65,14 +65,14 @@
 			list($year,$month,$day) =explode("-",$dateDeact);	
 			if(checkdate($month,$day,$year)) {
 				if($tmp_dateAct && $tmp_dateDeact < $tmp_dateAct) {
-					$errDeactDate = "Deactivation Date cannot come before Activation Date.";
+					$errDeactDate = "* Deactivation Date cannot come before Activation Date.";
 					$dateDeact = "";
 					$validDeactDate = false;
 				}		
 				$validDeactDate = true; 
 			}
 			else {
-				$errDeactDate = "Invalid Deactivation Date";
+				$errDeactDate = "* Invalid Deactivation Date";
 			}
 		}
 
@@ -86,7 +86,7 @@
 			if(checkdate($month,$day,$year)) {
 				$validEffDate = true;
 			} else {
-				$errEffDate = "Invalid Effective Date";
+				$errEffDate = "* Invalid Effective Date";
 			}
 		}
 		
@@ -98,8 +98,17 @@
         # Check for professor's name
         if(!empty($_POST["profName"])) {
             $profName = $_POST["profName"];
-        } else { $errProfName = "* name required"; }
+        } else { $errProfName = "* Name required"; }
 
+        # Check for poll type
+        if(!empty($_POST["pollType"])) {
+        	$pollType = $_POST["pollType"];
+        } 
+
+        # Check for department
+        if(!empty($_POST["dept"])) {
+        	$dept = $_POST["dept"];
+        } 
 	}
 
 	function cleanInput($data) {
@@ -160,10 +169,10 @@ Professors Name:
 </p>
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
-	<option>Career Review</option>
-	<option>Merit</option>
-	<option>Promotion</option>
-	<option>Appointment</option>
+	<option value="Career Review">Career Review</option>
+	<option value="Merit">Merit</option>
+	<option value="Promotion">Promotion</option>
+	<option value="Appointment">Appointment</option>
 </select>
 </p>
 <p>Department: 
@@ -272,7 +281,7 @@ Professors Name:
 <p>
 <a href="../index.php "><input type="button" value="Cancel"></a>
 <input type="button" value="Save" onclick="savePoll()">
-<input type="submit" value="Start">
+<input type="button" value="Start" onclick="startPoll()">
 </p>
 </form>
 <p><?php var_dump($profCmts); ?></p>
@@ -291,26 +300,24 @@ $(document).ready(function() {
 	});
         
 	
-	loadPollData();
-	storePollId();	
+	setupPoll();
 	
-	function loadPollData() {
-
+	function setupPoll() {
+		storePollId();	
 		loadProfCmts();
-		
-		var type = <?php if(isset($pollType)) { echo json_encode($pollType); } else { echo 0; } ?>;
-		var dept = <?php if(isset($dept)) { echo json_encode($dept); } else { echo 0; } ?>;
-
-
+		setPollType();
+		setDept();
+	};
+	
+	function setDept() {
+		var dept = <?php if($dept) { echo json_encode($dept); } else { echo 0; } ?>;
+		if(dept) { $('#dept').val(dept); }
 	};
 
-	function loadProfName() {
-		// Load Professor's name, poll type, and department if set
-		var name = <?php if(isset($profName)) { echo json_encode($profName); } else { echo 0; } ?>;
-		if(name !== 0) {
-
-		}
-	}; 
+	function setPollType() {
+		var type = <?php if($pollType) { echo json_encode($pollType); } else { echo 0; } ?>;
+		if(type) { $('#pollType').val(type); } 
+	};
 
 	function storePollId() {
 		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; } ?>;
@@ -355,7 +362,7 @@ $(document).ready(function() {
 <script type="text/javascript">
 function addToSelected() {
 	// Get the name of the professor that was doubled clicked
-        var profName = $("#profSel").val();
+    var profName = $("#profSel").val();
 	
 	// Check to the 'selected' list so that duplicates are not add to the list
 	var selectedProfs = document.getElementById("selected");
@@ -468,8 +475,8 @@ function savePoll() {
 	});
 	
 	// Post data
-	console.log(_votingInfo );
-	console.log( _pollData );
+	//console.log(_votingInfo );
+	//console.log( _pollData );
 
         // Store data in database if all required information is valid
         if(validData == 1) {
