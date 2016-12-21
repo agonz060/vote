@@ -1,6 +1,21 @@
 use Voting;
 
-DROP TABLE IF EXISTS Users, Vote_Data, Voters;
+DROP TABLE IF EXISTS Users, Vote_Data, Voters, Polls, Professors;
+
+Create table Polls (
+  poll_id int NOT NULL AUTO_INCREMENT,
+  title varchar(30) NOT NULL,
+  description varchar(300),
+  actDate date NOT NULL,
+  deactDate date NOT NULL,
+  effDate date NOT NULL,
+  name varchar(40) NOT NULL,
+  pollType varchar(30) NOT NULL,
+  dept varchar(30) NOT NULL,
+  history text,
+  dateModified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY(poll_id)
+);
 
 Create table Users (
   user_id int NOT NULL AUTO_INCREMENT,
@@ -30,17 +45,9 @@ Create table Voters (
   Primary Key(user_id,poll_id)
 );
 
--- Add to Polls
-alter table Polls add lName varchar(30) NOT NULL;
-alter table Polls add pollType varchar(30) NOT NULL;
-alter table Polls add dept varchar(30) NOT NULL;
-alter table Polls add effDate date NOT NULL;
-
-
 insert into Users(email,fName,lName, password, type) values('smith123@gmail.com','Bob','Smith','123456','Full Professor');
-insert into Users(email, fName, lName, password,type) values('thedonald@gmail.com','Donald','Trump','123456','Full Professor');
+insert into Users(email, fName, lName, password, type) values('thedonald@gmail.com','Donald','Duck','123456','Full Professor');
+insert into Users(email, fName, lName, password, type) values('elonMusk@green.com','Elon','Musk','123456','Full Professor');
 insert into Users(email,fName,lName,password,type) values('kevin@gmail.com','Kevin','Zhen','123456','Assistant Professor');
+insert into Users(email,fName,lName,password,type) values('agonztest@gmail.com', 'Armando','Gonzalez','123456','Full Professor');
 
-insert into Voters(user_id,poll_id,comment, voteFlag) values(1,1,'user_id1 poll_id1',0);
-insert into Voters(user_id,poll_id,comment, voteFlag) values(2,1,'user_id2 poll_id1',0);
-insert into Voters(user_id,poll_id,comment, voteFlag) values(3,1,'user_id3 poll_id1',0);

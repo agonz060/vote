@@ -45,9 +45,12 @@
 		</tr>
 	</thead>
 	<tbody>
-		<?php 
+		<?php
+			// Only display inactive polls (polls that have a start date > current date) 
 			$selectCmd="Select * from Polls Where deactDate > CURDATE()";
 			$result = $conn->query($selectCmd);
+
+			// Get poll data for displaying
 			while($row = $result->fetch_assoc()) {
 				$poll_id = $row["poll_id"];
 				$title = $row["title"];
@@ -55,7 +58,7 @@
 				$dateModified = $row["dateModified"];
 				$actDate = $row["actDate"];
 				$deactDate = $row["deactDate"];
-				$lName=$row["lName"];
+				$name=$row["name"];
 				$pollType=$row["pollType"];
 				$dept=$row["dept"];
 				$effDate=$row["effDate"];
@@ -82,7 +85,7 @@
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>
 								<input type='hidden' name='dateDeactive' value='$deactDate'>
-								<input type='hidden' name='lName' value='$lName'>
+								<input type='hidden' name='profName' value='$name'>
 								<input type='hidden' name='pollType' value='$pollType'>
 								<input type='hidden' name='dept' value='$dept'>
 								<input type='hidden' name='effDate' value='$effDate'>

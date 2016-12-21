@@ -95,10 +95,10 @@
 			$description = $_POST["description"];
 		}
 
-                # Check for professor's name
-                if(!empty($_POST["profName"])) {
-                    $profName = $_POST["profName"];
-                } else { $errProfName = "* name required"; }
+        # Check for professor's name
+        if(!empty($_POST["profName"])) {
+            $profName = $_POST["profName"];
+        } else { $errProfName = "* name required"; }
 
 	}
 
@@ -290,9 +290,27 @@ $(document).ready(function() {
 			$('#profCmtBox').val(cmt);
 	});
         
-	loadProfCmts();
+	
+	loadPollData();
 	storePollId();	
 	
+	function loadPollData() {
+
+		loadProfCmts();
+		
+		var type = <?php if(isset($pollType)) { echo json_encode($pollType); } else { echo 0; } ?>;
+		var dept = <?php if(isset($dept)) { echo json_encode($dept); } else { echo 0; } ?>;
+
+
+	};
+
+	function loadProfName() {
+		// Load Professor's name, poll type, and department if set
+		var name = <?php if(isset($profName)) { echo json_encode($profName); } else { echo 0; } ?>;
+		if(name !== 0) {
+
+		}
+	}; 
 
 	function storePollId() {
 		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; } ?>;
@@ -373,65 +391,62 @@ function savePoll() {
 	var description = $('#description').val();
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
-        var profName = $('#profName').val();
+    var profName = $('#profName').val();
 	var effDate = $('#effDate').val();
 	var pollType = $('#pollType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
 	
-<<<<<<< HEAD
 	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
 	var validPollType = validDept = validData = 0;
-=======
-        var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
-        var validName = validPollType = validDept = validData = 0;
->>>>>>> 59c4ed9d8d951dd3cd1ddfa3c275a520e4f0c9af
-        
-        if(!title || title.length == 0) {
-            $("#titleErr").text("* Title required");
-        } else { validTitle = 1; }
+    var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
+    var validName = validPollType = validDept = validData = 0;
+    
+    if(!title || title.length == 0) {
+        $("#titleErr").text("* Title required");
+    } else { validTitle = 1; }
 
-        if(!dateActive || dateActive.length == 0) {
-            $("#dateActErr").text("* Date required");
-        } else { validActDate = 1; }
+    if(!dateActive || dateActive.length == 0) {
+        $("#dateActErr").text("* Date required");
+    } else { validActDate = 1; }
 
-        if(!dateDeactive || dateDeactive.length == 0) {
-            $("#dateDeactErr").text("* Date required");
-        } else { validDeactDate = 1; }
+    if(!dateDeactive || dateDeactive.length == 0) {
+        $("#dateDeactErr").text("* Date required");
+    } else { validDeactDate = 1; }
 
-        if(!effDate || effDate.length == 0) {
-            $("#effDateErr").text("* Date required");
-        } else { validEffDate = 1; } 
+    if(!effDate || effDate.length == 0) {
+        $("#effDateErr").text("* Date required");
+    } else { validEffDate = 1; } 
 
-        if(!pollType || pollType.length == 0) {
-            $("#pollTypeErr").text("* Poll type required");
-        } else { validPollType = 1; } 
+    if(!pollType || pollType.length == 0) {
+        $("#pollTypeErr").text("* Poll type required");
+    } else { validPollType = 1; } 
 
-        if(!dept || dept.length == 0) {
-            $("#deptErr").text("* Department required");
-        } else { validDept = 1; } 
-       
-        if(!profName || profName.length == 0) {
-            $('#profNameErr').text('* Name required');
-        } else { validName = 1; }
+    if(!dept || dept.length == 0) {
+        $("#deptErr").text("* Department required");
+    } else { validDept = 1; } 
+   
+    if(!profName || profName.length == 0) {
+        $('#profNameErr').text('* Name required');
+    } else { validName = 1; }
 
-        if(validTitle && validActDate && validDeactDate && validEffDate && validPollType && validDept) {
-            if(validName) {
-                validData = 1;
-            }
+    if(validTitle && validActDate && validDeactDate && validEffDate && validPollType && validDept) {
+        if(validName) {
+            validData = 1;
         }
+    }
 
         // Create pollData object
-        var _pollData = { title: title,
-                            descr: description,
-                            actDate: dateActive,
-                            deactDate: dateDeactive,
-                            effDate: effDate,
-                            pollType: pollType,
-                            dept: dept,
-                            lName: profName };
+    var _pollData = { title: title,
+                    	descr: description,
+                        actDate: dateActive,
+                        deactDate: dateDeactive,
+                        effDate: effDate,
+                        pollType: pollType,
+                        dept: dept,
+                        name: profName };
         
 
-        var _votingInfo = { };
+    var _votingInfo = { };
 	var id = '';
 	var val = '';
 
@@ -458,6 +473,7 @@ function savePoll() {
 
         // Store data in database if all required information is valid
         if(validData == 1) {
+
             var _reason = prompt("Why did you create/edit this page?"); 
             $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
                     , function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
