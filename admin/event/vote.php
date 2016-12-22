@@ -15,7 +15,7 @@
 <body>
 <!-- PHP that processes user input begins here -->
 <?php
-        require 'connDB.php';
+        require_once 'connDB.php';
 
 	# Set voting variables
 	$day = $month = "";
@@ -280,8 +280,8 @@ Professors Name:
 
 <p>
 <a href="../index.php "><input type="button" value="Cancel"></a>
-<input type="button" value="Save" onclick="savePoll()">
-<input type="button" value="Start" onclick="startPoll()">
+<input type="button" value="Save" onclick="pollAction(0)">
+<input type="button" value="Start" onclick="pollAction(1)">
 </p>
 </form>
 <p><?php var_dump($profCmts); ?></p>
@@ -389,10 +389,11 @@ function addToSelected() {
 	} else {
 		alert(profName+" is already selected to participate.");
 	}
-};
+}; // End of addToSelected()
 
-function savePoll() {
+function pollAction(sendFlag) {
 	//alert("in savePoll")
+	
 	// Grab all input field data
 	var title = $('#title').val();
 	var description = $('#description').val();
@@ -450,7 +451,8 @@ function savePoll() {
                         effDate: effDate,
                         pollType: pollType,
                         dept: dept,
-                        name: profName };
+                        name: profName, 
+                    	sendFlag: sendFlag };
         
 
     var _votingInfo = { };
@@ -478,17 +480,25 @@ function savePoll() {
 	//console.log(_votingInfo );
 	//console.log( _pollData );
 
-        // Store data in database if all required information is valid
-        if(validData == 1) {
-
-            var _reason = prompt("Why did you create/edit this page?"); 
-            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
-                    , function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
-                    .fail(function() {
-                            alert("vote.php: error posting to savePoll.php");
-                    });
-        }
-};
+    // Store data in database if all required information is valid
+    if(validData == 1) {
+        var _reason = prompt("Why did you create/edit this page?"); 
+        $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
+                , function(data) { 
+                		if(data) { 
+                			alert(data); 
+                		} else { // Output appropiate message
+                			if(!sendFlag) { alert("Poll saved!"); } 
+                			else { alert("Poll notification(s) sent"); } 
+                			
+                			window.location.href = "../index.php"; 
+                			} // End of else 
+                		}) // End of $.post
+                .fail(function() {
+                        alert("vote.php: error posting to savePoll.php");
+                });
+    } // End of if
+}; // End of pollAction()
 
 function createProfCmtField(profName,cmt) {
 	// Create hidden input to store a voting professors's name and comment 

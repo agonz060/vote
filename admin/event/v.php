@@ -5,6 +5,7 @@
 </style>
 
 
+<!-- Check php comment for functionality -->
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
@@ -12,16 +13,15 @@
 ?>
 
 <body>
-<!-- Connect to database to load professor information -->
-<!-- <?php require "../event/loadProfs.php"; ?> -->
-
 <!-- PHP that processes user input begins here -->
 <?php
+    require_once 'connDB.php';
+
 	# Set voting variables
 	$day = $month = "";
-	$title = $description = $actDate = $deactDate = "";
-	$tmp_dateDeact = $tmp_dateAct = $tmp_dateEff= "";
-	$errTitle = $errEffDate= $errActDate = $errDeactDate = "";
+	$title = $description = $actDate = $deactDate = $profName = $effDate = "";
+	$pollType = $dept = $tmp_dateDeact = $tmp_dateAct = $tmp_effDate = "";
+	$errTitle = $errEffDate= $errActDate = $errDeactDate = $errProfName = "";
 	$validTitle =  $validActDate = $validDeactDate = false;
 	date_default_timezone_set('America/Los_Angeles'); 
 	
@@ -52,7 +52,7 @@
 			if(checkdate($month,$day,$year)) {
 				$validActDate = true;
 			} else {
-				$errActDate = "Invalid Activation Date";
+				$errActDate = "* Invalid Activation Date";
 			}
 		}	
 	 	
@@ -65,28 +65,28 @@
 			list($year,$month,$day) =explode("-",$dateDeact);	
 			if(checkdate($month,$day,$year)) {
 				if($tmp_dateAct && $tmp_dateDeact < $tmp_dateAct) {
-					$errDeactDate = "Deactivation Date cannot come before Activation Date.";
+					$errDeactDate = "* Deactivation Date cannot come before Activation Date.";
 					$dateDeact = "";
 					$validDeactDate = false;
 				}		
 				$validDeactDate = true; 
 			}
 			else {
-				$errDeactDate = "Invalid Deactivation Date";
+				$errDeactDate = "* Invalid Deactivation Date";
 			}
 		}
 
 		# Check for valid Effective Date
-		if(empty($_POST["dateEff"])) {
+		if(empty($_POST["effDate"])) {
 			$errEffDate = "* Invalid Effective Date";
 		} else {
-			$dateEff = $_POST["dateEff"];
-			$tmp_dateEff = new DateTime($dateEff);
-			list($year, $month, $day) = explode("-",$dateEff);
+			$effDate = $_POST["effDate"];
+			$tmp_effDate = new DateTime($effDate);
+			list($year, $month, $day) = explode("-",$effDate);
 			if(checkdate($month,$day,$year)) {
 				$validEffDate = true;
 			} else {
-				$errEffDate = "Invalid Effective Date";
+				$errEffDate = "* Invalid Effective Date";
 			}
 		}
 		
@@ -94,6 +94,21 @@
 		if(!empty($_POST["description"])) {
 			$description = $_POST["description"];
 		}
+
+        # Check for professor's name
+        if(!empty($_POST["profName"])) {
+            $profName = $_POST["profName"];
+        } else { $errProfName = "* Name required"; }
+
+        # Check for poll type
+        if(!empty($_POST["pollType"])) {
+        	$pollType = $_POST["pollType"];
+        } 
+
+        # Check for department
+        if(!empty($_POST["dept"])) {
+        	$dept = $_POST["dept"];
+        } 
 	}
 
 	function cleanInput($data) {
@@ -121,7 +136,7 @@
 <!-- Title of current vote -->
 <p>
 Title: <input type="text" id="title" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
-<span class="error"><?php echo "$errTitle";?></span> <br>
+<span id="titleErr" class="error"><?php echo "$errTitle";?></span> <br>
 </p>
 
 <!-- Descriptions/Comments about vote -->
@@ -137,18 +152,27 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 </p>
 
 <!-- Date vote becomes active/inactive -->
-<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ></p>
-<span class ="error"><?php echo "$errActDate";?></span><br>
-<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" ></p>
-<span class ="error"><?php echo "$errDeactDate";?></span><br>
-<p>Effective Date <input type="text" id="dateEff" name="dateEff" value="<?php if(isset($_POST['dateEff'])) {echo htmlentities ($_POST['dateEff']);} ?>" ></p>
-<span class ="error"><?php echo "$errEffDate";?></span><br>
+<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ><span id="dateActErr" class ="error"><?php echo "$errActDate";?></span><br>
+</p>
+
+<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" >
+<span id="dateDeactErr" class ="error"><?php echo "$errDeactDate";?></span><br>
+</p>
+
+<p>Effective Date <input type="text" id="effDate" name="effDate" value="<?php if(isset($_POST['effDate'])) {echo htmlentities ($_POST['effDate']);} ?>" >
+<span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
+</p>
+<p>
+Professors Name:
+<input type="text" id="profName" value="<?php if(isset($_POST['profName'])) { echo htmlentities($_POST['profName']); }?>">
+<span id="profNameErr" class="error"><?php echo "$errProfName";?></span><br>
+</p>
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
-	<option>Career Review</option>
-	<option>Merit</option>
-	<option>Promotion</option>
-	<option>Appointment</option>
+	<option value="Career Review">Career Review</option>
+	<option value="Merit">Merit</option>
+	<option value="Promotion">Promotion</option>
+	<option value="Appointment">Appointment</option>
 </select>
 </p>
 <p>Department: 
@@ -169,7 +193,11 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 	<td>
 	<!-- Selection displays the names and titles of professors -->
 	<select id="profSel" size="20" ondblclick="addToSelected()">
-	<?php 
+	<?php
+                $selectCmd = "SELECT user_id, fName, lName, type FROM Users";
+
+                $result = $conn->query($selectCmd);
+
 		# Variables used to store a professors information
 		$firstName = $lastName = $title = $email = "";
 		$fullName = $selection = "";
@@ -252,8 +280,8 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 
 <p>
 <a href="../index.php "><input type="button" value="Cancel"></a>
-<input type="button" value="Save" onclick="savePoll()">
-<input type="submit" value="Start">
+<input type="button" value="Save" onclick="pollAction(0)">
+<input type="button" value="Start" onclick="pollAction(1)">
 </p>
 </form>
 <p><?php var_dump($profCmts); ?></p>
@@ -271,16 +299,28 @@ $(document).ready(function() {
 			$('#profCmtBox').val(cmt);
 	});
         
-	loadProfCmts();
-	storePollId();	
 	
+	setupPoll();
+	
+	function setupPoll() {
+		storePollId();	
+		loadProfCmts();
+		setPollType();
+		setDept();
+	};
+	
+	function setDept() {
+		var dept = <?php if($dept) { echo json_encode($dept); } else { echo 0; } ?>;
+		if(dept) { $('#dept').val(dept); }
+	};
+
+	function setPollType() {
+		var type = <?php if($pollType) { echo json_encode($pollType); } else { echo 0; } ?>;
+		if(type) { $('#pollType').val(type); } 
+	};
 
 	function storePollId() {
-		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; }?>;
-		if(id == -1) {
-			alert("vote.php: poll id not set");
-		}
-
+		var id = <?php if($pollId) { echo json_encode($pollId); } else { echo -1; } ?>;
 		var pollId = document.createElement("input");
 		
 		pollId.setAttribute("type","hidden");
@@ -320,19 +360,20 @@ $(document).ready(function() {
 
 <!-- Double click script that interacts with the list of professors displayed to user -->
 <script type="text/javascript">
+function startPoll() {
+
+};
+
 function addToSelected() {
 	// Get the name of the professor that was doubled clicked
- 	var index = document.getElementById("profSel").selectedIndex;
-	var profName = document.getElementsByTagName("option")[index].value;
-	//alert("Prof:" + profName);	
+    var profName = $("#profSel").val();
 	
 	// Check to the 'selected' list so that duplicates are not add to the list
 	var selectedProfs = document.getElementById("selected");
 	var professors = selectedProfs.options;
 	var profFound = false;
 	for(var x=0; x < professors.length; x++) {
-		if(professors[x].value == profName)
-		{
+		if(professors[x].value == profName) {
 			profFound = true;
 		}
 	}
@@ -354,27 +395,72 @@ function addToSelected() {
 	}
 };
 
-function savePoll() {
+function pollAction(x) {
+	if(!x) {
+		alert("x=0");
+	} else { alert("x=1"); }
 	//alert("in savePoll")
 	// Grab all input field data
 	var title = $('#title').val();
 	var description = $('#description').val();
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
-	var dateEff = $('#dateEff').val();
-	var pollType = $('#classType option:selected').text();	
+    var profName = $('#profName').val();
+	var effDate = $('#effDate').val();
+	var pollType = $('#pollType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
-	// For the creation of votingInfo objects
 	
-	var _pollData = {'':''};
-	_pollData["title"] = title;
-	_pollData["descr"] = description;
-	_pollData["actDate"] = dateActive;
-	_pollData["deactDate"] = dateDeactive;
-	_pollData["dateEff"] = dateEff;
-	_pollData["pollType"] = pollType;
-	_pollData["dept"] = dept;
-	var _votingInfo = {'':''};
+	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
+	var validPollType = validDept = validData = 0;
+    var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
+    var validName = validPollType = validDept = validData = 0;
+    
+    if(!title || title.length == 0) {
+        $("#titleErr").text("* Title required");
+    } else { validTitle = 1; }
+
+    if(!dateActive || dateActive.length == 0) {
+        $("#dateActErr").text("* Date required");
+    } else { validActDate = 1; }
+
+    if(!dateDeactive || dateDeactive.length == 0) {
+        $("#dateDeactErr").text("* Date required");
+    } else { validDeactDate = 1; }
+
+    if(!effDate || effDate.length == 0) {
+        $("#effDateErr").text("* Date required");
+    } else { validEffDate = 1; } 
+
+    if(!pollType || pollType.length == 0) {
+        $("#pollTypeErr").text("* Poll type required");
+    } else { validPollType = 1; } 
+
+    if(!dept || dept.length == 0) {
+        $("#deptErr").text("* Department required");
+    } else { validDept = 1; } 
+   
+    if(!profName || profName.length == 0) {
+        $('#profNameErr').text('* Name required');
+    } else { validName = 1; }
+
+    if(validTitle && validActDate && validDeactDate && validEffDate && validPollType && validDept) {
+        if(validName) {
+            validData = 1;
+        }
+    }
+
+        // Create pollData object
+    var _pollData = { title: title,
+                    	descr: description,
+                        actDate: dateActive,
+                        deactDate: dateDeactive,
+                        effDate: effDate,
+                        pollType: pollType,
+                        dept: dept,
+                        name: profName };
+        
+
+    var _votingInfo = { };
 	var id = '';
 	var val = '';
 
@@ -396,14 +482,19 @@ function savePoll() {
 	});
 	
 	// Post data
-	console.log(_votingInfo );
-	console.log( _pollData );
-	var reason = prompt("Why did you create/edit this page?"); 
-	$.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: reason }
-		, function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
-		.fail(function() {
-			alert("vote.php: error posting to savePoll.php");
-		});		
+	//console.log(_votingInfo );
+	//console.log( _pollData );
+
+        // Store data in database if all required information is valid
+        if(validData == 1) {
+
+            var _reason = prompt("Why did you create/edit this page?"); 
+            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
+                    , function(data) { if(data) { alert(data); } else { alert("Poll saved!"); window.location.href = "../index.php"; }})
+                    .fail(function() {
+                            alert("vote.php: error posting to savePoll.php");
+                    });
+        }
 };
 
 function createProfCmtField(profName,cmt) {
@@ -450,10 +541,9 @@ function saveProfCmt() {
 $(function () {
 	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
 	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
-	$( "#dateEff" ).datepicker( {dateFormat: 'yy-mm-dd' });
+	$( "#effDate" ).datepicker( {dateFormat: 'yy-mm-dd' });
 });
 </script>
 <!-- End of javascript/jquery -->
-</head>
 </body>
 </html>

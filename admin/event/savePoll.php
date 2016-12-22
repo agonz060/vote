@@ -1,11 +1,12 @@
 <?php 
 	//echo "Entering savePoll.php\n";
-	require 'connDB.php';
+	require_once 'connDB.php';
+    require_once "../mailer/autoload.php";
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
-    $effDate = $pollType = $dept = $name = $reason = "";
-	
+    $effDate = $pollType = $dept = $name = $reason = $sendFlag = "";
+	$emailInfo = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
     $voters = [];
@@ -73,13 +74,14 @@
         $pollId= $pollData['pollId'];
     } else { echo "savePoll.php: poll ID not set\n"; }
 
-        //echo "\none\n";
+    if(isset($pollData['sendFlag'])) {
+        $sendFlag = $pollData['sendFlag'];
+    } else { $sendFlag = 0; } // Only save poll if no flag
 
-	// Update Polls database if pollId exists
     //echo "pollId set to 30\n";
     //$pollId = 36;
 	
-    if($pollId > 0) {
+    if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
 		$history=":edit:" . "user" . ":" . date("Y-m-d") . ":" . $reason;
@@ -114,15 +116,14 @@
             
             if($result) {
                 $row = $result->fetch_assoc();
-
                 $pollId = $row['poll_id'];
                 //echo 'New pollId: '.$pollId."\n";
                 //echo "Finished updating Polls table\n";
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
         } else { echo "savePoll.php: could not create new Poll\n"; } 
-	}
+	}// End of updating Polls table
         
-    if($votingInfo) {
+    if($votingInfo) {// Update Voters table
         //echo "Updating Voters table\n";
         // votingInfo = { "profName" => "comment" } 
         $profNames = array_keys($votingInfo);
@@ -179,14 +180,16 @@
                         if(!$result) {
                             echo "savePoll.php: could not delete user_id='$id'\n";
                         }
-                    }
-                }
-           }
+                    } // End of foreach
+                }// End of foreach
+           } // End of if
         } else { echo "savePoll.php: error executing getProfsCmd\n"; }
         
         if($profNames) {
             // Add professors to current poll by inserting prof's 
             // id and comment into the Voters table
+            $e = $email = "";
+
             foreach($profNames as $name) {
                 // Get user id of each professor 
                 //echo 'Name:'.$name."\n" ;
@@ -194,34 +197,122 @@
                 $fName = $nameSplit[0];
                 $lName = $nameSplit[1];
                 
-                $selectCmd = "SELECT user_id FROM Users WHERE fName='$fName' and lName='$lName'";
+                $selectCmd = "SELECT user_id, email FROM Users WHERE fName='$fName' and lName='$lName'";
                 $result = mysqli_query($conn,$selectCmd);
                 
                 if($result) {
                     $row = $result->fetch_assoc();
                     $id = $row['user_id'];
-                    
+                    $email = $row['email'];
+
                     if(!$id) { echo "savePoll.php: error getting user_id"; }
+                    if(!$email) { echo "savePoll.php: error getting email"; }
 
                     $cmt = $votingInfo[$name];
+                    
+                    // Store information for sending emails 
+                    $e = array( "name" => $name,
+                                "comment" => $cmt,
+                                "email" => $email );
+                    $emailInfo[] = $e;
                     
                     // Voter already part of current vote then UPDATE voters data 
                     if(in_array($id, $voters)) {
                         //echo 'update voter: '.$id." comment\n";
                         $updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
+                        $result = mysqli_query($conn, $updateVoter);
+
+                        if(!$result) { echo "savePoll.php: could not update voter: $id info"; } 
                     } else { // Voter is new to poll, i.e INSERT voter into poll
                         //echo "inserting new voter: $id into Voters table\n";
                         //echo "voters: ";print_r($voters);
-
+                        // Add id to voters[] for use when sending emails
                         $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, comment, voteFlag) ";
                         $addToPollCmd .= "VALUES('$id','$pollId','$cmt','0')";
                         $result = mysqli_query($conn,$addToPollCmd);
                         
                         if(!$result) { echo "savePoll.php: could not insert user_id='$id'\n"; }
                     }
-
                 } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
-            }    
+            }// End of foreach    
+        }// End of adding profs to poll
+    } // End of updating Voters table
+
+    // Function that sends emails, function call below this function
+    function sendEmail($name, $cmt, $email) { 
+            //PHPMailer Object
+        $mail = new PHPMailer;
+
+        // Enable SMTP debugging
+        $mail->SMTPDebug = false;
+
+        // Set PHPMailer to use SMTP
+        $mail->isSMTP();
+
+        // Set SMTP host name
+        $mail->Host = "smtp.gmail.com";
+
+        // Set this to true if SMTP host requires authentication to send email
+        $mail->SMTPAuth = true;
+
+        // Enter credentials
+        $mail->Username = "benderthesender@gmail.com";
+        $mail->Password = "bendSend1";
+
+        // If SMTP requires TLS encryption then set it
+        $mail->SMTPSecure = "tls";
+
+        // Set TCP port to connect to
+        $mail->Port = 587;
+
+        //From email address and name
+        $mail->From = "benderthesender@gmail.com";
+        $mail->FromName = "Armando Gonzalez";
+
+        //To address and name
+        $mail->addAddress($email, $name);
+        //$mail->addAddress("recepient1@example.com"); //Recipient name is optional
+
+        //Address to which recipient will reply
+        $mail->addReplyTo("agonztest@gmail.com", "Reply");
+
+        //CC and BCC
+        //$mail->addCC("cc@example.com");
+        //$mail->addBCC("bcc@example.com");
+
+        //Send HTML or Plain Text email
+        $mail->isHTML(true);
+        $mail->Subject = "Sent from vote.php";
+        
+        // Compose message body
+        $bodyMsg = "Comment: <br>" . $cmt . "<br>";
+        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your"; 
+        $voteLink = "<a href='localhost'>voting documents</a><br>";
+        $bodyMsg .= $voteLink;
+
+        $mail->Body = $bodyMsg;
+        //$mail->AltBody = "Testing plain text body of a message sent from a script";
+
+        if(!$mail->send()) {
+            echo "Mailer Error: " . $mail->ErrorInfo;
+            return;
         }
-    }
+
+        return;
+    } // End of function sendMail() 
+
+    if($sendFlag) { // Send email to all voters participating in poll
+        // User info variables
+        $name = $cmt = $email = "";
+
+        foreach($emailInfo as $userInfo) {
+            $name = $userInfo["name"];
+            $cmt = $userInfo["comment"];
+            $email = $userInfo["email"];
+
+            sendEmail($name,$cmt,$email);
+        }   
+    } // End of sending emails
+
+    
 ?>
