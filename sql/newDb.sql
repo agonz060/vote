@@ -41,13 +41,6 @@ Create table Voters (
   user_id int NOT NULL,
   poll_id int NOT NULL,
   comment varchar(255),
-  voteFlag int NOT NULL,
+  voteFlag int NOT NULL DEFAULT '0',
   Primary Key(user_id,poll_id)
 );
-
-insert into Users(email,fName,lName, password, type) values('smith123@gmail.com','Bob','Smith','123456','Full Professor');
-insert into Users(email, fName, lName, password, type) values('thedonald@gmail.com','Donald','Duck','123456','Full Professor');
-insert into Users(email, fName, lName, password, type) values('elonMusk@green.com','Elon','Musk','123456','Full Professor');
-insert into Users(email,fName,lName,password,type) values('kevin@gmail.com','Kevin','Zhen','123456','Assistant Professor');
-insert into Users(email,fName,lName,password,type) values('agonztest@gmail.com', 'Armando','Gonzalez','123456','Full Professor');
-

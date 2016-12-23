@@ -1,3 +1,54 @@
+<?php 
+    require_once 'connDB.php';
+    session_start();
+
+    // Redirect user to correct page if already logged in
+    // and cookie is still valid
+    if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+        if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+            if(isSessionExpired()) {
+                logOut();
+                redirectUserToLogin();
+            } 
+        } else { // Error must have occurred 
+                invalidCredentials();
+        }
+    } else { // Error must have occurred 
+        invalidCredentials(); 
+    }
+
+    // Check for expired activity
+    function isSessionExpired() {
+        $lastActivity = $_SESSION['LAST_ACTIVITY'];
+        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
+        
+        // Check if session has been active longer than IDLE_TIME_LIMIT
+        if(time() - $lastActivity >= $timeOut) {
+            return true;
+        } else { false; }   
+    }// End of isSesssionExpired()
+
+    function invalidCredentials() {
+        logOut();
+        redirectUserToLogin();
+    }
+
+    function logOut() {
+        // Destroy previous session
+        session_unset();
+        session_destroy();
+
+        // Begin new session
+        session_regenerate_id(true);
+        session_start();
+        return;
+    }
+
+    function redirectUserToLogin() {
+        header("Location: ../../home.php");
+    }
+        
+?>
 <html>
 <head>
 <style>
@@ -15,7 +66,7 @@
 <body>
 <!-- PHP that processes user input begins here -->
 <?php
-        require_once 'connDB.php';
+    //require_once 'connDB.php';
 
 	# Set voting variables
 	$day = $month = "";
@@ -31,7 +82,7 @@
 		# If pollId is set then it is an edit
 		# Initialize all values if edit
 		if(isset($_POST["poll_id"])) {
-			$pollId = $_POST["poll_id"];
+			$pollId = cleanInput($_POST["poll_id"]);
 		}
 	
 		# Check for title input; error if not provided
@@ -92,22 +143,22 @@
 		
 		# Process comment for selected professors
 		if(!empty($_POST["description"])) {
-			$description = $_POST["description"];
+			$description = cleanInput($_POST["description"]);
 		}
 
         # Check for professor's name
         if(!empty($_POST["profName"])) {
-            $profName = $_POST["profName"];
+            $profName = cleanInput($_POST["profName"]);
         } else { $errProfName = "* Name required"; }
 
         # Check for poll type
         if(!empty($_POST["pollType"])) {
-        	$pollType = $_POST["pollType"];
+        	$pollType = cleanInput($_POST["pollType"]);
         } 
 
         # Check for department
         if(!empty($_POST["dept"])) {
-        	$dept = $_POST["dept"];
+        	$dept = cleanInput($_POST["dept"]);
         } 
 	}
 
@@ -279,7 +330,7 @@ Professors Name:
 </table>
 
 <p>
-<a href="../index.php "><input type="button" value="Cancel"></a>
+<a href="../home.php "><input type="button" value="Cancel"></a>
 <input type="button" value="Save" onclick="pollAction(0)">
 <input type="button" value="Start" onclick="pollAction(1)">
 </p>
@@ -291,6 +342,10 @@ Professors Name:
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
 <script>
 $(document).ready(function() {
+
+    setupPoll();
+    setTimeout(timeOutReload,1200000); // 1200000ms = 20 mins
+
     $('#selected').change(function() {
             var selected = $(this).find('option:selected');
             var profName = selected.val();
@@ -299,9 +354,10 @@ $(document).ready(function() {
 			$('#profCmtBox').val(cmt);
 	});
         
-	
-	setupPoll();
-	
+	function timeOutReload() {
+        location.reload(true);
+    };
+
 	function setupPoll() {
 		storePollId();	
 		loadProfCmts();
@@ -483,21 +539,23 @@ function pollAction(sendFlag) {
     // Store data in database if all required information is valid
     if(validData == 1) {
         var _reason = prompt("Why did you create/edit this page?"); 
-        $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
-                , function(data) { 
-                		if(data) { 
-                			alert(data); 
-                		} else { // Output appropiate message
-                			if(!sendFlag) { alert("Poll saved!"); } 
-                			else { alert("Poll notification(s) sent"); } 
-                			
-                			window.location.href = "../index.php"; 
-                			} // End of else 
-                		}) // End of $.post
-                .fail(function() {
-                        alert("vote.php: error posting to savePoll.php");
-                });
-    } // End of if
+        if(_reason) {
+            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
+                    , function(data) { 
+                    		if(data) { 
+                    			alert(data); 
+                    		} else { // Output appropiate message
+                    			if(!sendFlag) { alert("Poll saved!"); } 
+                    			else { alert("Poll notification(s) sent"); } 
+                    			
+                    			window.location.href = "../home.php"; 
+                    			} // End of else 
+                    		}) // End of $.post
+                    .fail(function() {
+                            alert("vote.php: error posting to savePoll.php");
+                }); // End of $.post()
+        } // End of if(_reason)
+    } // End of if(validData)
 }; // End of pollAction()
 
 function createProfCmtField(profName,cmt) {

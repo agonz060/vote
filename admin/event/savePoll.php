@@ -6,7 +6,7 @@
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
     $effDate = $pollType = $dept = $name = $reason = $sendFlag = "";
-	$emailInfo = [];
+	$emailInfo = $removeList = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
     $voters = [];
@@ -189,7 +189,7 @@
             // Add professors to current poll by inserting prof's 
             // id and comment into the Voters table
             $e = $email = "";
-
+            //echo 'ProfNames: '; print_r($profNames);
             foreach($profNames as $name) {
                 // Get user id of each professor 
                 //echo 'Name:'.$name."\n" ;

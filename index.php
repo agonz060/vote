@@ -1,11 +1,167 @@
-<?php session_start(); ?>
+<?php 
+    require_once 'event/connDB.php';
+    session_start();
+
+    // Redirect user to correct page if already logged in
+    // and cookie is still valid
+    if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+        if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+            if(isSessionExpired()) {
+                logOut();
+            } else { 
+                redirectUser();
+            }
+        }
+    }
+
+    var_dump($_SESSION);
+
+    # Login verification 
+    $email = $pswd = "";
+    $emailErr = $pswdErr = $loginError = "";
+    $DB_ERROR = "<font color='red'><i>* Error: could not get user data</i></font>";
+    $LOGIN_ERROR_MSG = "<font color='red'><i>* Incorrect email / password combination</i></font>"; 
+
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+        //echo "entering POST";
+        if(empty($_POST['email'])) {
+            //echo 'in empty(email)'."\n";
+            $emailErr = "<font color='red'>* email required</font>";
+        } else { $email = cleanInput($_POST['email']); }
+
+        if(empty($_POST['pswd'])) {
+            //echo 'in empty(pswd)'."\n";
+            $pswdErr = "<font color='red'>* password required</font>";
+        } else { $pswd = cleanInput($_POST['pswd']); }
+
+        echo "Email: $email Pass: $pswd\n";
+    } // End of $_SERVER_REQUEST
+
+    if(!(empty($email) && empty($pswd))) { // Login if credentials are valid
+        //echo "verifying email and password\n";
+
+        $getUserInfoCmd = "SELECT user_id, password, type FROM Users WHERE email='$email'";
+        $result = mysqli_query($conn,$getUserInfoCmd);
+
+        if($result) { // Verify password
+            if($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $pswdHash = $row['password'];
+                if(password_verify($pswd,$pswdHash)) { 
+                    //echo 'password verified'."\n";
+                    $IDLE_TIME_LIMIT = 1200; // 1200 seconds = 20 mins
+                    $ADMIN = "Administrator";
+                    $id = $row['user_id'];
+                    $type = $row['type'];
+
+                    $_SESSION['user_id'] = $id;
+                    $_SESSION['type'] = $type;
+                    $_SESSION['IDLE_TIME_LIMIT'] = $IDLE_TIME_LIMIT; //1200 seconds = 15 mins
+                    $_SESSION['LAST_ACTIVITY'] = time();
+                    saveSessionVars();
+
+                     if($type == $ADMIN) { // Redirect to admin home page
+                        redirectToAdminPage();
+                    } else if($type ) { 
+                        // Redirect to user profile
+                        redirectToUserPage();
+                    }
+                } else { // Incorrect password
+                        $loginError = $LOGIN_ERROR_MSG;      
+                } 
+            } else { // user with $email not found
+                    $loginError = $LOGIN_ERROR_MSG; 
+            } 
+        } else { // error executing $getUserInfoCmd
+                $loginError = $DB_ERROR; 
+            }
+    } // End of login authentication
+
+    // Check for expired activity
+    function isSessionExpired() {
+        $lastActivity = $_SESSION['LAST_ACTIVITY'];
+        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
+        
+        // Check if session has been active longer than IDLE_TIME_LIMIT
+        if(time() - $lastActivity >= $timeOut) {
+            return true;
+        } else { false; }   
+    }// End of isSesssionExpired()
+
+    function redirectUser() {
+        // Session still valid, might have used the "back arrow"
+        // to navigate to this page, redirect appropiately
+        $ADMIN = "Administrator";
+        if(!empty($_SESSION['type'])) {
+            if($_SESSION['type'] == $ADMIN) {
+                updateLastActivity();
+                saveSessionVars();
+                redirectToAdminPage();
+            } else if($_SESSION['type']) { 
+                updateLastActivity();
+                saveSessionVars();
+                redirectToUserPage();
+            } else { // Error log out user and remain on page
+                logOut();
+            }
+        }
+    }
+
+    function updateLastActivity() {
+        $_SESSION['LAST_ACTIVITY'] = time();
+        return;
+    }
+
+    function saveSessionVars() {
+        session_write_close();
+        return;
+    }
+
+    function redirectToUserPage() {
+        header("Location: /user/home.php");
+        return;
+    }
+
+    function redirectToAdminPage() {
+        header("Location: /admin/index.php");
+        return;
+    }
+
+    function getSessionName() {
+        $BYTE_LEN = 8; // 8 bytes = 64 bit session name
+        return bin2hex(openssl_random_pseudo_bytes($BYTE_LEN));
+    }
+
+    function logOut() {
+        // Destroy previous session
+        session_unset();
+        session_destroy();
+
+        // Begin new session
+        session_regenerate_id(true);
+        session_start();
+        return;
+    } 
+
+    // End of log out function
+    function cleanInput($data) {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data);
+        return $data;
+    }
+
+// End of PHP ?>
+
 <table width="300" border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
  	<tr>
 		<form  method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
  		<td>
  		<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#FFFFFF">
- 			<tr>
- 				<td colspan="3"><strong>Member Login </strong></td>
+            <tr>
+ 				<td colspan="3"><strong>Member Login</strong>
+                    <?php echo $loginError; ?>
+                </td>
 			</tr>
 			<tr>
 				<td colspan="3"> <p id="loginError"></p>
@@ -14,17 +170,21 @@
  			<tr>
  				<td width="78">Email</td>
 				<td width="6">:</td>
- 				<td width="294"><input type="text" id="email"></td>
+ 				<td width="294"><input type="text" name="email" id="email">
+                    <?php echo $emailErr; ?>
+                </td>
  			</tr>
  			<tr>
  				<td>Password</td>
  				<td>:</td>
- 				<td><input type="password" id="pass"></td>
+ 				<td><input type="password" id="pswd" name="pswd">
+                    <?php echo $pswdErr; ?>
+                </td>
  			</tr>
  			<tr>
  				<td>&nbsp;</td>
  				<td>&nbsp;</td>
-				<td><input type="button" id="loginButton" value="Login"></td>
+				<td><input type="submit" id="loginButton" value="Login"></td>
 				<td><a href="event/register.php">Register</a></td>
  			</tr>
  		</table>
@@ -32,35 +192,3 @@
  		</form>
  	</tr>
 </table>
-
-<!-- Script begins -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-<script>
-$(document).ready(function() {
-    // Output error if there is no input, otherwise post to page
-    $("#loginButton").click(function() {
-        var _email = $("#email").val();
-        var _pass = $("#pass").val();
-        var errorMsg = "<font color='red'>* Email or password empty</font>"
-
-        if (email == '' || pass == '') {
-            $("#loginError").html(errorMsg);
-        } else {
-            $.post("event/login.php", { email: _email, pass: _pass }, 
-                function(data) { 
-                    if(data != '') {
-                        alert(data);
-                    }
-            });
-        }
-        var id = <?php if(isset($_SESSION['uId'])) { echo 1; } else { echo -1; } ?>;
-        if (id > 0) {
-            var type = <?php if(isset($_SESSION['uType'])) { echo json_encode($_SESSION['uType']); }?>;
-            if(type == "0") {
-                $(document).load("user/index.php");
-            } else { $(document).load("admin/index.php"); }
-        }
-    });
-
-});
-</script>

@@ -80,24 +80,24 @@ function cleanInput($data) {
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 
 <!-- Enter name and email -->
-First Name: <input type="text" id="firstName">
+First Name: <input type="text" id="firstName" name="firstName">
 <span id="fNameError" class="error"></span>
 <br><br>
 
-Last Name: <input type="text" id="lastName">
+Last Name: <input type="text" id="lastName" name="lastName">
 <span id="lNameError" class="error"></span>
 <br><br>
 
-E-mail: <input type="text" id="email">
+E-mail: <input type="text" id="email" name="email">
 <span id="emailError" class="error"> </span>
 <br><br>
 
 <!-- Select title -->
 Title: 
-<input type="radio" id="assistant" value="Assistant">Assistant Professor
-<input type="radio" id="associate" value="Associate">Associate Professor
-<input type="radio" id="full" value="Full">Full Professor
-<input type="radio" id="admin" value="Admin">Admin
+<input type="radio" id="Assistant Professor" value="Assistant Professor">Assistant Professor
+<input type="radio" id="Associate Professor" value="Associate Professor">Associate Professor
+<input type="radio" id="Full Professor" value="Full Professor">Full Professor
+<input type="radio" id="Administrator" value="Administrator">Admin
 <span id="titleError" class="error"></span>
 <br><br>
 
@@ -130,8 +130,7 @@ $("#createUser").click(function() {
             function(data) {
                 if(data) { alert(data); }       
         });
-    }
-    
+    }   
 });
 
 $("#cancel").click(function() {
