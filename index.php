@@ -1,20 +1,18 @@
 <?php 
     require_once 'event/connDB.php';
     session_start();
-
+    var_dump($_SESSION);
     // Redirect user to correct page if already logged in
     // and cookie is still valid
     if(!(empty($_SESSION['LAST_ACTIVITY']))) {
         if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
             if(isSessionExpired()) {
-                logOut();
+                signOut();
             } else { 
                 redirectUser();
             }
         }
     }
-
-    var_dump($_SESSION);
 
     # Login verification 
     $email = $pswd = "";
@@ -34,7 +32,7 @@
             $pswdErr = "<font color='red'>* password required</font>";
         } else { $pswd = cleanInput($_POST['pswd']); }
 
-        echo "Email: $email Pass: $pswd\n";
+        //echo "Email: $email Pass: $pswd\n";
     } // End of $_SERVER_REQUEST
 
     if(!(empty($email) && empty($pswd))) { // Login if credentials are valid
@@ -118,12 +116,18 @@
     }
 
     function redirectToUserPage() {
-        header("Location: /user/home.php");
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='user/home.php'</script>";
+        echo $jsRedirect;
         return;
     }
 
     function redirectToAdminPage() {
-        header("Location: /admin/index.php");
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='admin/home.php'</script>";
+        echo $jsRedirect;
         return;
     }
 
@@ -132,7 +136,7 @@
         return bin2hex(openssl_random_pseudo_bytes($BYTE_LEN));
     }
 
-    function logOut() {
+    function signOut() {
         // Destroy previous session
         session_unset();
         session_destroy();
@@ -150,7 +154,6 @@
         $data = htmlspecialchars($data);
         return $data;
     }
-
 // End of PHP ?>
 
 <table width="300" border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">

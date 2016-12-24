@@ -1,7 +1,7 @@
 <?php 
     require_once 'event/connDB.php';
     session_start();
-
+    /*
     // Redirect user to correct page if already logged in
     // and cookie is still valid
     if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -45,7 +45,7 @@
     function redirectUserToLogin() {
         header("Location: ../../index.php");
     }
-        
+*/ 
 ?>
 <body>
 <head>
@@ -76,16 +76,30 @@
 <!-- Display webpage title -->
 <h1 align="center"> BCOE Voting Management</h1>
 <hr>
-<form action="event/vote.php">
-<button class="button-create pure-button">Create</button> 
-</form>
-<form action="edit/editTable.php">
-<button class="button-edit pure-button">Edit</button>
-</form>
-<form action="event/vote.php">
-<button class="button-review pure-button">Review</button>
-</form>
-<form action="event/addUser.php">
-<button class="button-add pure-button">Add</button>
-</form>
+<button id="createButton" class="button-create pure-button">Create</button> 
+<button id="editButton" class="button-edit pure-button">Edit</button>
+<button id="reviewButton" class="button-review pure-button">Review</button>
+<button id="addButton" class="button-add pure-button">Add</button>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>    
+<script>
+        $(document).ready(function() {
+                setTimeout(timeTest,1200000); // 1200000ms = 20 mins
+                $('#createButton').onclick
+        });
+
+        function checkIdleTimeScript(buttonVal) {
+                if(buttonVal == 'edit') {
+                        var notIdle = "<?php checkIdleTime(); ?>";
+                        window.location.href = "event/edit.php";
+                } else (buttonVal == 'cancel') {
+                        var notIdle = "<?php checkIdleTime(); ?>";
+                        window.location.href = "../index.php";
+                }
+        }
+        
+        function timeTest() {
+                location.reload(true);
+        };                   
+</script>
 </body>

@@ -1,53 +1,6 @@
 <?php 
     require_once '../event/connDB.php';
-    session_start();
-
-    // Redirect user to correct page if already logged in
-    // and cookie is still valid
-    if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-        if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-            if(isSessionExpired()) {
-                logOut();
-                redirectUserToLogin();
-            } 
-        } else { // Error must have occurred 
-                invalidCredentials();
-        }
-    } else { // Error must have occurred 
-    	invalidCredentials(); 
-    }
-
-    // Check for expired activity
-    function isSessionExpired() {
-        $lastActivity = $_SESSION['LAST_ACTIVITY'];
-        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
-        // Check if session has been active longer than IDLE_TIME_LIMIT
-        if(time() - $lastActivity >= $timeOut) {
-            return true;
-        } else { false; }   
-    }// End of isSesssionExpired()
-
-    function invalidCredentials() {
-        logOut();
-        redirectUserToLogin();
-    }
-
-    function logOut() {
-        // Destroy previous session
-        session_unset();
-        session_destroy();
-
-        // Begin new session
-        session_regenerate_id(true);
-        session_start();
-        return;
-    }
-
-    function redirectUserToLogin() {
-        header("Location: ../index.php");
-    }
-        
+    session_start();  
 ?>
 <html>
 <head>
@@ -64,26 +17,9 @@
 		width: 80px;
 	}
 </style>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		$(".button-delete").click(function() {
-			var confirmation = prompt("Type DELETE if you are sure you want to delete entry");
-			if(confirmation == "DELETE") { 
-				var poll_id = $(this).val(); 		
-				$.post("deleteRow.php", {poll_id : poll_id}, 
-				function(response,status) {
-					location.reload();
-				});
-			}
-		});
-	});
-</script>
 </head>
 <body>
-<?php require "loadEditTable.php";
-?>
-
+<?php require "loadEditTable.php"; ?>
 <table class="pure-table pure-table-bordered" align="center">
 	<thead>
 		<tr>
@@ -148,5 +84,23 @@
 		?>
 	</tbody>
 </table>
+<!-- End of web page HTML -->
+<!-- Start script -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".button-delete").click(function() {
+            var confirmation = prompt("Type DELETE if you are sure you want to delete entry");
+            if(confirmation == "DELETE") { 
+                var poll_id = $(this).val();        
+                $.post("deleteRow.php", {poll_id : poll_id}, 
+                function(response,status) {
+                    location.reload();
+                });
+            }
+        });
+    });
+</script>
+<!-- End script -->
 </body>
 </html>

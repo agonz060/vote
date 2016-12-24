@@ -2,14 +2,14 @@
     require_once '../event/connDB.php';
     session_start();
     //var_dump($_SESSION);
-    //echo 'one';
+
     if(!isValidSession()) {
         signOut();
         saveSessionVars();
         redirectToLogIn();
     }
 
-    if($_SERVER["REQUEST_METHOD"] == "POST") {
+    /*if($_SERVER["REQUEST_METHOD"] == "POST") {
         if(!empty($_POST['action'])) {
                 $EDIT = "edit";
                 $REVIEW = "review";
@@ -34,6 +34,7 @@
                 } // End of isValidSession()
         } // End of $_POST['action']
     } // End of $_SERVER['REQUEST_METHOD']
+    */
 
     function isValidSession() {
             if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -105,50 +106,84 @@
 <head>
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
-        .button-edit {
-                text-align: center;
-                color: white;
-                background: rgb(28,184,65);
-        	width: 160px;
-	}
-        .button-review {
-                text-align: center;
-                color: white;
-                background: rgb(66,140,244);
-        	width: 160px;
-	}
-
-        .button-signOut {
-                text-align: center;
-                color: white;
-                background: rgb(202,60,60);
-                width: 160px;
-        }
+    .button-edit {
+        color: white;
+        background: rgb(28,184,65); 
+        width: 80px;
+    }
+    .button-delete {
+        color: white;
+        background: rgb(202,60,60);
+        width: 80px;
+    }
 </style>
 </head>
 <body>
-<!-- Display webpage title -->
-<h1 align="center"> User Homepage </h1>
-<hr>
-<form  method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-<div id="menu" name="menu" align="center">
-        <button name="action" value="edit" class="button-edit pure-button">View current ballots</button> 
-        <button name="action" value="review" class="button-review pure-button">Review past ballots</button>
-        <button name="action" value="signOut" class="button-signOut pure-button">Sign out</button>
-</div>
-</form>
-<!-- Web page HTML ends here -->
-<!-- JS begins here -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>    
-<script>
-        $(document).ready(function() {
-                // Set interval to reload page for user authentication purposes
-                setInterval(reloadPage,1200000); //1200000 ms = 1200 s = 20 mins
-        });
+    <table class="pure-table pure-table-bordered" align="center">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Regarding</th>
+                <th>Type of Poll</th>
+                <th>Ballot End Date</th>
+                <th>Edit/Submit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+                // Poll data
+                $poll_id = $title = $description = $endDate  = "";
+                $name = $effDate = $pollType = $dept = "";
 
-        function reloadPage() {
-                location.reload();
-        };
-</script>
-<!-- JS ends here -->
+                // Only display inactive polls (polls that have a start date > current date) 
+                $selectCmd="Select * from Polls Where deactDate > CURDATE()";
+                $result = $conn->query($selectCmd);
+                
+                // Get poll data for displaying
+                while($row = $result->fetch_assoc()) {
+                    $poll_id = $row["poll_id"];
+                    $title = $row["title"];
+                    $description = $row["description"];
+                    $endDate = $row["deactDate"];
+                    $name=$row["name"];
+                    $pollType=$row["pollType"];
+                    $dept=$row["dept"];
+                    $effDate=$row["effDate"];
+                    echo "<tr>
+                            <td>
+                                $title
+                            </td>
+                            <td>
+                                $description
+                            </td>
+                            <td>
+                                $actDate
+                            </td>
+                            <td>
+                                $deactDate
+                            </td>
+                            <td>
+                                $dateModified
+                            </td>
+                            <td>
+                                <form method='post' id='editForm' action='../event/vote.php'>
+                                    <button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
+                                    <input type='hidden' name='title' value='$title'>
+                                    <input type='hidden' name='description' value='$description'>
+                                    <input type='hidden' name='dateActive' value='$actDate'>
+                                    <input type='hidden' name='dateDeactive' value='$deactDate'>
+                                    <input type='hidden' name='profName' value='$name'>
+                                    <input type='hidden' name='pollType' value='$pollType'>
+                                    <input type='hidden' name='dept' value='$dept'>
+                                    <input type='hidden' name='effDate' value='$effDate'>
+                                </form>
+                                <button class='button-delete pure-button' value='$poll_id'>Delete</button>  
+                            </td>           
+                        </tr>";
+                }
+            ?>
+        </tbody>
+    </table>
 </body>
+<!-- End of web page HTML -->

@@ -1,7 +1,7 @@
 <?php 
     require_once 'connDB.php';
     session_start();
-
+    /*
     // Redirect user to correct page if already logged in
     // and cookie is still valid
     if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -47,7 +47,7 @@
     function redirectUserToLogin() {
         header("Location: ../../home.php");
     }
-        
+*/     
 ?>
 <html>
 <head>

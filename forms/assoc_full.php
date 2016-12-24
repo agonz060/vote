@@ -14,39 +14,41 @@
     $dataErrorMsg = "Error loading form data";
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
-        if(isset($_POST["lastName"])) {
+        // Following Post variables are polling data
+        if(!empty($_POST["lastName"])) {
             $lastName = $_POST["lastName"];
         } else { $lastName = $dataErrorMsg; }
 
-        if(isset($_POST["pollType"])) {
+        if(!empty($_POST["pollType"])) {
             $pollType = $_POST["pollType"];
         } else { $pollType = $dataErrorMsg; }
 
-        if(isset($_POST["profTitle"])) {
+        if(!empty($_POST["profTitle"])) {
             $pollType = $_POST["profTitle"];
         } else { $pollType = $dataErrorMsg; }
 
-        if(isset($_POST["dept"])) {
+        if(!empty($_POST["dept"])) {
             $pollType = $_POST["dept"];
         } else { $pollType = $dataErrorMsg; }
     
-        if(isset($_POST["effDate"])) {
+        if(!empty($_POST["effDate"])) {
             $pollType = $_POST["effDate"];
         } else { $pollType = $dataErrorMsg; }
-    
-        if(isset($_POST["fromStep"])) {
+        
+        // The following four posts are user data
+        if(!empty($_POST["fromStep"])) {
             $fromStep = $_POST["fromStop"];
         }
     
-        if(isset($_POST["toStep"])) {
+        if(!empty($_POST["toStep"])) {
             $toStep = $_POST["toStep"];
         }
         
-        if(isset($_POST["vote"])) {
+        if(!empty($_POST["vote"])) {
             $vote = $_POST["vote"];
         }
 
-        if(isset($_POST["comment"])) {
+        if(!empty($_POST["comment"])) {
             $comment = $_POST["comment"];
         }
     }
@@ -100,7 +102,7 @@ Opposed: <input type="radio" name="vote" id="vote" value="1">&nbsp;&nbsp;&nbsp;
 Abstain: <input type="radio" name="vote" id="vote" value="2"></br>
 <hr>
 Comments:<br>
-<textarea id="comment" name= "comment" rows="8" style="width:100%"><?php if(isset($comment)) { echo "$comment"; } ?></textarea>
+<textarea id="comment" name= "comment" rows="8" style="width:100%"><?php if(!empty($comment)) { echo "$comment"; } ?></textarea>
 </div>
 <hr>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
