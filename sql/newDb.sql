@@ -23,7 +23,7 @@ Create table Users (
   fName varchar(30) NOT NULL,
   lName varchar(30) NOT NULL,
   password varchar(255) NOT NULL,
-  type varchar(30) NOT NULL,
+  title varchar(30) NOT NULL,
   PRIMARY KEY(user_id)
 );
 
@@ -44,3 +44,12 @@ Create table Voters (
   voteFlag int NOT NULL DEFAULT '0',
   Primary Key(user_id,poll_id)
 );
+
+INSERT INTO Users(email,fName,lName,password,title)
+VALUES('assit','assistant','test','a1','Assistant Professor');
+
+INSERT INTO Users(email,fName,lName,password,title)
+VALUES('assoc','associate','test','a2','Associate Professor');
+
+INSERT INTO Users(email,fName,lName,password,title)
+VALUES('full','full','test','f1','Full Professor');

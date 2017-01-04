@@ -1,20 +1,33 @@
 <?php 
-    require_once 'connDB.php';
     session_start();
-    /*
-    // Redirect user to correct page if already logged in
-    // and cookie is still valid
-    if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-        if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-            if(isSessionExpired()) {
-                logOut();
-                redirectUserToLogin();
-            } 
+    
+    /*if(!isAdmin()) {
+        signOut();
+    } else if(idleLimitReached()) {
+        signOut();
+    }
+    */
+
+    function idleLimitReached() {
+        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                if(isSessionExpired()) {
+                    return 1;
+                } else { return 0; }
+            } else { // Error must have occurred
+                    return 1; }
         } else { // Error must have occurred 
-                invalidCredentials();
+            return 1; }
+    } // End of isValidSession() 
+
+    function isAdmin() {
+        if(!empty($_SESSION['title'])) {
+            $ADMIN = "Administrator";
+
+            if($_SESSION['title'] !== $ADMIN) {
+                return 0;
+            } else return 1;
         }
-    } else { // Error must have occurred 
-        invalidCredentials(); 
     }
 
     // Check for expired activity
@@ -28,12 +41,17 @@
         } else { false; }   
     }// End of isSesssionExpired()
 
-    function invalidCredentials() {
-        logOut();
-        redirectUserToLogin();
+    function updateLastActivity() {
+        $_SESSION['LAST_ACTIVITY'] = time();
+        return;
     }
 
-    function logOut() {
+    function saveSessionVars() {
+        session_write_close();
+        return;
+    }
+
+    function signOut() {
         // Destroy previous session
         session_unset();
         session_destroy();
@@ -41,15 +59,22 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
+
+        // Save and redirect
+        saveSessionVars();
+        redirectToLogIn();
+    }
+    
+    function redirectToLogIn() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../index.php'</script>";
+        echo $jsRedirect;
         return;
     }
-
-    function redirectUserToLogin() {
-        header("Location: ../../home.php");
-    }
-*/     
+    
+/* Session verification ends here */ 
 ?>
-<html>
 <head>
 <style>
 .error {color: #FF0000;}
@@ -66,18 +91,19 @@
 <body>
 <!-- PHP that processes user input begins here -->
 <?php
-    //require_once 'connDB.php';
-
+    require_once 'event/connDB.php';
+    date_default_timezone_set('America/Los_Angeles');
+    
 	# Set voting variables
 	$day = $month = "";
 	$title = $description = $actDate = $deactDate = $profName = $effDate = "";
 	$pollType = $dept = $tmp_dateDeact = $tmp_dateAct = $tmp_effDate = "";
 	$errTitle = $errEffDate= $errActDate = $errDeactDate = $errProfName = "";
-	$validTitle =  $validActDate = $validDeactDate = false;
-	date_default_timezone_set('America/Los_Angeles'); 
+	$validTitle =  $validActDate = $validDeactDate = false; 
 	
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
+        print_r($_POST);
 		# Check for pollId
 		# If pollId is set then it is an edit
 		# Initialize all values if edit
@@ -230,8 +256,9 @@ Professors Name:
 </p>
 <p>Department: 
 <select id="dept" name="dept" class="selector">
-	<option>Electrical Engineering</option>
-	<option>Computer Engineering</option>
+    <option>Computer Engineering</option>
+    <option>Electrical Engineering</option>
+    <option>Mechanical Engineering</option>
 </select>
 </p>
 <!-- Begin professor selection -->
@@ -247,9 +274,9 @@ Professors Name:
 	<!-- Selection displays the names and titles of professors -->
 	<select id="profSel" size="20" ondblclick="addToSelected()">
 	<?php
-                $selectCmd = "SELECT user_id, fName, lName, type FROM Users";
+        $selectCmd = "SELECT user_id, fName, lName, title FROM Users";
 
-                $result = $conn->query($selectCmd);
+        $result = $conn->query($selectCmd);
 
 		# Variables used to store a professors information
 		$firstName = $lastName = $title = $email = "";
@@ -260,7 +287,7 @@ Professors Name:
 			$profId = $row["user_id"];
 			$firstName = $row["fName"];
 			$lastName = $row["lName"];
-			$title = $row["type"];
+			$title = $row["title"];
 			$fullName = $firstName." ".$lastName;
 			$selection = " ".$fullName." : ".$title." ";
 			
@@ -332,7 +359,7 @@ Professors Name:
 </table>
 
 <p>
-<a href="../home.php "><input type="button" value="Cancel"></a>
+<a href="home.php "><input type="button" value="Cancel"></a>
 <input type="button" value="Save" onclick="pollAction(0)">
 <input type="button" value="Start" onclick="pollAction(1)">
 </p>
@@ -542,17 +569,17 @@ function pollAction(sendFlag) {
     if(validData == 1) {
         var _reason = prompt("Why did you create/edit this page?"); 
         if(_reason) {
-            $.post("savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
+            $.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
                     , function(data) { 
-                    		if(data) { 
-                    			alert(data); 
-                    		} else { // Output appropiate message
-                    			if(!sendFlag) { alert("Poll saved!"); } 
-                    			else { alert("Poll notification(s) sent"); } 
-                    			
-                    			window.location.href = "../home.php"; 
-                    			} // End of else 
-                    		}) // End of $.post
+                		if(data) { 
+                			alert(data); 
+                		} else { // Output appropiate message
+                			if(!sendFlag) { alert("Poll saved!"); } 
+                			else { alert("Poll notification(s) sent"); } 
+                			
+                			window.location.href = "home.php"; 
+                			} // End of else 
+                		}) // End of $.post
                     .fail(function() {
                             alert("vote.php: error posting to savePoll.php");
                 }); // End of $.post()
@@ -609,4 +636,3 @@ $(function () {
 </script>
 <!-- End of javascript/jquery -->
 </body>
-</html>

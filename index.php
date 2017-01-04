@@ -1,7 +1,9 @@
 <?php 
-    require_once 'event/connDB.php';
     session_start();
-    var_dump($_SESSION);
+
+    require_once 'event/connDB.php';
+    
+    //var_dump($_SESSION);
     // Redirect user to correct page if already logged in
     // and cookie is still valid
     if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -38,7 +40,8 @@
     if(!(empty($email) && empty($pswd))) { // Login if credentials are valid
         //echo "verifying email and password\n";
 
-        $getUserInfoCmd = "SELECT user_id, password, type FROM Users WHERE email='$email'";
+        $getUserInfoCmd = "SELECT user_id, fName, lName, password, title ";
+        $getUserInfoCmd .= "FROM Users WHERE email='$email'";
         $result = mysqli_query($conn,$getUserInfoCmd);
 
         if($result) { // Verify password
@@ -50,17 +53,23 @@
                     $IDLE_TIME_LIMIT = 1200; // 1200 seconds = 20 mins
                     $ADMIN = "Administrator";
                     $id = $row['user_id'];
-                    $type = $row['type'];
+                    $title = $row['title'];
+                    $name = $row['fName'];
+                    $name .= ' '.$row['lName'];
 
                     $_SESSION['user_id'] = $id;
-                    $_SESSION['type'] = $type;
-                    $_SESSION['IDLE_TIME_LIMIT'] = $IDLE_TIME_LIMIT; //1200 seconds = 15 mins
+                    $_SESSION['userName'] = $name;
+                    $_SESSION['title'] = $title;
+                    // IDLE_TIME_LIMIT set line 53
+                    //1200 seconds = 15 mins
+                    $_SESSION['IDLE_TIME_LIMIT'] = $IDLE_TIME_LIMIT; 
                     $_SESSION['LAST_ACTIVITY'] = time();
+                    $_SESSION['REAL_PATH_DOC_ROOT'] = realpath($_SERVER['DOCUMENT_ROOT']);
                     saveSessionVars();
 
-                     if($type == $ADMIN) { // Redirect to admin home page
+                     if($title == $ADMIN) { // Redirect to admin home page
                         redirectToAdminPage();
-                    } else if($type ) { 
+                    } else if($title ) { 
                         // Redirect to user profile
                         redirectToUserPage();
                     }
@@ -75,7 +84,7 @@
             }
     } // End of login authentication
 
-    // Check for expired activity
+    // Check for idle time limit has been reached
     function isSessionExpired() {
         $lastActivity = $_SESSION['LAST_ACTIVITY'];
         $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
@@ -90,12 +99,12 @@
         // Session still valid, might have used the "back arrow"
         // to navigate to this page, redirect appropiately
         $ADMIN = "Administrator";
-        if(!empty($_SESSION['type'])) {
-            if($_SESSION['type'] == $ADMIN) {
+        if(!empty($_SESSION['title'])) {
+            if($_SESSION['title'] == $ADMIN) {
                 updateLastActivity();
                 saveSessionVars();
                 redirectToAdminPage();
-            } else if($_SESSION['type']) { 
+            } else if($_SESSION['title']) { 
                 updateLastActivity();
                 saveSessionVars();
                 redirectToUserPage();
@@ -131,11 +140,6 @@
         return;
     }
 
-    function getSessionName() {
-        $BYTE_LEN = 8; // 8 bytes = 64 bit session name
-        return bin2hex(openssl_random_pseudo_bytes($BYTE_LEN));
-    }
-
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -147,7 +151,6 @@
         return;
     } 
 
-    // End of log out function
     function cleanInput($data) {
         $data = trim($data);
         $data = stripslashes($data);
@@ -162,7 +165,8 @@
  		<td>
  		<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#FFFFFF">
             <tr>
- 				<td colspan="3"><strong>Member Login</strong>
+ 				<td colspan="3" algin="center">
+                    <span align="center"><strong>Member Login</strong></span>
                     <?php echo $loginError; ?>
                 </td>
 			</tr>

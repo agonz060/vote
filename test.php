@@ -1,4 +1,37 @@
 <?php 
+	date_default_timezone_set('America/Los_Angeles');
+	$endDate = "2017-01-09";
+	$endDate_time = strtotime($endDate);
+	$current_time = strtotime("now");
+	$today_time = strtotime("today");
+
+	echo "currentTime: $current_time<br>todayTime: $today_time<br>";
+
+	if($current_time < $endDate_time) {
+		echo "current time < end time<br>";
+		echo "2017-01-03 < 2017-01-09<br>";
+		echo "$current_time".' < '."$endDate_time<br>";
+	}
+
+	$sixDays = strtotime("+6 day");
+	echo "six days: $sixDays<br>";
+	$sixDays = $current_time + $sixDays;
+
+	echo "endDate: $endDate_time <br>";
+	echo 'current + 6 day: ';
+	
+	"<br>";
+	/*session_start();
+	print_r($_SESSION);
+
+	$_SESSION['varNames'] = [];
+
+
+	<form method="post">
+		<input type="submit" name="submit" value="Submit">
+		<input type="submit" name="cancel" value="Cancel">
+	</form>
+	//echo pathinfo();
 	$lifeTime = 30;
 
 	session_start();
@@ -17,11 +50,11 @@
 				session_start();
 			}
 	}
-
+	*/
 ?>
 
 <?php 
-	function testing() {
+	/*function testing() {
 		echo "test complete";
 	}
 	$x = 0;
@@ -41,9 +74,7 @@
 
 	$n = 'armando gonzalez';
 	echo $a[$n];
-
-
-
+	*/
 ?>
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 <input type="submit" name="incr" value="incr-button">

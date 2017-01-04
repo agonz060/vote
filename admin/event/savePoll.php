@@ -1,4 +1,81 @@
 <?php 
+    session_start();
+    
+    /*if(!isAdmin()) {
+        signOut();
+    } else if(idleLimitReached()) {
+        signOut();
+    }
+    */
+
+    function idleLimitReached() {
+        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                if(isSessionExpired()) {
+                    return 1;
+                } else { return 0; }
+            } else { // Error must have occurred
+                    return 1; }
+        } else { // Error must have occurred 
+            return 1; }
+    } // End of isValidSession() 
+
+    function isAdmin() {
+        if(!empty($_SESSION['title'])) {
+            $ADMIN = "Administrator";
+
+            if($_SESSION['title'] !== $ADMIN) {
+                return 0;
+            } else return 1;
+        }
+    }
+
+    // Check for expired activity
+    function isSessionExpired() {
+        $lastActivity = $_SESSION['LAST_ACTIVITY'];
+        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
+        
+        // Check if session has been active longer than IDLE_TIME_LIMIT
+        if(time() - $lastActivity >= $timeOut) {
+            return true;
+        } else { false; }   
+    }// End of isSesssionExpired()
+
+    function updateLastActivity() {
+        $_SESSION['LAST_ACTIVITY'] = time();
+        return;
+    }
+
+    function saveSessionVars() {
+        session_write_close();
+        return;
+    }
+
+    function signOut() {
+        // Destroy previous session
+        session_unset();
+        session_destroy();
+
+        // Begin new session
+        session_regenerate_id(true);
+        session_start();
+
+        // Save and redirect
+        saveSessionVars();
+        redirectToLogIn();
+    }
+    
+    function redirectToLogIn() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../index.php'</script>";
+        echo $jsRedirect;
+        return;
+    }
+    
+/* Session verification ends here */ 
+?>
+<?php 
 	//echo "Entering savePoll.php\n";
 	require_once 'connDB.php';
     require_once "../mailer/autoload.php";
@@ -80,11 +157,12 @@
 
     //echo "pollId set to 30\n";
     //$pollId = 36;
-	
+	$name = $_SESSION['userName'];
     if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
-		$history=":edit:" . "user" . ":" . date("Y-m-d") . ":" . $reason;
+
+		$history=":edit:" . "$name" . ":" . date("Y-m-d") . ":" . $reason;
 		
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
@@ -99,7 +177,7 @@
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
 		// Update modification history
-        $history="create:" ."user" . ":" . date("Y-m-d") . ":" . $reason; 
+        $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,history,name,pollType,dept,effDate)";

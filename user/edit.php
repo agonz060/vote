@@ -1,51 +1,22 @@
 <?php 
-    require_once '../event/connDB.php';
     session_start();
-    //var_dump($_SESSION);
+    
+    var_dump($_SESSION);
 
-    if(!isValidSession()) {
+    if(idleTimeLimitReached()) {
         signOut();
-        saveSessionVars();
-        redirectToLogIn();
-    }
+    } 
 
-    /*if($_SERVER["REQUEST_METHOD"] == "POST") {
-        if(!empty($_POST['action'])) {
-                $EDIT = "edit";
-                $REVIEW = "review";
-                $SIGNOUT = "signOut";
-
-                if(isValidSession()) {
-                        $action = $_POST['action'];
-
-                        if($action == $EDIT) {
-                                updateLastActivity();
-                                saveSessionVars();
-                                redirectToEditPage();      
-                        } else if($action == $REVIEW) {
-                                updateLastActivity();
-                                saveSessionVars();
-                                redirectToReviewPage();
-                        } else if($action == $SIGNOUT) {
-                                signOut();
-                                saveSessionVars();
-                                redirectToLogIn();
-                        } 
-                } // End of isValidSession()
-        } // End of $_POST['action']
-    } // End of $_SERVER['REQUEST_METHOD']
-    */
-
-    function isValidSession() {
-            if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-                if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-                    if(isSessionExpired()) {
-                        return 0;
-                    } else { return 1; }
-                } else { // Error must have occurred
-                        return 0; }
-            } else { // Error must have occurred 
-                return 0; }
+    function idleTimeLimitReached() {
+        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                if(isSessionExpired()) {
+                    return 1;
+                } else { return 0; }
+            } else { // Error must have occurred
+                    return 1; }
+        } else { // Error must have occurred 
+            return 1; }
     } // End of isValidSession() 
 
     // Check for expired activity
@@ -77,29 +48,28 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
-    }
 
-    function redirectToEditPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='edit.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToReviewPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='review.php'</script>";
-        echo $jsRedirect;
-        return;
+        saveSessionVars();
+        redirectToLogIn();
     }
 
     function redirectToLogIn() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='../index.php'</script>";
+        $jsRedirect .= "<script>location.href='home.php'</script>";
         echo $jsRedirect;
+        return;
+    }
+    
+?>
+<?php 
+    require_once '../event/connDB.php';
+    // Helper functions
+    function titleError() {
+        $jsAlert = "<script type='text/javascript' ";
+        $jsAlert .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsAlert .= "<script>alert('User title not set. Redirecting to log in page...');</script>";
+        echo $jsAlert;
         return;
     }
 ?>
@@ -109,11 +79,6 @@
     .button-edit {
         color: white;
         background: rgb(28,184,65); 
-        width: 80px;
-    }
-    .button-delete {
-        color: white;
-        background: rgb(202,60,60);
         width: 80px;
     }
 </style>
@@ -126,24 +91,34 @@
                 <th>Description</th>
                 <th>Regarding</th>
                 <th>Type of Poll</th>
-                <th>Ballot End Date</th>
-                <th>Edit/Submit</th>
+                <th>Poll  End Date</th>
+                <th>Edit</th>
             </tr>
         </thead>
         <tbody>
             <?php
+                // Titles
+                $ASST = "Assistant Professor";
+                $ASSOC = "Associate Professor";
+                $FULL = "Full Professor";
+
+                if(empty($_SESSION['title'])) {
+                    titleError();
+                    signOut();
+                }
+
                 // Poll data
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
 
-                // Only display inactive polls (polls that have a start date > current date) 
-                $selectCmd="Select * from Polls Where deactDate > CURDATE()";
+                // Only display inactive polls
+                $selectCmd="Select * from Polls Where CURDATE() <= deactDate";
                 $result = $conn->query($selectCmd);
                 
                 // Get poll data for displaying
                 while($row = $result->fetch_assoc()) {
                     $poll_id = $row["poll_id"];
-                    $title = $row["title"];
+                    $pollTitle = $row["title"];
                     $description = $row["description"];
                     $endDate = $row["deactDate"];
                     $name=$row["name"];
@@ -152,37 +127,70 @@
                     $effDate=$row["effDate"];
                     echo "<tr>
                             <td>
-                                $title
+                                $pollTitle
                             </td>
                             <td>
                                 $description
                             </td>
                             <td>
-                                $actDate
+                                $name
                             </td>
                             <td>
-                                $deactDate
+                                $pollType
                             </td>
                             <td>
-                                $dateModified
+                                $endDate
                             </td>
-                            <td>
-                                <form method='post' id='editForm' action='../event/vote.php'>
-                                    <button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
-                                    <input type='hidden' name='title' value='$title'>
-                                    <input type='hidden' name='description' value='$description'>
-                                    <input type='hidden' name='dateActive' value='$actDate'>
-                                    <input type='hidden' name='dateDeactive' value='$deactDate'>
+                            <td>";
+                            if(!empty($_SESSION['title'])) {
+                                // Poll types
+                                $MERRIT = "Merrit";
+                                $PROMOTION = "Promotion";
+                                $REAPPOINTMENT = "Reappointment";
+                                $FIFTH_YEAR_REVIEW = "Fifth Year Review";
+                                $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
+
+                                // Var
+                                $redirect = '';
+                                $title = $_SESSION['title'];
+
+                                if($title == $ASST) {
+                                    if($pollType == $MERRIT) {
+                                        $redirect = '../forms/merrit.php';
+                                    } else { // Only other form available to Assistant professors 
+                                        $redirect = '../forms/test.php';
+                                        //$redirect = '../forms/asst.php';
+                                    }
+                                } else if($title == $ASSOC || $title == $FULL) {
+                                    if($pollType == $PROMOTION) {
+                                        $redirect = '../forms/assoc_full.php';
+                                    } else if($pollType == $REAPPOINTMENT) {
+                                        $redirect = '../forms/reappointment.php';
+                                    } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
+                                        $redirect = '../forms/fifthYearAppraisal.php';
+                                    } else if($polltype == $FIFTH_YEAR_REVIEW) {
+                                        $redirect = '../forms/quinquennial.php';
+                                    }
+                                } // End of if( $title == ($ASSOC || $FULL) )
+                            } else { // $_SESSION['title'] not set, have user 
+                                    // log in to reload data
+                                signOut();
+                            }
+                                echo"
+                                <form method='post' id='editForm' action='$redirect'>
+                                    <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
+                                    <button class='button-edit pure-button'>Edit</button>
+                                    <input type='hidden' name='poll_id' value='$poll_id'>
                                     <input type='hidden' name='profName' value='$name'>
                                     <input type='hidden' name='pollType' value='$pollType'>
                                     <input type='hidden' name='dept' value='$dept'>
                                     <input type='hidden' name='effDate' value='$effDate'>
+                                    <input type='hidden' name='deactDate' value='$endDate'>
                                 </form>
-                                <button class='button-delete pure-button' value='$poll_id'>Delete</button>  
                             </td>           
                         </tr>";
-                }
-            ?>
+                } // End of while loop
+            // End of PHP ?>
         </tbody>
     </table>
 </body>

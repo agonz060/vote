@@ -9,7 +9,7 @@
 		$conn = new mysqli($servername, $username, $pwd, $db);
 
 		if($conn->connect_error) {
-			echo "Connection error: " . $conn->connect_error . "<br>";
+			echo "deleteRow.php: Connection error: " . $conn->connect_error . "<br>";
 		}
 		$id = $_POST["poll_id"];	
 		$delCmd = "DELETE from Polls WHERE poll_id=$id";
@@ -24,6 +24,6 @@
 
 	}
 	else {
-		echo "poll_id not set"; 
+		echo "deleteRow.php: poll_id not set"; 
 	}
 ?>

@@ -100,12 +100,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
        			//echo "user exists\n";
        			$registrationErr = "* User with email '$email' is already registered";
        		} else { // insert new user into Users table
-       			$addUserCmd = "INSERT INTO Users(email,fName,lName,password,type)";
+       			$addUserCmd = "INSERT INTO Users(email,fName,lName,password,title)";
        			$addUserCmd .= " VALUES('$email','$firstName','$lastName','$hashPass','$title')";
        			//echo "Cmd: $addUserCmd";
        			$result = mysqli_query($conn,$addUserCmd);
 
-       			if(!$result) { $registrationErr = "Error: could not create user with email '$email'"; }
+       			if(!$result) { // Error executing $addUserCmd line 103,104
+                    $registrationErr = "Error: could not create user with email '$email'"; }
        			else { 
        				echo "<script type='text/javascript'>
        						alert('Registration complete!');

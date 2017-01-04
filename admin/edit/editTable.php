@@ -19,14 +19,14 @@
 </style>
 </head>
 <body>
-<?php require "loadEditTable.php"; ?>
+<!-- Last change here from 'require' -> 'require_once' -->
+<?php require_once "loadEditTable.php"; ?>
 <table class="pure-table pure-table-bordered" align="center">
 	<thead>
 		<tr>
 			<th>Title</th>
 			<th>Description</th>
-			<th>Date Active</th>
-			<th>Date Deactive</th>
+			<th>Vote End Date</th>
 			<th>Date Modified</th>
 			<th>Edit/Delete</th>
 		</tr>
