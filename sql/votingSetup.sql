@@ -1,6 +1,6 @@
 USE Voting;
 
-DROPT TABLE IF EXISTS Users, Vote_Data, Voters, Polls, Professors;
+DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Polls, Professors;
 
 CREATE TABLE Polls (
     poll_id int NOT NULL AUTO_INCREMENT,
