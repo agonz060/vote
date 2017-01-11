@@ -180,8 +180,8 @@
         $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,history,name,pollType,dept,effDate)";
-		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$history','$name','$pollType','$dept','$effDate')";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
+		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
 	    //echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
@@ -322,8 +322,9 @@
         $mail = new PHPMailer;
 
         // Enable SMTP debugging
-        $mail->SMTPDebug = false;
-
+	$mail->SMTPDebug = false;
+	//html friendly debug output
+	//$mail->Debugoutput = 'html';
         // Set PHPMailer to use SMTP
         $mail->isSMTP();
 
@@ -364,13 +365,19 @@
         
         // Compose message body
         $bodyMsg = "Comment: <br>" . $cmt . "<br>";
-        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your"; 
-        $voteLink = "<a href='localhost'>voting documents</a><br>";
+        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your "; 
+        $voteLink = "<a href='localhost/vote/index.php'>voting documents</a><br>";
         $bodyMsg .= $voteLink;
 
         $mail->Body = $bodyMsg;
         //$mail->AltBody = "Testing plain text body of a message sent from a script";
-
+	$mail->SMTPOptions = array(
+		'ssl' => array (
+			'verify_peer' => false,
+			'verify_peer_name' => false,
+			'allow_self_signed' => true
+		)
+	);
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;
