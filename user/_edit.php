@@ -5,17 +5,7 @@
 
     if(idleTimeLimitReached()) {
         signOut();
-    } else { 
-        unsetPollVariables();
-        timeSinceLastActivity();
-        updateLastActivity(); 
-    }
-
-    function timeSinceLastActivity() {
-        $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
-        return;
-    }
+    } else { updateLastActivity(); }
 
     function idleTimeLimitReached() {
         if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -24,7 +14,7 @@
                     return 1;
                 } else { return 0; }
             } else { // Error must have occurred
-                return 1; }
+                    return 1; }
         } else { // Error must have occurred 
             return 1; }
     } // End of isValidSession() 
@@ -55,32 +45,6 @@
         saveSessionVars();
     }
 
-    function unsetPollVariables() {
-        // Session variables accessed
-        $CMT = "cmt";
-        $PROF_NAME = "profName";
-        $DESCRIPTION = "description";
-        $EFF_DATE = "effDate";
-        $POLL_ID = "poll_id";
-        $POLL_TYPE = "pollType";
-        $PROF_NAME = "profName";
-        $ACT_DATE = "actDate";
-        $DEACT_DATE = "deactDate";
-        $READ_ONLY = "READ_ONLY";
-        $DEPT = "dept";
-
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DESCRIPTION]);
-        unset($GLOBALS['_SESSION'][$CMT]);
-        unset($GLOBALS['_SESSION'][$POLL_ID]);
-        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
-        unset($GLOBALS['_SESSION'][$READ_ONLY]);
-        unset($GLOBALS['_SESSION'][$DEPT]);
-
-    }
-
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -89,8 +53,8 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
+
         saveSessionVars();
-        
         redirectToLogIn();
     }
 
@@ -165,7 +129,7 @@
                 <th>Description</th>
                 <th>Regarding</th>
                 <th>Type of Poll</th>
-                <th>Poll  End Date</th>
+                <th>Poll End Date</th>
                 <th>Edit</th>
             </tr>
         </thead>

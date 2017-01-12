@@ -1,14 +1,21 @@
-<?php 
+<?php
+    // review.php : 
+    // Displays a user's voting history
     session_start();
-    
     var_dump($_SESSION);
-
-    if(idleTimeLimitReached()) {
+    //echo 'one';
+    if(idleLimitReached()) {
+        echo 'one';
         signOut();
-    } else { 
+    } else {
+        echo 'two';
+        $READ_ONLY = true;
         unsetPollVariables();
+        $t = time() - $_SESSION['LAST_ACTIVITY'];
+        echo "Time in seconds since last activity: $t";
+        $_SESSION["READ_ONLY"] = $READ_ONLY;
         timeSinceLastActivity();
-        updateLastActivity(); 
+        updateLastActivity();
     }
 
     function timeSinceLastActivity() {
@@ -17,23 +24,22 @@
         return;
     }
 
-    function idleTimeLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-                if(isSessionExpired()) {
-                    return 1;
-                } else { return 0; }
-            } else { // Error must have occurred
+    function idleLimitReached() {
+            if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+                if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                    if(isSessionExpired()) {
+                        return 1;
+                    } else { return 0; }
+                } else { // Error must have occurred
+                     return 1; }
+            } else { // Error must have occurred 
                 return 1; }
-        } else { // Error must have occurred 
-            return 1; }
     } // End of isValidSession() 
 
     // Check for expired activity
     function isSessionExpired() {
         $lastActivity = $_SESSION['LAST_ACTIVITY'];
         $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
         // Check if session has been active longer than IDLE_TIME_LIMIT
         if(time() - $lastActivity >= $timeOut) {
             return true;
@@ -48,11 +54,6 @@
     function saveSessionVars() {
         session_write_close();
         return;
-    }
-
-    function updateAndSave() {
-        updateLastActivity();
-        saveSessionVars();
     }
 
     function unsetPollVariables() {
@@ -90,17 +91,11 @@
         session_regenerate_id(true);
         session_start();
         saveSessionVars();
-        
+
+        // Save, redirect
         redirectToLogIn();
     }
-
-    function redirectToLogIn() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='index.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
+/* End of session verification */
 ?>
 <?php 
     require_once '../event/connDB.php';
@@ -113,13 +108,13 @@
         if(!empty($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
         } else { 
-            $msg = 'edit.php: error - user_id not set. Redirecting to log in..';
+            $msg = 'edit.php: error - user_id not set. Redirecting to log in...';
             alertMsg($msg);
             signOut();
         }
 
         $SELECTCMD = "SELECT poll_id FROM Voters WHERE user_id=$user_id ";
-        $SELECTCMD .= "AND voteFlag=0";
+        $SELECTCMD .= "AND voteFlag=1";
         $result = mysqli_query($conn,$SELECTCMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
@@ -161,11 +156,9 @@
     <table class="pure-table pure-table-bordered" align="center">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Description</th>
                 <th>Regarding</th>
                 <th>Type of Poll</th>
-                <th>Poll  End Date</th>
+                <th>Poll End Date</th>
                 <th>Edit</th>
             </tr>
         </thead>
@@ -202,20 +195,12 @@
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
                                 $poll_id = $row["poll_id"];
-                                $pollTitle = $row["title"];
-                                $description = $row["description"];
                                 $endDate = $row["deactDate"];
                                 $name=$row["name"];
                                 $pollType=$row["pollType"];
                                 $dept=$row["dept"];
                                 $effDate=$row["effDate"];
                                 echo "<tr>
-                                        <td>
-                                            $pollTitle
-                                        </td>
-                                        <td>
-                                            $description
-                                        </td>
                                         <td>
                                             $name
                                         </td>
@@ -242,7 +227,6 @@
                                                 if($pollType == $MERRIT) {
                                                     $redirect = '../forms/merrit.php';
                                                 } else { // Only other form available to Assistant professors 
-                                                    //$redirect = '../forms/test.php';
                                                     $redirect = '../forms/asst.php';
                                                 }
                                             } else if($title == $ASSOC || $title == $FULL) {

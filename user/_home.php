@@ -1,14 +1,10 @@
 <?php 
     session_start();
+    
     //var_dump($_SESSION);
     //echo 'one';
-    timeSinceLastActivity();
-
     if(idleLimitReached()) {
         signOut();
-    } else {
-        unsetPollVariables();
-        updateLAstActivity();
     }
 
     function idleLimitReached() {
@@ -18,17 +14,11 @@
                         return 1;
                     } else { return 0; }
                 } else { // Error must have occurred
-                    return 1; }
+                        return 1; }
             } else { // Error must have occurred 
                 return 1; }
     } // End of isValidSession() 
 
-    function timeSinceLastActivity() {
-        $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
-        return;
-    }
-    
     // Check for expired activity
     function isSessionExpired() {
         $lastActivity = $_SESSION['LAST_ACTIVITY'];
@@ -50,32 +40,6 @@
         return;
     }
 
-    function unsetPollVariables() {
-        // Session variables accessed
-        $CMT = "cmt";
-        $PROF_NAME = "profName";
-        $DESCRIPTION = "description";
-        $EFF_DATE = "effDate";
-        $POLL_ID = "poll_id";
-        $POLL_TYPE = "pollType";
-        $PROF_NAME = "profName";
-        $ACT_DATE = "actDate";
-        $DEACT_DATE = "deactDate";
-        $READ_ONLY = "READ_ONLY";
-        $DEPT = "dept";
-
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DESCRIPTION]);
-        unset($GLOBALS['_SESSION'][$CMT]);
-        unset($GLOBALS['_SESSION'][$POLL_ID]);
-        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
-        unset($GLOBALS['_SESSION'][$READ_ONLY]);
-        unset($GLOBALS['_SESSION'][$DEPT]);
-
-    }
-
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -84,8 +48,9 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
+
+        // Save and redirect
         saveSessionVars();
-        
         redirectToLogIn();
     }
 /* End of session verification*/
@@ -100,6 +65,7 @@
 
             if(!idleLimitReached()) {
                 $action = $_POST['action'];
+
                 if($action == $EDIT) {
                         updateLastActivity();
                         saveSessionVars();

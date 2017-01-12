@@ -1,15 +1,11 @@
 <?php 
     session_start();
-    var_dump($_SESSION);
-    
-    if(empty($_SESSION['readOnly'])) {
-        if(isPollExpired()) {
-            cancelVote();
-        }
-    }
+    // var_dump($_SESSION);
 
     if(idleTimeLimitReached()) {
         signOut();
+    } else if(isPollExpired()) {
+        cancelVote();
     } else { updateLastActivity(); }
 
     function idleTimeLimitReached() {
@@ -19,7 +15,7 @@
                     return 1;
                 } else { return 0; }
             } else { // Error must have occurred
-                return 1; }
+                    return 1; }
         } else { // Error must have occurred 
             return 1; }
     } // End of isValidSession() 
@@ -44,7 +40,23 @@
         return;
     }
 
+    function unsetSessionVariables() {
+        // Session variables accessed
+        $CMT = "cmt";
+        $POLL_ID = "poll_id";
+        $POLL_TYPE = "pollType";
+        $PROF_NAME = "profName";
+        $DEACT_DATE = "deactDate";
+
+        unset($GLOBALS['_SESSION'][$CMT]);
+        unset($GLOBALS['_SESSION'][$POLL_ID]);
+        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
+        unset($GLOBALS['_SESSION'][$PROF_NAME]);
+        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
+    }
+
     function updateAndSave() {
+        unsetSessionVariables();
         updateLastActivity();
         saveSessionVars();
     }
@@ -57,8 +69,8 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
-        saveSessionVars();
 
+        saveSessionVars();
         redirectToLogIn();
     }
 
@@ -81,7 +93,6 @@
 
     // Get all posted poll data
     if($_SERVER["REQUEST_METHOD"] == "POST") {
-        print_r($_POST);
         // Security and poll checks
         if(idleTimeLimitReached()) {
             signOut();
@@ -166,7 +177,7 @@
             updateAndSave();
             redirectToEditPage();
         } else { // Error while updating Voters table
-            $alertMsg = 'asst.php: error - could not execute $UPDATEVOTERSCMD ';
+            $alertMsg = 'asst.php: error - could not execute $UPDATEVOTERSCMD '
             $alertMsg .= 'in function updateVotersTable()'; 
             alertMsg($alertMsg);
             updateAndSave();
@@ -348,11 +359,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 </p>
 <div id="actionDiv">
     <input type="submit"  name="action" value="Cancel">
-    <?php if(empty($_SESSION['READ_ONLY'])) {
-            $displaySubmitButton = "<input type='submit' name='action' value='Submit'>";
-            echo $displaySubmitButton;
-        }
-    ?>
+    <input type="submit" name="action" value="Submit">
 </div>
 </form>
 <!-- End form -->

@@ -1,4 +1,9 @@
 <?php 
+	/*$x = array();
+	if(empty($x)) {
+		echo "x is empty<br>";
+	}
+
 	date_default_timezone_set('America/Los_Angeles');
 	$endDate = "2017-01-09";
 	$endDate_time = strtotime($endDate);
@@ -76,8 +81,11 @@
 	echo $a[$n];
 	*/
 ?>
+
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
-<input type="submit" name="incr" value="incr-button">
+<!-- <input type="submit" name="incr" value="incr-button"> -->
+<input type="submit" name="submit" value="submit">
+<input type="button" name="submit" value="submit" action="alert()">
 </form>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
 <script>
@@ -92,7 +100,7 @@ function timeTest() {
 $(document).ready(function() {
 
 
-		setTimeout(timeTest,4000);
+		//setTimeout(timeTest,4000);
 	//var t = 1;
 	//if(t) { alert('T = 1'); } else { alert('t = 0'); }
 });
