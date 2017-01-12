@@ -106,7 +106,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
        			$result = mysqli_query($conn,$addUserCmd);
 
        			if(!$result) { // Error executing $addUserCmd line 103,104
-                    $registrationErr = "Error: could not create user with email '$email'"; }
+                            $registrationErr = "Database error: could not create user with email '$email'"; }
        			else { 
        				echo "<script type='text/javascript'>
        						alert('Registration complete!');
