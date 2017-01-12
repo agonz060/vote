@@ -5,14 +5,12 @@
     var_dump($_SESSION);
     //echo 'one';
     if(idleLimitReached()) {
-        echo 'one';
+        //echo 'one';
         signOut();
     } else {
-        echo 'two';
+        //echo 'two';
         $READ_ONLY = true;
         unsetPollVariables();
-        $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time in seconds since last activity: $t";
         $_SESSION["READ_ONLY"] = $READ_ONLY;
         timeSinceLastActivity();
         updateLastActivity();
@@ -56,6 +54,11 @@
         return;
     }
 
+    function updateAndSave() {
+        updateLastActivity();
+        saveSessionVars();
+    }
+
     function unsetPollVariables() {
         // Session variables accessed
         $CMT = "cmt";
@@ -82,6 +85,14 @@
 
     }
 
+    function redirectToLogIn() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='index.php'</script>";
+        echo $jsRedirect;
+        return;
+    }
+    
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -100,6 +111,7 @@
 <?php 
     require_once '../event/connDB.php';
     // Helper functions
+    // Gets the poll id's the user has voted on or the poll has expired
     function getPollIDs() {
         global $conn;
         $ids = array();
@@ -108,21 +120,50 @@
         if(!empty($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
         } else { 
-            $msg = 'edit.php: error - user_id not set. Redirecting to log in...';
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
             alertMsg($msg);
             signOut();
         }
 
+        // Get all polls the user has voted in or polls the user was included in
+        // but did not participate in
         $SELECTCMD = "SELECT poll_id FROM Voters WHERE user_id=$user_id ";
-        $SELECTCMD .= "AND voteFlag=1";
+        $SELECTCMD .= "AND (voteFlag=1 OR (CURDATE() > pollEndDate))";
         $result = mysqli_query($conn,$SELECTCMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
                 $ids[] = $row['poll_id'];
             }
-            return $ids;
+            //return $ids;
         } else { // Error executing select command
             return -1;
+        }
+    }
+
+    function getAssistantData($pollId) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set line 130. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Assistant_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$pollId";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data[] = $row;
+            }
+            echo 'Vote data: '; print_r($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while executing SELECT_CMD line 143.';
+            alertMsg($msg);
+
         }
     }
 
@@ -179,6 +220,8 @@
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
 
+                // Search for user_id in Voters, then select all poll_id from
+                // Voters where voteFlag = 1
                 $ids = getPollIDs();
                 if($ids == -1) {
                     $msg = "edit.php: error executing SELECTCMD in getPollIDs().";
@@ -189,8 +232,9 @@
                 } else {
                     foreach($ids as $id) {
                         // Only display inactive polls
-                        $selectCmd = "SELECT * FROM Polls WHERE CURDATE() <= deactDate ";
-                        $selectCmd .= "AND poll_id=$id";
+                        $selectCmd = "SELECT * FROM Polls WHERE poll_id=$id ";
+                        $selectCmd .= "OR CURDATE() >= deactDate";
+
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
@@ -219,24 +263,30 @@
                                             $FIFTH_YEAR_REVIEW = "Fifth Year Review";
                                             $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
 
-                                            // Var
-                                            $redirect = '';
+                                            // Vars
+                                            $redirect = $voteData = '';
                                             $title = $_SESSION['title'];
+                                            $voteData = '';
 
                                             if($title == $ASST) {
                                                 if($pollType == $MERRIT) {
                                                     $redirect = '../forms/merrit.php';
                                                 } else { // Only other form available to Assistant professors 
+                                                    $voteData = getAssistantData($poll_id);
                                                     $redirect = '../forms/asst.php';
                                                 }
                                             } else if($title == $ASSOC || $title == $FULL) {
                                                 if($pollType == $PROMOTION) {
+                                                    $voteData = getPromotionData($poll_id);
                                                     $redirect = '../forms/assoc_full.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
+                                                    $voteData = getReappointmentData($poll_id);
                                                     $redirect = '../forms/reappointment.php';
                                                 } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
+                                                    $voteData = getFifthYearAppraisalData($poll_id);
                                                     $redirect = '../forms/fifthYearAppraisal.php';
                                                 } else if($polltype == $FIFTH_YEAR_REVIEW) {
+                                                    $voteData = getFifthYearReviewData($poll_id);
                                                     $redirect = '../forms/quinquennial.php';
                                                 }
                                             } // End of if( $title == ($ASSOC || $FULL) )
@@ -248,7 +298,7 @@
                                             signOut();
                                         }
                                         echo"
-                                        <form method='post' id='editForm' action='$redirect'>
+                                        <form method='post' id='editPoll_$po' action='$redirect'>
                                             <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
                                             <button class='button-edit pure-button'>Edit</button>
                                             <input type='hidden' name='poll_id' value='$poll_id'>
@@ -256,7 +306,9 @@
                                             <input type='hidden' name='pollType' value='$pollType'>
                                             <input type='hidden' name='dept' value='$dept'>
                                             <input type='hidden' name='effDate' value='$effDate'>
-                                            <input type='hidden' name='deactDate' value='$endDate'>
+                                            <input type='hidden' name='deactDate' value='$endDate'>";
+            
+                                        echo"
                                         </form>
                                     </td>           
                                 </tr>";

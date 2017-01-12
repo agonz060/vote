@@ -159,18 +159,20 @@
     }
 
     function submitVote() {
-        updateAssistantTable();
-        if(updateVotersTable()) {
-            $alertMsg = "Vote submitted!";
-            alertMsg($alertMsg);
-            updateAndSave();
-            redirectToEditPage();
-        } else { // Error while updating Voters table
-            $alertMsg = 'asst.php: error - could not execute $UPDATEVOTERSCMD ';
-            $alertMsg .= 'in function updateVotersTable()'; 
-            alertMsg($alertMsg);
-            updateAndSave();
-            redirectToEditPage();
+        $errorDetected = updateAssistantTable();
+        if(!$errorDetected) {
+            if(updateVotersTable()) {
+                $alertMsg = "Vote submitted!";
+                alertMsg($alertMsg);
+                updateAndSave();
+                redirectToEditPage();
+            } else { // Error while updating Voters table
+                $alertMsg = 'asst.php: error - could not execute $UPDATEVOTERSCMD ';
+                $alertMsg .= 'in function updateVotersTable()'; 
+                alertMsg($alertMsg);
+                updateAndSave();
+                redirectToEditPage();
+            }
         }
     }
 
@@ -216,17 +218,20 @@
             $result = mysqli_query($conn,$INSERTCMD);
             if(!$result) { // Error executing $INSERTCMD
                 $alertMsg = 'asst.php: error - executing $INSERTCMD';
+                $alertMsgTesting = "asst.php: error - executing $INSERTCMD";
                 alertMsg($alertMsg);
                 updateAndSave();
                 redirectToEditPage();
+                return 1; // indicates error has occurred
             }
-            return;// End of successful insert into Assistant_Data table
+            return 0;// End of successful insert into Assistant_Data table
         } else { // Error duplicate entry, only one submission allowed
             $alertMsg = "asst.php: error - voting data for this poll and from ";
             $alertMsg .= "this user already exists!";
             alertMsg($alertMsg);
             updateAndSave();
             redirectToEditPage();
+            return 1; // Indicates error has occured
         }
     }
 

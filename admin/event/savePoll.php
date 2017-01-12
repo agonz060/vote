@@ -305,11 +305,11 @@
                         //echo "inserting new voter: $id into Voters table\n";
                         //echo "voters: ";print_r($voters);
                         // Add id to voters[] for use when sending emails
-                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, comment, voteFlag) ";
-                        $addToPollCmd .= "VALUES('$id','$pollId','$cmt','0')";
+                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, pollEndDate, comment, voteFlag) ";
+                        $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','$cmt','0')";
                         $result = mysqli_query($conn,$addToPollCmd);
                         
-                        if(!$result) { echo "savePoll.php: could not insert user_id='$id'\n"; }
+                        if(!$result) { echo "savePoll.php: could not insert user_id='$id' line 312\n"; }
                     }
                 } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
             }// End of foreach    
