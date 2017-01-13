@@ -12,32 +12,31 @@
     // Form data 
     $lastName = $pollType = $profTitle = $dept = $effDate = "";
     $dataErrorMsg = "Error loading form data";
-
+    var_dump($_POST);
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         // Following Post variables are polling data
-        if(!empty($_POST["lastName"])) {
-            $lastName = $_POST["lastName"];
+        if(!empty($_POST["profName"])) {
+            $lastName = $_POST["profName"];
         } else { $lastName = $dataErrorMsg; }
 
         if(!empty($_POST["pollType"])) {
             $pollType = $_POST["pollType"];
         } else { $pollType = $dataErrorMsg; }
-
-        if(!empty($_POST["profTitle"])) {
-            $pollType = $_POST["profTitle"];
-        } else { $pollType = $dataErrorMsg; }
-
+        //not posted
         if(!empty($_POST["dept"])) {
-            $pollType = $_POST["dept"];
-        } else { $pollType = $dataErrorMsg; }
-    
+            $dept = $_POST["dept"];
+        } else { $dept = $dataErrorMsg; }
+
         if(!empty($_POST["effDate"])) {
-            $pollType = $_POST["effDate"];
-        } else { $pollType = $dataErrorMsg; }
-        
+            $effDate = $_POST["effDate"];
+        } else { $effDate = $dataErrorMsg; }
+    
+        if(!empty($_POST["deactDate"])) {
+            $deactDate = $_POST["deactDate"];
+        } else { $deactDate = $dataErrorMsg; }
         // The following four posts are user data
         if(!empty($_POST["fromStep"])) {
-            $fromStep = $_POST["fromStop"];
+            $fromStep = $_POST["fromStep"];
         }
     
         if(!empty($_POST["toStep"])) {
@@ -63,16 +62,26 @@
 faculty member wishes to remain anonymous and/or will not be able to attend the meeting 
 and would like the comments brought up at the meeting for discussion.<br>
 </p>
-<p class="preface">
-[Use this statement for CEE advisory ballots instead of the above <strong>NOTE..:</strong>
-Comment may be submitted to the chair prior to the department meeting if the faculty member will
-not be able to attend the meeting and would like the comments brought up at the meeting for discussion.]<br>
-</p>
-<p class="preface">
-(Use this statement EE advisory ballots: Anonymous or absentee comments will be raised at the
-meeting at the Chair's discretion. .....This is in addition to the above
-<strong>NOTE:</strong> Comments may be submitted....)<br>
-</p>
+
+<?php
+    if($dept === "Computer Engineering") {
+	echo '<p class="preface">';
+	echo htmlspecialchars("[Use this statement for CEE advisory ballots instead of the above ");
+	echo '<strong>NOTE..:</strong>';
+	echo htmlspecialchars("Comment may be submitted to the chair prior to the department meeting if the faculty member will
+	not be able to attend the meeting and would like the comments brought up at the meeting for discussion.]");
+	echo '<br></p>';
+    }
+    if($dept === "Electrical Engineering") {
+	echo '<p class="preface">';
+	echo htmlspecialchars("(Use this statement for EE advisory ballots: Anonymous or absentee comments will be raised at the
+	meeting at the Chair's discretion. .....This is in addition to the above");
+	echo '<strong>NOTE:</strong>';
+        echo htmlspecialchars("Comments may be submitted....)");
+	echo '<br></p>';
+    }
+?>
+
 <p class="preface">
 Comments not discussed at the meeting will not be reflected in the department letter.
 </p>
@@ -115,13 +124,6 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <input type="button" value="Submit">
 </p>
 </form>
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<script src="http://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script>
-$(function() {
-	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
-});
-</script>
+
 </body>
 </html>
