@@ -9,9 +9,7 @@
         signOut();
     } else {
         //echo 'two';
-        $READ_ONLY = true;
         unsetPollVariables();
-        $_SESSION["READ_ONLY"] = $READ_ONLY;
         timeSinceLastActivity();
         updateLastActivity();
     }
@@ -54,7 +52,7 @@
         return;
     }
 
-    function updateAndSave() {
+    function updateAndSaveSession() {
         updateLastActivity();
         saveSessionVars();
     }
@@ -88,7 +86,7 @@
     function redirectToLogIn() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='index.php'</script>";
+        $jsRedirect .= "<script>location.href='../index.php'</script>";
         echo $jsRedirect;
         return;
     }
@@ -110,6 +108,26 @@
 ?>
 <?php 
     require_once '../event/connDB.php';
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+        $HOME = "home";
+        $EDIT = "edit";
+        $SIGN_OUT = "signOut";
+        $menuOption = "";
+
+        if(!empty($_POST['menu'])) {
+            $menuOption =$_POST['menu'];
+            if($menuOption == $HOME) {
+                updateAndSaveSession();
+                redirectToHomePage();
+            } else if($menuOption == $EDIT) {
+                updateAndSaveSession();
+                redirectToEditPage();
+            } else if($menuOption == $SIGN_OUT) {
+                signOut();
+            }
+        }
+    } // End of processing $_POST data
+
     // Helper functions
     // Gets the poll id's the user has voted on or the poll has expired
     function getPollIDs() {
@@ -123,18 +141,20 @@
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
             alertMsg($msg);
             signOut();
+            return -1;
         }
 
         // Get all polls the user has voted in or polls the user was included in
         // but did not participate in
-        $SELECTCMD = "SELECT poll_id FROM Voters WHERE user_id=$user_id ";
-        $SELECTCMD .= "AND (voteFlag=1 OR (CURDATE() > pollEndDate))";
+        $SELECTCMD = "SELECT poll_id FROM Voters WHERE (user_id=$user_id ";
+        $SELECTCMD .= "AND voteFlag=1)";
         $result = mysqli_query($conn,$SELECTCMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
                 $ids[] = $row['poll_id'];
             }
-            //return $ids;
+            //echo "ids: "; print_r($ids);
+            return $ids;
         } else { // Error executing select command
             return -1;
         }
@@ -142,7 +162,7 @@
 
     function getAssistantData($pollId) {
         if(empty($_SESSION['user_id'])) {
-            $msg = 'review.php: error - user_id not set line 130. Redirecting to log in...';
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
             alertMsg($msg);
             signOut();
         }
@@ -156,14 +176,16 @@
         $result = mysqli_query($conn,$SELECT_CMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
-                $data[] = $row;
+                $data = $row;
             }
-            echo 'Vote data: '; print_r($data);
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
             //return $data;     
         } else { // Error occured while executing command
-            $msg = 'review.php: error - failure while executing SELECT_CMD line 143.';
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Assistant Data table';
             alertMsg($msg);
-
+            return -1;
         }
     }
 
@@ -182,18 +204,52 @@
         echo $jsRedirect;
         return;
     }
+
+    function redirectToEditPage() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='edit.php'</script>";
+        echo $jsRedirect;
+        return;
+    }
 ?>
 <head>
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
-    .button-edit {
+    .button-home {
+        text-align: center;
         color: white;
-        background: rgb(28,184,65); 
-        width: 80px;
+        background: rgb(224,224,224);
+        width: 160px;
+    }
+    .button-edit {
+        text-align: center;
+        color: white;
+        background: rgb(66,140,244);
+        width: 160px;
+    }
+    .button-view {
+        text-align: center;
+        color: white;
+        background: rgb(28,184,65);
+        width: 160px;
+    }
+    .button-signOut {
+        text-align: center;
+        color: white;
+        background: rgb(202,60,60);
+        width: 160px;
     }
 </style>
 </head>
 <body>
+    <form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    <div id="menuDiv" align="center">
+        <button name="menu" value="home" class="button-home pure-button">Home</button> 
+        <button name="menu" value="edit" class="button-edit pure-button">Edit vote</button>
+        <button name="menu" value="signOut" class="button-signOut pure-button">Sign out</button>
+    </div>
+    </form>
     <table class="pure-table pure-table-bordered" align="center">
         <thead>
             <tr>
@@ -219,7 +275,8 @@
                 // Poll data
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
-
+                $pollData = array();
+                $READ_ONLY = 1;
                 // Search for user_id in Voters, then select all poll_id from
                 // Voters where voteFlag = 1
                 $ids = getPollIDs();
@@ -227,33 +284,35 @@
                     $msg = "edit.php: error executing SELECTCMD in getPollIDs().";
                     $msg .= " Redirecting to user home page...";
                     alertMsg($msg);
-                    updateAndSave();
+                    updateAndSaveSession();
                     redirectToHomePage();
                 } else {
                     foreach($ids as $id) {
                         // Only display inactive polls
-                        $selectCmd = "SELECT * FROM Polls WHERE poll_id=$id ";
-                        $selectCmd .= "OR CURDATE() >= deactDate";
+                        $selectCmd = "SELECT * FROM Polls WHERE poll_id=$id";
+                        //$selectCmd .= "OR CURDATE() >= deactDate";
 
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
-                                $poll_id = $row["poll_id"];
-                                $endDate = $row["deactDate"];
-                                $name=$row["name"];
-                                $pollType=$row["pollType"];
-                                $dept=$row["dept"];
-                                $effDate=$row["effDate"];
+                                $pollData['READ_ONLY'] = $READ_ONLY;
+                                $pollData['poll_id'] = $row["poll_id"];
+                                $pollData['deactDate'] = $row["deactDate"];
+                                $pollData['name'] = $row["name"];
+                                $pollData['pollType'] = $row["pollType"];
+                                $pollData['dept'] = $row["dept"];
+                                $pollData['effDate'] = $row["effDate"];
                                 echo "<tr>
-                                        <td>
-                                            $name
+                                        <td>".
+                                            $pollData['name']
+                                            ."
                                         </td>
-                                        <td>
-                                            $pollType
-                                        </td>
-                                        <td>
-                                            $endDate
-                                        </td>
+                                        <td>".
+                                            $pollData['pollType'].
+                                        "</td>
+                                        <td>".
+                                            $pollData['deactDate'].
+                                        "</td>
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
                                             // Poll types
@@ -266,7 +325,9 @@
                                             // Vars
                                             $redirect = $voteData = '';
                                             $title = $_SESSION['title'];
-                                            $voteData = '';
+                                            $pollType = $pollData['pollType'];
+                                            $poll_id = $pollData['poll_id'];
+                                            $pollData = json_encode($pollData);
 
                                             if($title == $ASST) {
                                                 if($pollType == $MERRIT) {
@@ -298,17 +359,11 @@
                                             signOut();
                                         }
                                         echo"
-                                        <form method='post' id='editPoll_$po' action='$redirect'>
+                                        <form method='post' id='editPoll_$poll_id' action='$redirect'>
                                             <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
-                                            <button class='button-edit pure-button'>Edit</button>
-                                            <input type='hidden' name='poll_id' value='$poll_id'>
-                                            <input type='hidden' name='profName' value='$name'>
-                                            <input type='hidden' name='pollType' value='$pollType'>
-                                            <input type='hidden' name='dept' value='$dept'>
-                                            <input type='hidden' name='effDate' value='$effDate'>
-                                            <input type='hidden' name='deactDate' value='$endDate'>";
-            
-                                        echo"
+                                            <button class='button-view pure-button'>View</button>
+                                            <input type='hidden' name='pollData' value='$pollData'>
+                                            <input type='hidden' name='_voteData' value='$voteData'>
                                         </form>
                                     </td>           
                                 </tr>";
@@ -317,7 +372,7 @@
                             $msg = "edit.php: error when executing selectCmd.\n";
                             $msg .= "Could not display table. Redirecting to home page...";
                             alertMsg($msg);
-                            updateAndSave();
+                            updateAndSaveSession();
                             redirectToHomePage();
                         }
                     } // End of displaying user edit table

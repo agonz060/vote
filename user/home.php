@@ -1,6 +1,6 @@
 <?php 
     session_start();
-    //var_dump($_SESSION);
+    var_dump($_SESSION);
     //echo 'one';
     timeSinceLastActivity();
 
@@ -63,6 +63,7 @@
         $DEACT_DATE = "deactDate";
         $READ_ONLY = "READ_ONLY";
         $DEPT = "dept";
+        $REAL_PATH = "REAL_PATH_DOC_ROOT";
 
         unset($GLOBALS['_SESSION'][$PROF_NAME]);
         unset($GLOBALS['_SESSION'][$DESCRIPTION]);
@@ -73,7 +74,7 @@
         unset($GLOBALS['_SESSION'][$DEACT_DATE]);
         unset($GLOBALS['_SESSION'][$READ_ONLY]);
         unset($GLOBALS['_SESSION'][$DEPT]);
-
+        unset($GLOBALS['_SESSION'][$REAL_PATH]);
     }
 
     function signOut() {

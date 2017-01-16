@@ -1,4 +1,40 @@
 <?php 
+	session_start();
+	$_SESSION['title'] = "Success sucka!!";
+	// Test $SESSION variables on ajax post
+	// will vars hold their value?
+	require_once 'event/connDB.php';
+
+	function getAssistantData() {
+        global $conn;
+        $data = array();
+
+        $SELECT_CMD = "SELECT * FROM Assistant_Data WHERE user_id=1 AND ";
+        $SELECT_CMD .= "poll_id=3";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            return -1;
+        }
+    }
+
+	$x = getAssistantData();
+
+	echo "encoded: $x";
+
+	$d = json_decode($x,true);
+	echo "decoded: "; print_r($d);
+
+	$c = $d['voteCmt'];
+	echo "cmt: $c";
+
 	/*$x = array();
 	if(empty($x)) {
 		echo "x is empty<br>";
@@ -81,27 +117,38 @@
 	echo $a[$n];
 	*/
 ?>
-
+<p id="alertP"></p>
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 <!-- <input type="submit" name="incr" value="incr-button"> -->
 <input type="submit" name="submit" value="submit">
-<input type="button" name="submit" value="submit" action="alert()">
+<input type="button" id="submitButton" name="submit" value="submit" action="alert()">
 </form>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
 <script>
 
 function timeTest() {
 	location.reload(true);
-
 	alert("Act time: "+actTime+" Current time: "+currTime+"\nTime since act: "+timePassed);
-	
 };		
 
 $(document).ready(function() {
-
+	$("#submitButton").click(function() {
+		submitTest();
+	});
 
 		//setTimeout(timeTest,4000);
 	//var t = 1;
 	//if(t) { alert('T = 1'); } else { alert('t = 0'); }
 });
+
+function submitTest() {
+	var _voteData = <?php if(!empty($x)) { echo json_encode($x); } else { echo 0; } ?>;
+	if(_voteData) {
+		$.post("submitTest.php", { voteData: _voteData }
+			, function(data) {
+				alert(data);
+				$("#alertP").val(data);
+		});
+	}
+};
 </script>

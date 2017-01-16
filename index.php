@@ -64,7 +64,6 @@
                     //1200 seconds = 15 mins
                     $_SESSION['IDLE_TIME_LIMIT'] = $IDLE_TIME_LIMIT; 
                     $_SESSION['LAST_ACTIVITY'] = time();
-                    $_SESSION['REAL_PATH_DOC_ROOT'] = realpath($_SERVER['DOCUMENT_ROOT']);
                     saveSessionVars();
 
                      if($title == $ADMIN) { // Redirect to admin home page

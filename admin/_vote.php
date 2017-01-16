@@ -579,7 +579,7 @@ function pollAction(sendFlag) {
                 			
                 			window.location.href = "home.php"; 
                 			} // End of else 
-                		}) // End of function()
+                		}) // End of $.post
                     .fail(function() {
                             alert("vote.php: error posting to savePoll.php");
                 }); // End of $.post()
