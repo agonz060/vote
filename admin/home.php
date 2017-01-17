@@ -84,7 +84,7 @@
     function redirectToEditPage() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='edit.php'</script>";
+        $jsRedirect .= "<script>location.href='edit/editTable.php'</script>";
         echo $jsRedirect;
         return;
     }

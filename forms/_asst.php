@@ -63,6 +63,7 @@
         echo $jsRedirect;
         return;
     }
+
 // End session verification  
 ?>
 <?php
@@ -77,6 +78,16 @@
     // Get all posted poll data
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         print_r($_POST);
+        // Security and poll checks
+        if(idleTimeLimitReached()) {
+            signOut();
+        } else if(!empty($pollData)) {
+            $d = $pollData['deactDate'];
+            if(isPollExpired($d)) {
+                cancelVote();
+            }
+        } // End of else if(...)
+    
         if(!empty($_POST['action'])) {
             $CANCEL = "Cancel";
 
@@ -208,6 +219,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
+
     // Document ready
     $(function() {
     	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
@@ -241,6 +253,6 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                 }); // End of $.post(...)
             } // End of if(...)
         } // End of else(...)
-    } // End of submitVote()
+    }
 </script>
 </body>

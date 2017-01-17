@@ -1,14 +1,17 @@
-<?php 
+<?php
+    // review.php : 
+    // Displays a user's voting history
     session_start();
-    
     var_dump($_SESSION);
-
-    if(idleTimeLimitReached()) {
+    //echo 'one';
+    if(idleLimitReached()) {
+        //echo 'one';
         signOut();
-    } else { 
+    } else {
+        //echo 'two';
         unsetPollVariables();
-        //timeSinceLastActivity();
-        updateLastActivity(); 
+        timeSinceLastActivity();
+        updateLastActivity();
     }
 
     function timeSinceLastActivity() {
@@ -17,23 +20,22 @@
         return;
     }
 
-    function idleTimeLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-                if(isSessionExpired()) {
-                    return 1;
-                } else { return 0; }
-            } else { // Error must have occurred
+    function idleLimitReached() {
+            if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+                if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                    if(isSessionExpired()) {
+                        return 1;
+                    } else { return 0; }
+                } else { // Error must have occurred
+                     return 1; }
+            } else { // Error must have occurred 
                 return 1; }
-        } else { // Error must have occurred 
-            return 1; }
     } // End of isValidSession() 
 
     // Check for expired activity
     function isSessionExpired() {
         $lastActivity = $_SESSION['LAST_ACTIVITY'];
         $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
         // Check if session has been active longer than IDLE_TIME_LIMIT
         if(time() - $lastActivity >= $timeOut) {
             return true;
@@ -51,7 +53,6 @@
     }
 
     function updateAndSaveSession() {
-        unsetPollVariables();
         updateLastActivity();
         saveSessionVars();
     }
@@ -82,6 +83,14 @@
 
     }
 
+    function redirectToLogIn() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../index.php'</script>";
+        echo $jsRedirect;
+        return;
+    }
+    
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -91,24 +100,17 @@
         session_regenerate_id(true);
         session_start();
         saveSessionVars();
-        
+
+        // Save, redirect
         redirectToLogIn();
     }
-
-    function redirectToLogIn() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='../index.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
+/* End of session verification */
 ?>
 <?php 
     require_once '../event/connDB.php';
-
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         $HOME = "home";
-        $REVIEW = "review";
+        $EDIT = "edit";
         $SIGN_OUT = "signOut";
         $menuOption = "";
 
@@ -117,9 +119,9 @@
             if($menuOption == $HOME) {
                 updateAndSaveSession();
                 redirectToHomePage();
-            } else if($menuOption == $REVIEW) {
+            } else if($menuOption == $EDIT) {
                 updateAndSaveSession();
-                redirectToReviewPage();
+                redirectToEditPage();
             } else if($menuOption == $SIGN_OUT) {
                 signOut();
             }
@@ -127,6 +129,7 @@
     } // End of processing $_POST data
 
     // Helper functions
+    // Gets the poll id's the user has voted on or the poll has expired
     function getPollIDs() {
         global $conn;
         $ids = array();
@@ -135,20 +138,82 @@
         if(!empty($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
         } else { 
-            $msg = 'edit.php: error - user_id not set. Redirecting to log in..';
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
             alertMsg($msg);
             signOut();
+            return -1;
         }
 
-        $SELECTCMD = "SELECT poll_id FROM Voters WHERE user_id=$user_id ";
-        $SELECTCMD .= "AND voteFlag=0";
+        // Get all polls the user has voted in or polls the user was included in
+        // but did not participate in
+        $SELECTCMD = "SELECT poll_id FROM Voters WHERE (user_id=$user_id ";
+        $SELECTCMD .= "AND voteFlag=1)";
         $result = mysqli_query($conn,$SELECTCMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
                 $ids[] = $row['poll_id'];
             }
+            //echo "ids: "; print_r($ids);
             return $ids;
         } else { // Error executing select command
+            return -1;
+        }
+    }
+
+    function getPromotionData($pollId) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Associate_Promotion_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$pollId";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Assistant Data table';
+            alertMsg($msg);
+            return -1;
+        }
+    }
+
+    function getAssistantData($pollId) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Assistant_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$pollId";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Assistant Data table';
+            alertMsg($msg);
             return -1;
         }
     }
@@ -169,16 +234,16 @@
         return;
     }
 
-    function redirectToReviewPage() {
+    function redirectToEditPage() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='review.php'</script>";
+        $jsRedirect .= "<script>location.href='edit.php'</script>";
         echo $jsRedirect;
         return;
     }
 ?>
 <head>
-<<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
     .button-home {
         text-align: center;
@@ -189,13 +254,13 @@
     .button-edit {
         text-align: center;
         color: white;
-        background: rgb(28,184,65);
+        background: rgb(66,140,244);
         width: 160px;
     }
-    .button-review {
+    .button-view {
         text-align: center;
         color: white;
-        background: rgb(66,140,244);
+        background: rgb(28,184,65);
         width: 160px;
     }
     .button-signOut {
@@ -210,18 +275,16 @@
     <form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
     <div id="menuDiv" align="center">
         <button name="menu" value="home" class="button-home pure-button">Home</button> 
-        <button name="menu" value="review" class="button-review pure-button">Review votes</button>
+        <button name="menu" value="edit" class="button-edit pure-button">Edit vote</button>
         <button name="menu" value="signOut" class="button-signOut pure-button">Sign out</button>
     </div>
     </form>
     <table class="pure-table pure-table-bordered" align="center">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Description</th>
                 <th>Regarding</th>
                 <th>Type of Poll</th>
-                <th>Poll  End Date</th>
+                <th>Poll End Date</th>
                 <th>Edit</th>
             </tr>
         </thead>
@@ -239,10 +302,12 @@
                 }
 
                 // Poll data
-                $pollData = array();
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
-
+                $pollData = array();
+                $READ_ONLY = 1;
+                // Search for user_id in Voters, then select all poll_id from
+                // Voters where voteFlag = 1
                 $ids = getPollIDs();
                 if($ids == -1) {
                     $msg = "edit.php: error executing SELECTCMD in getPollIDs().";
@@ -253,13 +318,13 @@
                 } else {
                     foreach($ids as $id) {
                         // Only display inactive polls
-                        $selectCmd = "SELECT * FROM Polls WHERE CURDATE() <= deactDate ";
-                        $selectCmd .= "AND poll_id=$id";
+                        $selectCmd = "SELECT * FROM Polls WHERE poll_id=$id";
+                        //$selectCmd .= "OR CURDATE() >= deactDate";
+
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
-                                $pollTitle = $row["title"];
-                                $description = $row["description"];
+                                $pollData['READ_ONLY'] = $READ_ONLY;
                                 $pollData['poll_id'] = $row["poll_id"];
                                 $pollData['deactDate'] = $row["deactDate"];
                                 $pollData['name'] = $row["name"];
@@ -267,21 +332,16 @@
                                 $pollData['dept'] = $row["dept"];
                                 $pollData['effDate'] = $row["effDate"];
                                 echo "<tr>
-                                        <td>
-                                            $pollTitle
-                                        </td>
-                                        <td>
-                                            $description
+                                        <td>".
+                                            $pollData['name']
+                                            ."
                                         </td>
                                         <td>".
-                                            $pollData['name']."
-                                        </td>
+                                            $pollData['pollType'].
+                                        "</td>
                                         <td>".
-                                            $pollData['pollType']."
-                                        </td>
-                                        <td>".
-                                            $pollData['deactDate']."
-                                        </td>
+                                            $pollData['deactDate'].
+                                        "</td>
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
                                             // Poll types
@@ -291,27 +351,32 @@
                                             $FIFTH_YEAR_REVIEW = "Fifth Year Review";
                                             $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
 
-                                            // Var's
-                                            $redirect = '';
-                                            $title = $_SESSION['title'];                
+                                            // Vars
+                                            $redirect = $voteData = '';
+                                            $title = $_SESSION['title'];
                                             $pollType = $pollData['pollType'];
+                                            $poll_id = $pollData['poll_id'];
                                             $pollData = json_encode($pollData);
 
                                             if($title == $ASST) {
                                                 if($pollType == $MERRIT) {
                                                     $redirect = '../forms/merrit.php';
                                                 } else { // Only other form available to Assistant professors 
-                                                    //$redirect = '../forms/test.php';
+                                                    $voteData = getAssistantData($poll_id);
                                                     $redirect = '../forms/asst.php';
                                                 }
                                             } else if($title == $ASSOC || $title == $FULL) {
                                                 if($pollType == $PROMOTION) {
+                                                    $voteData = getPromotionData($poll_id);
                                                     $redirect = '../forms/assoc_full.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
+                                                    $voteData = getReappointmentData($poll_id);
                                                     $redirect = '../forms/reappointment.php';
                                                 } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
+                                                    $voteData = getFifthYearAppraisalData($poll_id);
                                                     $redirect = '../forms/fifthYearAppraisal.php';
                                                 } else if($polltype == $FIFTH_YEAR_REVIEW) {
+                                                    $voteData = getFifthYearReviewData($poll_id);
                                                     $redirect = '../forms/quinquennial.php';
                                                 }
                                             } // End of if( $title == ($ASSOC || $FULL) )
@@ -323,10 +388,11 @@
                                             signOut();
                                         }
                                         echo"
-                                        <form method='post' id='editForm' action='$redirect'>
+                                        <form method='post' id='editPoll_$poll_id' action='$redirect'>
                                             <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
-                                            <button class='button-edit pure-button'>Edit</button>
+                                            <button class='button-view pure-button'>View</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
+                                            <input type='hidden' name='_voteData' value='$voteData'>
                                         </form>
                                     </td>           
                                 </tr>";

@@ -1,6 +1,7 @@
 USE Voting;
 
 DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Polls, Professors;
+DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data, Fifth_Year_Review_Data, Reappointment_Data; 
 
 CREATE TABLE Polls (
     poll_id int NOT NULL AUTO_INCREMENT,
@@ -31,6 +32,7 @@ CREATE TABLE Users (
 CREATE TABLE Voters (
     user_id int NOT NULL,
     poll_id int NOT NULL,
+    pollEndDate date NOT NULL,
     comment varchar(300),
     voteFlag int NOT NULL DEFAULT '0',
     PRIMARY KEY(user_id,poll_id)

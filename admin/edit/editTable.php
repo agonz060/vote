@@ -28,6 +28,7 @@
 			<th>Description</th>
 			<th>Vote End Date</th>
 			<th>Date Modified</th>
+			<th>Date Deactivated</th>
 			<th>Edit/Delete</th>
 		</tr>
 	</thead>

@@ -180,8 +180,13 @@
         $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
+<<<<<<< HEAD
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,dateModified)";
 		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$dateModified')";
+=======
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
+		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
+>>>>>>> 56a29cd8b4b0e9adac2577950200aeb474cb076b
 	    //echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
@@ -306,11 +311,11 @@
                         //echo "inserting new voter: $id into Voters table\n";
                         //echo "voters: ";print_r($voters);
                         // Add id to voters[] for use when sending emails
-                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, comment, voteFlag) ";
-                        $addToPollCmd .= "VALUES('$id','$pollId','$cmt','0')";
+                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, pollEndDate, comment, voteFlag) ";
+                        $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','$cmt','0')";
                         $result = mysqli_query($conn,$addToPollCmd);
                         
-                        if(!$result) { echo "savePoll.php: could not insert user_id='$id'\n"; }
+                        if(!$result) { echo "savePoll.php: could not insert user_id='$id' line 312\n"; }
                     }
                 } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
             }// End of foreach    
@@ -323,8 +328,9 @@
         $mail = new PHPMailer;
 
         // Enable SMTP debugging
-        $mail->SMTPDebug = false;
-
+	$mail->SMTPDebug = false;
+	//html friendly debug output
+	//$mail->Debugoutput = 'html';
         // Set PHPMailer to use SMTP
         $mail->isSMTP();
 
@@ -365,13 +371,19 @@
         
         // Compose message body
         $bodyMsg = "Comment: <br>" . $cmt . "<br>";
-        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your"; 
-        $voteLink = "<a href='localhost'>voting documents</a><br>";
+        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your "; 
+        $voteLink = "<a href='localhost/vote/index.php'>voting documents</a><br>";
         $bodyMsg .= $voteLink;
 
         $mail->Body = $bodyMsg;
         //$mail->AltBody = "Testing plain text body of a message sent from a script";
-
+	$mail->SMTPOptions = array(
+		'ssl' => array (
+			'verify_peer' => false,
+			'verify_peer_name' => false,
+			'allow_self_signed' => true
+		)
+	);
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;
