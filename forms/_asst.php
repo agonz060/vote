@@ -1,11 +1,9 @@
 <?php 
     session_start();
-    // var_dump($_SESSION);
-
+    //var_dump($_SESSION);
+    
     if(idleTimeLimitReached()) {
         signOut();
-    } else if(isPollExpired()) {
-        cancelVote();
     } else { updateLastActivity(); }
 
     function idleTimeLimitReached() {
@@ -15,7 +13,7 @@
                     return 1;
                 } else { return 0; }
             } else { // Error must have occurred
-                    return 1; }
+                return 1; }
         } else { // Error must have occurred 
             return 1; }
     } // End of isValidSession() 
@@ -40,23 +38,7 @@
         return;
     }
 
-    function unsetSessionVariables() {
-        // Session variables accessed
-        $CMT = "cmt";
-        $POLL_ID = "poll_id";
-        $POLL_TYPE = "pollType";
-        $PROF_NAME = "profName";
-        $DEACT_DATE = "deactDate";
-
-        unset($GLOBALS['_SESSION'][$CMT]);
-        unset($GLOBALS['_SESSION'][$POLL_ID]);
-        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
-    }
-
-    function updateAndSave() {
-        unsetSessionVariables();
+    function updateAndSaveSession() {
         updateLastActivity();
         saveSessionVars();
     }
@@ -69,8 +51,8 @@
         // Begin new session
         session_regenerate_id(true);
         session_start();
-
         saveSessionVars();
+
         redirectToLogIn();
     }
 
@@ -86,201 +68,66 @@
 ?>
 <?php
     require_once '../event/connDB.php';
-
+    //echo "1";
     // Poll data
+    // * NOTE: $_voteData is data posted from a database(storage)
+    $pollData = $_voteData = array();
     $name = $deactDate = $pollType = "";
     $alertMsg = $dataErrorMsg = "";
 
     // Get all posted poll data
     if($_SERVER["REQUEST_METHOD"] == "POST") {
+        print_r($_POST);
         // Security and poll checks
         if(idleTimeLimitReached()) {
             signOut();
-        } else if(isPollExpired()) {
-            cancelVote();
-        }
-
+        } else if(!empty($pollData)) {
+            $d = $pollData['deactDate'];
+            if(isPollExpired($d)) {
+                cancelVote();
+            }
+        } // End of else if(...)
+    
         if(!empty($_POST['action'])) {
-            $SUBMIT = "Submit";
             $CANCEL = "Cancel";
 
             $cmt = "";
             $action = $_POST['action'];
 
-            if($action == $SUBMIT) {
-                if(!empty($_POST['comment'])) {
-                    $_SESSION['cmt'] = cleanInput($_POST['comment']);
-                    submitVote();
-                } else {
-                    $dataErrorMsg = "<font color='red'>* Comment required</font>";
-                }
-            } else if($action == $CANCEL) {
+            if($action == $CANCEL) {
                 cancelVote();
-            }
-             
+            }         
         } else { // Get poll data posted by /user/edit.php 
             //echo "Loading poll data<br>";
-            if(!empty($_POST['poll_id'])) {
+            if(!empty($_POST['pollData'])) {
                 //echo "pollId set\n";
-                $_SESSION['poll_id'] = cleanInput($_POST['poll_id']);
-            } else if(empty($_SESSION['poll_id'])) {
-                $alertMsg = "asst.php: error getting poll_id\n";
-                errorGettingPollData();
+                $pollData = $_POST['pollData'];
+                $pollData = json_decode($pollData,true);
+                //$_SESSION['poll_id'] = cleanInput($_POST['poll_id']);
+            } else { // Error 
+                $alertMsg = "asst.php: error loading pollData";
+                alertAndRedirect($alertMsg);
             }
 
-            if(!empty($_POST['pollType'])) {
-                //echo "pollType set\n";
-                $_SESSION['pollType'] = cleanInput($_POST['pollType']);
-            } else if(empty($_SESSION['pollType'])) {
-                $alertMsg = "asst.php: error getting pollType";
-                errorGettingPollData();
-            }
-        
-            if(!empty($_POST['profName'])) {
-                //echo "profName set\n";
-                $_SESSION['profName'] = cleanInput($_POST['profName']);
-            } else if(empty($_SESSION['profName'])) { 
-                $alertMsg = "asst.php: errror getting profName";
-                errorGettingPollData();
-            }
-
-            if(!empty($_POST['deactDate'])) {
-                $_SESSION['deactDate'] = cleanInput($_POST['deactDate']);
-            } else if(empty($_SESSION['deactDate'])) {
-                $alertMsg = "asst.php: error getting deactDate";
-                errorGettingPollData();
-            }
+            if(!empty($_POST['_voteData'])) {
+                $_voteData = $_POST['_voteData'];
+                $_voteData = json_decode($_voteData,true);     
+            } 
             //print_r($_SESSION);
+            //echo "2";
         } // End !empty($_POST['action']) else block
-        updateLastActivity();
+        
+        //updateLastActivity();
     } // End of $_SERVER['REQUEST_METHOD']
 
-    function isPollExpired() {
-        date_default_timezone_set('America/Los_Angeles');
-        if(!empty($_SESSION['deactDate'])) {
-            $deactDate = $_SESSION['deactDate'];
-            $deactDateTime = strtotime($deactDate);
-            $currentTime = strtotime("now");
-
-            if($currentTime < $deactDateTime) {
-                // There is still time to vote
-                return false;
-            } else { return true; }
-        }
-    }
-
-    function submitVote() {
-        updateAssistantTable();
-        if(updateVotersTable()) {
-            $alertMsg = "Vote submitted!";
-            alertMsg($alertMsg);
-            updateAndSave();
-            redirectToEditPage();
-        } else { // Error while updating Voters table
-            $alertMsg = 'asst.php: error - could not execute $UPDATEVOTERSCMD '
-            $alertMsg .= 'in function updateVotersTable()'; 
-            alertMsg($alertMsg);
-            updateAndSave();
-            redirectToEditPage();
-        }
-    }
-
-    function updateVotersTable() {
-        global $conn;
-        $poll_id = $user_id = "";
-
-        if(!empty($_SESSION['poll_id'])) {
-            $poll_id = $_SESSION['poll_id'];
-        } 
-        if(!empty($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
-        }
-
-        $UPDATEVOTERSCMD = "UPDATE Voters SET voteFlag=1 WHERE ";
-        $UPDATEVOTERSCMD .= "poll_id=$poll_id AND user_id=$user_id";
-        //echo $UPDATEVOTERSCMD."<br>";
-
-        $result = mysqli_query($conn,$UPDATEVOTERSCMD);
-        if(!$result) { // Error executing mysqli command
-            return false;
-        } else { return true; }
-    }
-
-    function updateAssistantTable() {
-        global $conn;
-        $poll_id = $user_id = $cmt = "";
-
-        if(!empty($_SESSION['poll_id'])) {
-            $poll_id = $_SESSION['poll_id'];
-        } 
-        if(!empty($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
-        }
-        if(!empty($_SESSION['cmt'])) {
-            $cmt = $_SESSION['cmt'];
-        }
-
-        if(!dataExists()) {
-            $INSERTCMD = "INSERT INTO Assistant_Data(poll_id,user_id,voteCmt) ";
-            $INSERTCMD .= "VALUES('$poll_id','$user_id','$cmt')";
-
-            $result = mysqli_query($conn,$INSERTCMD);
-            if(!$result) { // Error executing $INSERTCMD
-                $alertMsg = 'asst.php: error - executing $INSERTCMD';
-                alertMsg($alertMsg);
-                updateAndSave();
-                redirectToEditPage();
-            }
-            return;// End of successful insert into Assistant_Data table
-        } else { // Error duplicate entry, only one submission allowed
-            $alertMsg = "asst.php: error - voting data for this poll and from ";
-            $alertMsg .= "this user already exists!";
-            alertMsg($alertMsg);
-            updateAndSave();
-            redirectToEditPage();
-        }
-    }
-
-    function dataExists() {
-        global $conn;
-        $poll_id = $user_id = $cmt = "";
-
-        if(!empty($_SESSION['poll_id'])) {
-            $poll_id = $_SESSION['poll_id'];
-        } 
-        if(!empty($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
-        }
-
-        $CHECKEXISTINGDATACMD = "SELECT voteFlag FROM Voters ";
-        $CHECKEXISTINGDATACMD .= "WHERE poll_id=$poll_id AND user_id=$user_id";
-
-        $result = mysqli_query($conn,$CHECKEXISTINGDATACMD);
-        if($result) {
-            $row = $result->fetch_assoc();
-            $voteFlag = $row['voteFlag'];
-            if($voteFlag == 0) {
-                return false;
-            } else if($voteFlag == 1) { 
-                return true; 
-            }
-        } else { // Error executing mysqli command
-            $alertMsg = "asst.php: error - could not execute $CHECKEXISTINGDATACMD";
-            alertMsg();
-            updateAndSave();
-            redirectToEditPage();
-        }
-    }
-
     function cancelVote() {
-        updateAndSave();
+        updateAndSaveSession();
         redirectToEditPage();
     }
 
-    function errorGettingPollData() {
-        global $alertMsg;
-        alertMsg("$alertMsg");
-        updateAndSave();
+    function alertAndRedirect($msg) {
+        alertMsg("$msg");
+        updateAndSaveSession();
         redirectToEditPage();
         return;
     }
@@ -319,7 +166,7 @@
 <body>
 <form style="width:70%; margin: 0 auto" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
 <h1 align="center"><u>Confidential Document</u></h1>
-<p align="center"><?php echo $dataErrorMsg; ?></p>
+<p id="dataErrorMsg" align="center"><?php echo $dataErrorMsg; ?></p>
 <h4 align="center">*NON VOTING FACULTY MEMBERS</h4>
 <h4 align="center">CONFIDENTIAL EVALUATION FORM</h4>
 <div>
@@ -342,14 +189,14 @@
 <div>
     <p> 
         Merit, Promotions, or Fith-year appraisal for 
-        <?php if(!empty($_SESSION['profName']) && !empty($_SESSION['pollType'])) {
-                echo $_SESSION['profName']."'s ".$_SESSION['pollType'].'.';
+        <?php if(!empty($pollData)) {
+                echo $pollData['name']."'s ".$pollData['pollType'].'.';
                 } ?> 
     </p>
     Confidential comments regarding Merrit, Promotions or Fifth-year appraisals.</br>
     <textarea name="comment" id="comment" rows="8" style="width:100%"><?php 
             // PHP open tag above
-            if(!empty($_SESSION['cmt'])) { echo $_SESSION['cmt']; } 
+            if(!empty($_voteData['voteCmt'])) { echo $_voteData['voteCmt']; } 
         ?></textarea>
 </div>
 <hr/>
@@ -358,8 +205,12 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
 <div id="actionDiv">
-    <input type="submit"  name="action" value="Cancel">
-    <input type="submit" name="action" value="Submit">
+    <input type="submit" name="action" value="Cancel">
+    <?php if(empty($pollData['READ_ONLY'])) {
+            $displaySubmitButton = "<button type='button' id='submitButton'>Submit</button>";
+            echo $displaySubmitButton;
+        }
+    ?>
 </div>
 </form>
 <!-- End form -->
@@ -368,8 +219,40 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
-$(function() {
-	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
-});
+
+    // Document ready
+    $(function() {
+    	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
+
+        $("#submitButton").click(function() {
+            submitVote();
+        })
+    });
+    // Helper functions begin here
+    function submitVote() {
+        var _comment = $("#comment").val();
+        var userVoteData = { comment: _comment };
+        if(_comment.length == 0 || !_comment.trim()) {
+            var noCommentEntered = "Vote must contain comment to submit";
+            $("#dataErrorMsg").val(noCommentEntered);
+        } else {
+            var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else  { echo 0; } ?>;
+            if(_pollData) { 
+                $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
+                        , function(data) { 
+                            if(data) { // Error occured during submission
+                                alert(data);
+                            } else { // Successful submission
+                                alert("Thank you for voting!");
+                                window.location.href = "../user/edit.php";
+                            } 
+                        }) // End of function()
+                    .fail(function() {
+                        var msg = "asst.php : error posting to submitVote.php";
+                        alert(msg);
+                }); // End of $.post(...)
+            } // End of if(...)
+        } // End of else(...)
+    }
 </script>
 </body>
