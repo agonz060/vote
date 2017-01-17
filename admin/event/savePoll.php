@@ -180,13 +180,8 @@
         $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-<<<<<<< HEAD
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,dateModified)";
-		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$dateModified')";
-=======
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
-		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
->>>>>>> 56a29cd8b4b0e9adac2577950200aeb474cb076b
+	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
 	    //echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
@@ -203,7 +198,7 @@
                 //echo 'New pollId: '.$pollId."\n";
                 //echo "Finished updating Polls table\n";
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
-        } else { echo "savePoll.php: could not execute INSERT command line 183\n"; } 
+        } else { echo "savePoll.php: could not execute INSERT command $cmd\n"; } 
 	}// End of updating Polls table
         
     if($votingInfo) {// Update Voters table
@@ -315,7 +310,7 @@
                         $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','$cmt','0')";
                         $result = mysqli_query($conn,$addToPollCmd);
                         
-                        if(!$result) { echo "savePoll.php: could not insert user_id='$id' line 312\n"; }
+                        if(!$result) { echo "savePoll.php: could not insert user_id='$id' into poll using: $addToPollCmd\n"; }
                     }
                 } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
             }// End of foreach    
