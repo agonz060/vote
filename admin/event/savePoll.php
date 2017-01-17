@@ -180,8 +180,8 @@
         $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,history,name,pollType,dept,effDate)";
-		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$history','$name','$pollType','$dept','$effDate')";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,dateModified)";
+		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$dateModified')";
 	    //echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
@@ -198,7 +198,7 @@
                 //echo 'New pollId: '.$pollId."\n";
                 //echo "Finished updating Polls table\n";
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
-        } else { echo "savePoll.php: could not create new Poll\n"; } 
+        } else { echo "savePoll.php: could not execute INSERT command line 183\n"; } 
 	}// End of updating Polls table
         
     if($votingInfo) {// Update Voters table
@@ -252,6 +252,7 @@
                     // Remove professors from current poll
                     foreach($removeList as $id) {
                         //echo 'removing from vote id: '.$id."\n";
+                    
                         $delCmd = "DELETE FROM Voters WHERE user_id='$id'";
                         $result = mysqli_query($conn, $delCmd);
 
