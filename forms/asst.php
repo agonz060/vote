@@ -109,9 +109,13 @@
         //updateLastActivity();
     } // End of $_SERVER['REQUEST_METHOD']
 
-    function cancelVote() {
+    function cancelVote($p) {
         updateAndSaveSession();
-        redirectToEditPage();
+        if(empty($p['READ_ONLY'])) {
+            redirectToReviewPage();
+        } else {
+            redirectToEditPage();
+        }
     }
 
     function alertAndRedirect($msg) {
@@ -125,6 +129,14 @@
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
         $jsRedirect .= "<script>location.href='../user/edit.php';</script>";
+        echo $jsRedirect;
+        return;
+    }
+
+    function redirectToReviewPage() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../user/review.php';</script>";
         echo $jsRedirect;
         return;
     }

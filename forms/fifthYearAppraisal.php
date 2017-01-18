@@ -1,3 +1,127 @@
+<?php 
+    session_start();
+    //var_dump($_SESSION);
+    
+    if(idleTimeLimitReached()) {
+        signOut();
+    } else { updateLastActivity(); }
+
+    function idleTimeLimitReached() {
+        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
+            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+                if(isSessionExpired()) {
+                    return 1;
+                } else { return 0; }
+            } else { // Error must have occurred
+                return 1; }
+        } else { // Error must have occurred 
+            return 1; }
+    } // End of isValidSession() 
+
+    // Check for expired activity
+    function isSessionExpired() {
+        $lastActivity = $_SESSION['LAST_ACTIVITY'];
+        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
+        // Check if session has been active longer than IDLE_TIME_LIMIT
+        if(time() - $lastActivity >= $timeOut) {
+            return true;
+        } else { false; }   
+    }// End of isSesssionExpired()
+
+    function updateLastActivity() {
+        $_SESSION['LAST_ACTIVITY'] = time();
+        return;
+    }
+
+    function saveSessionVars() {
+        session_write_close();
+        return;
+    }
+
+    function updateAndSaveSession() {
+        updateLastActivity();
+        saveSessionVars();
+    }
+
+    function signOut() {
+        // Destroy previous session
+        session_unset();
+        session_destroy();
+
+        // Begin new session
+        session_regenerate_id(true);
+        session_start();
+        saveSessionVars();
+
+        redirectToLogIn();
+    }
+
+    function redirectToLogIn() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../index.php'</script>";
+        echo $jsRedirect;
+        return;
+    }
+// End session verification  
+?>
+<?php
+    // Form data 
+    // * NOTE: $_voteData is user data previously submitted by the user
+    //                     sent from review.php
+    $pollData = $_voteData = "";
+    $name = $pollType = $profTitle = $dept = $effDate = "";
+    // Vote data 
+    $comment = "";
+
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+        //print_r($_POST);
+        //echo "here";
+        if(!empty($_POST['cancelVote'])) {
+            echo "canceling vote";
+            cancelVote();
+        }
+
+        if(!empty($_POST['pollData'])) {
+            $pollData = $_POST['pollData'];
+            $pollData = json_decode($pollData,true);
+
+            $name = $pollData['name'];
+            $pollType = $pollData['pollType'];
+            $dept = $pollData['dept'];
+            $effDate = $pollData['effDate'];
+        } else { // Error  
+            $alertMsg = "fifthYearAppraisal.php: error loading pollData";
+            alertAndRedirect($alertMsg);
+        }
+
+        if(!empty($_POST['_voteData'])) {
+            $_voteData = $_POST['_voteData'];
+            $_voteData = json_decode($_voteData,true);  
+        } 
+    } // End of if($_SERVER[...])
+    
+    function cancelVote() {
+        updateAndSaveSession();
+        redirectToReviewPage();
+    }
+
+    function alertAndRedirect($msg) {
+        alertMsg("$msg");
+        updateAndSaveSession();
+        redirectToEditPage();
+        return;
+    }
+
+    function redirectToReviewPage() {
+        $jsRedirect = "<script type='text/javascript' ";
+        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
+        $jsRedirect .= "<script>location.href='../user/review.php';</script>";
+        echo $jsRedirect;
+        return;
+    }
+// End of PHP 
+?>
 <html>
 <head>
 <title>Faculty Confidential Advisory Vote To The Chair</title>
@@ -30,27 +154,25 @@ Comments not discussed at the meeting will not be reflected in the department le
 <hr/>
 <div>
 <p> 
-I cast my vote regarding the recomendation for
-<select id="lastName" class="selector">
-	<option>Last Name</option>
-	<option>Trump</option>
-</select>'s 5<sup>th</sup>-Tear Appraisal in the 
-<input size="15" type="text" name="dept" id="dept" value=""/> Department
-, effective <input size="10" type="text" name="effDate" id="effDate"/>.</br>
+I cast my vote regarding the recomendation for <?php
+	$displayStr = "$name's 5<sup>th</sup>-Year Appraisal in the $dept ";
+	$displayStr .= "Department, effective $effDate.<br>";  
+	echo $displayStr
+// End PHP ?>
 </p>
-Positive: <input type="radio" id="vote" name="positive" value="0"></br>
+Positive: <input type="radio" id="positiveVote" name="vote" value="1"></br>
 <p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote cannot be cast unless
 reasons for qualification(s) are discussed at the department meeting)</br></p>
-<textarea id="qualifications" name="qualifications" row="8" style="width:100%; display:none" value=""></textarea>
-Opposed: <input type="radio" id="vote" name="opposed" value="1"></br>
-Abstain: <input type="radio" id="vote" name="abstain" value="2"></br>
+<textarea id="qualificationsCmts" name="qualifications" row="8" style="width:100%; display:none"></textarea>
+Opposed: <input type="radio" id="opposedVote" name="vote" value="2"></br>
+Abstain: <input type="radio" id="abstainVote" name="vote" value="3"></br>
 <hr/>
 <strong>TEACHING</strong> (Please list positive and negative aspects):</br>
-<textarea id="teaching" name="teaching" rows="8" style="width:100%"></textarea>
+<textarea id="teachingCmts" name="teaching" rows="8" style="width:100%"></textarea>
 <strong>RESEARCH</strong> (Please list positive and negative aspects):</br>
-<textarea id="research" name="research"rows="8" style="width:100%"></textarea>
+<textarea id="researchCmts" name="research"rows="8" style="width:100%"></textarea>
 <strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):</br>
-<textarea id="pubService" name="pubService" rows="8" style="width:100%"></textarea>
+<textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%"></textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -58,30 +180,133 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
 <p>
-<input type="button" value="Submit">
+<input type="submit" name="cancelVote" value="Cancel">
+<?php if(empty($pollData['READ_ONLY'])) {
+            $displaySubmitButton = "<button type='button' id='submitButton'>Submit</button>";
+            echo $displaySubmitButton;
+        }
+    ?>
+</p>
 </form>
+</body>
+<!-- End of HTML body -->
+<!-- Scripting begins -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
-$(function() {
-	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
-});
+    loadVoteData();
 
-$(function() {
-	$("input[type='radio'][name='vote']").change(function() {
-		if(this.value == 0) {
-			$('#qualifications').show();
-			$('#qualifications').prop('required',true);
-			$('#posPreface').show();
-		}
-		else {
-			$('#qualifications').hide();
-			$('#qualifications').prop('required',false);
-			$('#posPreface').hide();
-		}
-	});
-});
+    // Document ready
+    $(function() {
+        $IN_FAVOR_VOTE = 1;
+		$("input[type='radio'][name='vote']").change(function() {
+			if(this.value == $IN_FAVOR_VOTE) {
+				$('#qualifications').show();
+				$('#qualifications').prop('required',true);
+				$('#posPreface').show();
+			}
+			else {
+				$('#qualifications').hide();
+				$('#qualifications').prop('required',false);
+				$('#posPreface').hide();
+			}
+		});
+		$("#submitButton").click(function() { 
+			getVoteData();
+			//submitVote(); 
+		});
+        //$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
+    });
+
+    function loadVoteData() {
+        var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+                                else { echo 0; } ?>;
+        if(loadData) {        
+            var vote = <?php if(!empty($_voteData['vote'])) 
+                                { echo $_voteData['vote']; } 
+                                else { echo 0; } ?>;
+            $('input[name=vote][value='+vote+']').attr('checked','checked');
+        }  
+    }
+
+    function getVoteData() {
+    	var IN_FAVOR_VOTE = 1;
+    	var _vote = $("input[name=vote]:checked").val();
+        var _qualificationsCmts = $("#qualificationsCmts").val();
+        
+        if(_vote == IN_FAVOR_VOTE) {
+	        if(_qualificationsCmts.length == 0 || !_qualificationsCmts.trim()) {
+	            var noCommentEntered = "Vote must contain comment to submit";
+	            alert(noCommentEntered);
+	            return 0;
+	        }
+	    } else { _qualificationsCmts = '*empty*'; }
+
+        var _teachingCmts = $("#teachingCmts").val();
+        var _researchCmts = $("#researchCmts").val();
+        var _pubServiceCmts = $("#pubServiceCmts").val();
+        
+        if(_teachingCmts.length == 0 || !_teachingCmts.trim()) {
+        	var noCmtEntered = "Teaching comments are required to submit vote.";
+        	alert(noCmtEntered);
+        	return 0;
+        } else if(_researchCmts.length == 0 || !_researchCmts.trim()) {
+        	var noCmtEntered = "Research comments are required to submit vote.";
+        	alert(noCmtEntered);
+        	return 0;
+        } else if(_pubServiceCmts.length == 0 || !_pubServiceCmts.trim()) {
+        	var noCmtEntered = "Public service comments are required to submit vote.";
+        	alert(noCmtEntered);
+        	return 0;
+        }
+
+        if(_vote) {
+            var voteData = { vote: _vote, qualificationsCmts: _qualificationsCmts
+            					, teachingCmts: _teachingCmts 
+            					, researchCmts: _researchCmts
+            					, pubServiceCmts: _pubServiceCmts };
+            var voteDataStr = "vote: "+_vote+" qual: "+_qualificationsCmts;
+            	voteDataStr += "teach: "+_teachingCmts+" research: "+_researchCmts;
+            	voteDataStr += " pubSerCmts: "+_pubServiceCmts;
+			alert(voteDataStr);
+            //return voteData;
+        } else { // Vote missing 
+            var voteMissing = "Please select a voting option before submitting.";
+            alert(voteMissing);
+            return 0;
+        }
+    }
+    // Helper functions begin here
+    function submitVote() {
+        var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+                                else { echo 0; } ?>;
+        if(!isReadOnly) {
+        var userVoteData = getVoteData();
+        if(userVoteData) {
+            //alert(userVoteData);
+            var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
+            //alert(_pollData);
+            if(_pollData) {
+                $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
+                            , function(data) { 
+                                if(data) { // Error occured during submission
+                                    alert(data);
+                                } else { // Successful submission
+                                    alert("Thank you for voting!");
+                                    window.location.href = "../user/edit.php";
+                                } 
+                            }) // End of function()
+                        .fail(function() {
+                            var msg = "asst.php : error posting to submitVote.php";
+                            alert(msg);
+                }); // End of $.post(...)
+            }
+        } else { // Error while getting vote data
+            alert("Something went wrong while collecting vote information.");
+        }
+        } // End of if(!isReadOnly)   
+    }
 </script>
-</body>
+<!-- Scripting ends -->
 </html>
