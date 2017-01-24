@@ -181,12 +181,8 @@
 
         // Mysql command to create new Poll
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
-<<<<<<< HEAD:admin/event/savePoll.php
-		$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
-=======
 	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
->>>>>>> b5c712b8d17bcd5a956fa833b572b577a7aae048:admin/event/savePoll.php
-	    //echo "$cmd";
+	//echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
 		// Create new poll

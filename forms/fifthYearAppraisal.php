@@ -2,10 +2,10 @@
     session_start();
     //var_dump($_SESSION);
     
-    if(idleTimeLimitReached()) {
+    /*if(idleTimeLimitReached()) {
         signOut();
     } else { updateLastActivity(); }
-
+    */
     function idleTimeLimitReached() {
         if(!(empty($_SESSION['LAST_ACTIVITY']))) {
             if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
@@ -132,7 +132,7 @@
 </style>
 </head>
 <body>
-<form id="myForm" style="width:70%; margin: 0 auto" method="post" action=<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form id="myForm" style="width:70%; margin: 0 auto" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <h2 align="center">Faculty Confidential Advisory To Vote To The Chair</h2>
 <h2 align="center">**PLEASE CAST A VOTE ON ALL OPTIONS**</h2>
 <div>
@@ -160,18 +160,19 @@ I cast my vote regarding the recomendation for <?php
 	echo $displayStr
 // End PHP ?>
 </p>
-Positive: <input type="radio" id="positiveVote" name="vote" value="1"></br>
+Positive: <input type="radio" id="positiveVote" name="vote" value="1"><br>
+Positive with qualifications: <input type="radio" name="vote" value="2"><br>
 <p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote cannot be cast unless
-reasons for qualification(s) are discussed at the department meeting)</br></p>
-<textarea id="qualificationsCmts" name="qualifications" row="8" style="width:100%; display:none"></textarea>
-Opposed: <input type="radio" id="opposedVote" name="vote" value="2"></br>
-Abstain: <input type="radio" id="abstainVote" name="vote" value="3"></br>
+reasons for qualification(s) are discussed at the department meeting)<br></p>
+<!-- <textarea id="qualificationsCmts" name="qualifications" row="8" style="width:100%; display:none"></textarea> -->
+Opposed: <input type="radio" id="opposedVote" name="vote" value="3"><br>
+Abstain: <input type="radio" id="abstainVote" name="vote" value="4"><br>
 <hr/>
-<strong>TEACHING</strong> (Please list positive and negative aspects):</br>
+<strong>TEACHING</strong> (Please list positive and negative aspects):<br>
 <textarea id="teachingCmts" name="teaching" rows="8" style="width:100%"></textarea>
-<strong>RESEARCH</strong> (Please list positive and negative aspects):</br>
-<textarea id="researchCmts" name="research"rows="8" style="width:100%"></textarea>
-<strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):</br>
+<strong>RESEARCH</strong> (Please list positive and negative aspects):<br>
+<textarea id="researchCmts" name="research" rows="8" style="width:100%"></textarea>
+<strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):<br>
 <textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%"></textarea>
 </div>
 <hr/>
@@ -191,17 +192,15 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 </body>
 <!-- End of HTML body -->
 <!-- Scripting begins -->
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
     loadVoteData();
 
     // Document ready
     $(function() {
-        $IN_FAVOR_VOTE = 1;
-		$("input[type='radio'][name='vote']").change(function() {
-			if(this.value == $IN_FAVOR_VOTE) {
+        var IN_FAVOR_VOTE = 2;
+		$("input[type=radio][name=vote]").change(function() {
+			if(this.value == IN_FAVOR_VOTE) {
 				$('#qualifications').show();
 				$('#qualifications').prop('required',true);
 				$('#posPreface').show();
@@ -216,8 +215,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 			getVoteData();
 			//submitVote(); 
 		});
-        //$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
-    });
+    }); // End of document ready
 
     function loadVoteData() {
         var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
@@ -226,23 +224,13 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             var vote = <?php if(!empty($_voteData['vote'])) 
                                 { echo $_voteData['vote']; } 
                                 else { echo 0; } ?>;
-            $('input[name=vote][value='+vote+']').attr('checked','checked');
+            $("input[name=vote][value="+vote+"]").attr('checked','checked');
         }  
     }
 
     function getVoteData() {
-    	var IN_FAVOR_VOTE = 1;
-    	var _vote = $("input[name=vote]:checked").val();
-        var _qualificationsCmts = $("#qualificationsCmts").val();
-        
-        if(_vote == IN_FAVOR_VOTE) {
-	        if(_qualificationsCmts.length == 0 || !_qualificationsCmts.trim()) {
-	            var noCommentEntered = "Vote must contain comment to submit";
-	            alert(noCommentEntered);
-	            return 0;
-	        }
-	    } else { _qualificationsCmts = '*empty*'; }
-
+    	var IN_FAVOR_VOTE = 2;
+        var _vote = $("input[type=radio][name=vote]").val();
         var _teachingCmts = $("#teachingCmts").val();
         var _researchCmts = $("#researchCmts").val();
         var _pubServiceCmts = $("#pubServiceCmts").val();
@@ -262,11 +250,10 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         }
 
         if(_vote) {
-            var voteData = { vote: _vote, qualificationsCmts: _qualificationsCmts
-            					, teachingCmts: _teachingCmts 
-            					, researchCmts: _researchCmts
-            					, pubServiceCmts: _pubServiceCmts };
-            var voteDataStr = "vote: "+_vote+" qual: "+_qualificationsCmts;
+            var voteData = { vote: _vote, teachingCmts: _teachingCmts 
+            				, researchCmts: _researchCmts
+            				, pubServiceCmts: _pubServiceCmts };
+            var voteDataStr = "vote: "+_vote;
             	voteDataStr += "teach: "+_teachingCmts+" research: "+_researchCmts;
             	voteDataStr += " pubSerCmts: "+_pubServiceCmts;
 			alert(voteDataStr);
