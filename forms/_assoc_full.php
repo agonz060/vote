@@ -227,11 +227,14 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                                 else { echo 0; } ?>;
         if(loadData) {        
             var fromLevel = <?php if(!empty($_voteData['fromLevel'])) 
-                                { echo $_voteData['fromLevel']; } ?>;
+                                { echo $_voteData['fromLevel']; } 
+                                else { echo 0; } ?>;
             var toLevel = <?php if(!empty($_voteData['toLevel'])) 
-                                { echo $_voteData['toLevel']; } ?>;
+                                { echo $_voteData['toLevel']; } 
+                                else { echo 0; } ?>;
             var vote = <?php if(!empty($_voteData['vote'])) 
-                                { echo $_voteData['vote']; } ?>;
+                                { echo $_voteData['vote']; } 
+                                else { echo 0; } ?>;
         
             $('#fromLevel option[value='+fromLevel+']').attr('selected','selected');
             $('#toLevel option[value='+toLevel+']').attr('selected','selected');
@@ -254,7 +257,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(_vote) {
             var voteData = { voteCmt: _comment, fromLevel: _fromLevel, 
                             toLevel: _toLevel, vote: _vote };
-                            alert("vote: "+_vote+"voteCmt: "+_comment);
+                            //alert("vote: "+_vote+"voteCmt: "+_comment);
             return voteData;
         } else { // Vote missing 
             var voteMissing = "Please select a voting option before submitting.";

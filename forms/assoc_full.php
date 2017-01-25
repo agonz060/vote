@@ -257,7 +257,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(_vote) {
             var voteData = { voteCmt: _comment, fromLevel: _fromLevel, 
                             toLevel: _toLevel, vote: _vote };
-                            alert("vote: "+_vote+"voteCmt: "+_comment);
+                            //alert("vote: "+_vote+"voteCmt: "+_comment);
             return voteData;
         } else { // Vote missing 
             var voteMissing = "Please select a voting option before submitting.";

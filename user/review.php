@@ -160,6 +160,34 @@
         }
     }
 
+    function getFifthYearAppraisalData($poll_id) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Fifth_Year_Appraisal_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$pollId";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Assistant Data table';
+            alertMsg($msg);
+            return -1;
+        }
+    }
     function getPromotionData($pollId) {
         if(empty($_SESSION['user_id'])) {
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
@@ -302,7 +330,7 @@
                 }
 
                 // Poll data
-                $poll_id = $title = $description = $endDate  = "";
+                $poll_id = $title = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
                 $pollData = array();
                 $READ_ONLY = 1;
@@ -324,13 +352,29 @@
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
-                                $pollData['READ_ONLY'] = $READ_ONLY;
+                                $poll_id = $row["poll_id"];
+                                $deactDate = $row["deactDate"];
+                                $name = $row["name"];
+                                $pollType = $row["pollType"];
+                                $dept = $row["dept"];
+                                $effDate = $row["effDate"];
+                                $pollData = array("READ_ONLY" => $READ_ONLY,
+                                                "poll_id" => $poll_id,
+                                                "deactDate" => $deactDate,
+                                                "name" => $name,
+                                                "pollType" => $pollType,
+                                                "dept" => $dept,
+                                                "effDate" => $effDate );
+
+                                /*$pollData['READ_ONLY'] = $READ_ONLY;
                                 $pollData['poll_id'] = $row["poll_id"];
                                 $pollData['deactDate'] = $row["deactDate"];
                                 $pollData['name'] = $row["name"];
                                 $pollData['pollType'] = $row["pollType"];
                                 $pollData['dept'] = $row["dept"];
                                 $pollData['effDate'] = $row["effDate"];
+                                */
+                                //echo "pollData: ";print_r($pollData);
                                 echo "<tr>
                                         <td>".
                                             $pollData['name']
@@ -357,7 +401,7 @@
                                             $pollType = $pollData['pollType'];
                                             $poll_id = $pollData['poll_id'];
                                             $pollData = json_encode($pollData);
-
+                                            //echo "json_encode(pollData): $pollData";
                                             if($title == $ASST) {
                                                 if($pollType == $MERRIT) {
                                                     $redirect = '../forms/merrit.php';
