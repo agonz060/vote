@@ -1,6 +1,15 @@
 <?php 
     require_once '../event/connDB.php';
     session_start();  
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+	if(!empty($_POST["home"])) {
+		redirectToHome();	
+	}
+    }
+    function redirectToHome() {
+	echo "<script type='text/javascript'>location.href='../home.php'</script>";
+    }
+
 ?>
 <html>
 <head>
@@ -21,6 +30,10 @@
 <body>
 <!-- Last change here from 'require' -> 'require_once' -->
 <?php require_once "loadEditTable.php"; ?>
+<form method='post' id='menuForm' action='<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>'>
+<button name="home" value="home" class="pure-button">Home</button>
+</form>
+
 <table class="pure-table pure-table-bordered" align="center">
 	<thead>
 		<tr>
