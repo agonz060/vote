@@ -26,12 +26,12 @@
         //echo "entering POST";
         if(empty($_POST['email'])) {
             //echo 'in empty(email)'."\n";
-            $emailErr = "<font color='red'>* email required</font>";
+            $emailErr = "<font color='red'>* Email required</font>";
         } else { $email = cleanInput($_POST['email']); }
 
         if(empty($_POST['pswd'])) {
             //echo 'in empty(pswd)'."\n";
-            $pswdErr = "<font color='red'>* password required</font>";
+            $pswdErr = "<font color='red'>* Password required</font>";
         } else { $pswd = cleanInput($_POST['pswd']); }
 
         //echo "Email: $email Pass: $pswd\n";
@@ -124,17 +124,13 @@
     }
 
     function redirectToUserPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='user/home.php'</script>";
+        $jsRedirect = "<script type='text/javascript'>location.href='user/home.php'</script>";
         echo $jsRedirect;
         return;
     }
 
     function redirectToAdminPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='admin/home.php'</script>";
+        $jsRedirect = "<script type='text/javascript'>location.href='admin/home.php'</script>";
         echo $jsRedirect;
         return;
     }
@@ -157,44 +153,35 @@
         return $data;
     }
 // End of PHP ?>
-
-<table width="300" border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
- 	<tr>
-		<form  method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
- 		<td>
- 		<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#FFFFFF">
-            <tr>
- 				<td colspan="3" algin="center">
-                    <span align="center"><strong>Member Login</strong></span>
-                    <?php echo $loginError; ?>
-                </td>
-			</tr>
-			<tr>
-				<td colspan="3"> <p id="loginError"></p>
-				</td>
-			</td>
- 			<tr>
- 				<td width="78">Email</td>
-				<td width="6">:</td>
- 				<td width="294"><input type="text" name="email" id="email">
-                    <?php echo $emailErr; ?>
-                </td>
- 			</tr>
- 			<tr>
- 				<td>Password</td>
- 				<td>:</td>
- 				<td><input type="password" id="pswd" name="pswd">
-                    <?php echo $pswdErr; ?>
-                </td>
- 			</tr>
- 			<tr>
- 				<td>&nbsp;</td>
- 				<td>&nbsp;</td>
-				<td><input type="submit" id="loginButton" value="Login"></td>
-				<td><a href="event/register.php">Register</a></td>
- 			</tr>
- 		</table>
- 		</td>
- 		</form>
- 	</tr>
-</table>
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="#">BCOE Voting</a>
+		</div>
+	</div>	
+</nav>
+<div class="container">
+<form class="form-signin" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+	<h2 class="form-signin-heading">Login</h2>
+	<div class="form-group">
+		<?php if(!empty($loginError)) { echo $LOGIN_ERROR_MSG;}?>
+		<input name="email" style="width: 50%" type="email" class="form-control" id="email" placeholder="Email">
+		<?php if(!empty($emailErr)) { echo $emailErr;}?>
+	</div>
+	<div class="form-group">
+		<input name="pswd" style="width: 50%" type="password" class="form-control" id="pwd" placeholder="Password">
+		<?php if(!empty($pswdErr)) { echo $pswdErr;}?>
+	</div>
+	<button type="submit" class="btn btn-success btn-lg">Submit</button>
+	<a href="event/register.php">Need to register?</a>
+</form>
+</div>
+</body>
+</html>
