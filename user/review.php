@@ -2,7 +2,7 @@
     // review.php : 
     // Displays a user's voting history
     session_start();
-    var_dump($_SESSION);
+    //var_dump($_SESSION);
     //echo 'one';
     if(idleLimitReached()) {
         //echo 'one';
@@ -10,7 +10,7 @@
     } else {
         //echo 'two';
         unsetPollVariables();
-        timeSinceLastActivity();
+        //timeSinceLastActivity();
         updateLastActivity();
     }
 
