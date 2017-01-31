@@ -173,10 +173,20 @@ Description: <br><textarea id="description" name="description" rows="5" cols="70
 <span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
 </p>
 <p>
-Professors Name:
+Professor's Name:
 <input type="text" id="profName" value="<?php if(isset($_POST['profName'])) { echo htmlentities($_POST['profName']); }?>">
 <span id="profNameErr" class="error"><?php echo "$errProfName";?></span><br>
 </p>
+<p>
+<!-- 
+Professor's Title: 
+<select id="profTitle" name="profTitle" class="selector">
+    <option value="Assistant Professor">Assistant Professor</option>
+    <option value="Associate Professor">Associate Professor</option>
+    <option value="Full Professor">Full Professor</option>
+</select>
+</p>
+-->
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
     <option value="Merrit">Merrit</option>
