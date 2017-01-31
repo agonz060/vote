@@ -14,6 +14,7 @@
 <html>
 <head>
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 	.button-edit {
 		color: white;
@@ -28,12 +29,22 @@
 </style>
 </head>
 <body>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="../home.php">BCOE Voting</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li><a href="../home.php">Home</a></li>
+			<li><a href="../vote.php">Create Poll</a></li>
+			<li class="active"><a href="editTable.php">Edit Poll</a></li>
+			<li><a href="reviewTable.php">Review Poll</a></li>
+			<li><a href="../add.php">Add User</a></li>
+		</ul>
+	</div>
+</nav>
 <!-- Last change here from 'require' -> 'require_once' -->
 <?php require_once "loadEditTable.php"; ?>
-<form method='post' id='menuForm' action='<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>'>
-<button name="home" value="home" class="pure-button">Home</button>
-</form>
-
 <table class="pure-table pure-table-bordered" align="center">
 	<thead>
 		<tr>

@@ -1,7 +1,6 @@
 <?php 
     session_start();
-    var_dump($_SESSION);
-    //echo 'one';
+    //var_dump($_SESSION);
     timeSinceLastActivity();
 
     if(idleLimitReached()) {
@@ -25,7 +24,7 @@
 
     function timeSinceLastActivity() {
         $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
+        //echo "Time since last activity: $t";
         return;
     }
     
@@ -144,6 +143,7 @@
 ?>
 <head>
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
     .button-edit {
         text-align: center;
@@ -163,16 +163,31 @@
         background: rgb(202,60,60);
         width: 160px;
     }
+    .navbar {
+	margin-bottom: 0px;
+    }
 </style>
 </head>
 <body>
 <!-- Display webpage title -->
-<h1 align="center"> User Homepage </h1>
-<hr>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="home.php">BCOE Voting</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="home.php">Home</a></li>
+			<li><a href="edit.php">Edit Poll</a></l>
+			<li><a href="review.php">Review Poll</a></li>
+		</ul>
+	</div>
+</nav>
+<div class="jumbotron">
+	<h1>Welcome <?php echo htmlspecialchars($_SESSION["userName"]); ?>!</h1>
+	<p>You have # polls to vote on.</p>
+</div>
 <form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
 <div id="menu" name="menu" align="center">
-    <button name="action" value="edit" class="button-edit pure-button">View current ballots</button> 
-    <button name="action" value="review" class="button-review pure-button">Review past ballots</button>
     <button name="action" value="signOut" class="button-signOut pure-button">Sign out</button>
 </div>
 </form>

@@ -11,6 +11,7 @@
     }
 ?>
 <head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
     .error {color: #FF0000;}
 </style>
@@ -136,6 +137,22 @@ function cleanInput($data) {
 }
 
 ?>
+<!-- End PHP -->
+
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="home.php">BCOE Voting</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li><a href="home.php">Home</a></li>
+			<li><a href="vote.php">Create Poll</a></li>
+			<li><a href="edit/editTable.php">Edit Poll</a></li>
+			<li><a href="edit/reviewTable.php">Review Poll</a></li>
+			<li class="active"><a href="add.php">Add User</a></li>
+		</ul>
+	</div>
+</nav>
 <!-- Title -->
 <h1 align="center">User Registration</h1>
 <hr><br>

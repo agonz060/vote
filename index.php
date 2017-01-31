@@ -167,16 +167,16 @@
 		</div>
 	</div>	
 </nav>
-<div class="container">
+<div style="width: 30%" class="well container">
 <form class="form-signin" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
 	<h2 class="form-signin-heading">Login</h2>
 	<div class="form-group">
 		<?php if(!empty($loginError)) { echo $LOGIN_ERROR_MSG;}?>
-		<input name="email" style="width: 50%" type="email" class="form-control" id="email" placeholder="Email">
+		<input name="email" style="width: 80%" type="email" class="form-control" id="email" placeholder="Email">
 		<?php if(!empty($emailErr)) { echo $emailErr;}?>
 	</div>
 	<div class="form-group">
-		<input name="pswd" style="width: 50%" type="password" class="form-control" id="pwd" placeholder="Password">
+		<input name="pswd" style="width: 80%" type="password" class="form-control" id="pwd" placeholder="Password">
 		<?php if(!empty($pswdErr)) { echo $pswdErr;}?>
 	</div>
 	<button type="submit" class="btn btn-success btn-lg">Submit</button>

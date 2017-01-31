@@ -1,5 +1,6 @@
 <?php session_start(); ?>
 <head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
     .error {color: #FF0000;}
 </style>
@@ -131,9 +132,13 @@ function cleanInput($data) {
 <!-- End PHP -->
 
 <!-- Title -->
-<h1 align="center">User Registration</h1>
-<hr><br>
-
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="../index.php">BCOE Voting</a>
+		</div>
+	</div>	
+</nav>
 <!-- Begin form -->
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <span id="registrationErr" class="error"><?php echo "<i>$registrationErr</i><br>";?></span>
