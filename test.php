@@ -1,6 +1,9 @@
 <?php 
 	session_start();
-	$_SESSION['title'] = "Success sucka!!";
+	require_once 'testInclude.php';
+	test();
+	test();
+	/*$_SESSION['title'] = "Success sucka!!";
 	// Test $SESSION variables on ajax post
 	// will vars hold their value?
 	require_once 'event/connDB.php';
@@ -35,7 +38,7 @@
 	$c = $d['voteCmt'];
 	echo "cmt: $c";
 
-	/*$x = array();
+	$x = array();
 	if(empty($x)) {
 		echo "x is empty<br>";
 	}

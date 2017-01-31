@@ -365,15 +365,6 @@
                                                 "pollType" => $pollType,
                                                 "dept" => $dept,
                                                 "effDate" => $effDate );
-
-                                /*$pollData['READ_ONLY'] = $READ_ONLY;
-                                $pollData['poll_id'] = $row["poll_id"];
-                                $pollData['deactDate'] = $row["deactDate"];
-                                $pollData['name'] = $row["name"];
-                                $pollData['pollType'] = $row["pollType"];
-                                $pollData['dept'] = $row["dept"];
-                                $pollData['effDate'] = $row["effDate"];
-                                */
                                 //echo "pollData: ";print_r($pollData);
                                 echo "<tr>
                                         <td>".
