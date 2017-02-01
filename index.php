@@ -60,7 +60,7 @@
                     $_SESSION['user_id'] = $id;
                     $_SESSION['userName'] = $name;
                     $_SESSION['title'] = $title;
-                    // IDLE_TIME_LIMIT set line 53
+                    // IDLE_TIME_LIMIT set 
                     //1200 seconds = 15 mins
                     $_SESSION['IDLE_TIME_LIMIT'] = $IDLE_TIME_LIMIT; 
                     $_SESSION['LAST_ACTIVITY'] = time();

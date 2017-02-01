@@ -1,111 +1,14 @@
 <?php 
     session_start();
-    
-    /*if(!isAdmin()) {
+
+    require_once "event/sessionHandling.php";
+    require_once "event/redirections.php";
+
+    if(!isAdmin()) {
         signOut();
     } else if(idleLimitReached()) {
         signOut();
     }
-    */
-
-    function idleLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-                if(isSessionExpired()) {
-                    return 1;
-                } else { return 0; }
-            } else { // Error must have occurred
-                    return 1; }
-        } else { // Error must have occurred 
-            return 1; }
-    } // End of isValidSession() 
-
-    function isAdmin() {
-        if(!empty($_SESSION['title'])) {
-            $ADMIN = "Administrator";
-
-            if($_SESSION['title'] !== $ADMIN) {
-                return 0;
-            } else return 1;
-        }
-    }
-
-    // Check for expired activity
-    function isSessionExpired() {
-        $lastActivity = $_SESSION['LAST_ACTIVITY'];
-        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
-        // Check if session has been active longer than IDLE_TIME_LIMIT
-        if(time() - $lastActivity >= $timeOut) {
-            return true;
-        } else { false; }   
-    }// End of isSesssionExpired()
-
-    function updateLastActivity() {
-        $_SESSION['LAST_ACTIVITY'] = time();
-        return;
-    }
-
-    function saveSessionVars() {
-        session_write_close();
-        return;
-    }
-
-    function signOut() {
-        // Destroy previous session
-        session_unset();
-        session_destroy();
-
-        // Begin new session
-        session_regenerate_id(true);
-        session_start();
-
-        // Save and redirect
-        saveSessionVars();
-        redirectToLogIn();
-    }
-    
-    function redirectToAddPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='add.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToVotePage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='vote.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToEditPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='edit.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToReviewPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='review.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToLogIn() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='../index.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-    
-/* Session verification ends here */ 
 ?>
 <head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -114,7 +17,6 @@
 </style>
 </head>
 <body>
-<!-- Start PHP -->
 <?php
 require_once 'event/connDB.php';
 #<!-- Define variables -->
@@ -251,6 +153,10 @@ function cleanInput($data) {
 		</ul>
 	</div>
 </nav>
+<!-- Title -->
+<h1 align="center">User Registration</h1>
+<hr><br>
+
 <!-- Begin form -->
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <span id="registrationErr" class="error"><?php echo "<i>$registrationErr</i><br>";?></span>
@@ -294,8 +200,16 @@ Re-enter password: <input type="password" id="pass2" name="pass2" value="<?php i
 <!-- Scripts begin here -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
-$(document).ready(function() {
-    setTitle();
+    $(document).ready(function() {
+        setTitle();
+        // Set interval to reload page for user authentication purposes
+        setInterval(reloadPage,1200000); //1200000 ms = 1200 s = 20 mins
+    }); // End of $(document).ready
+
+    // Redirect user to login page
+    $("#cancel").click(function() {
+        window.location.href = "../index.php";
+    });
 
     function setTitle() {
         title = <?php if($title) { echo json_encode($title); } else { echo 0; } ?>;
@@ -308,13 +222,10 @@ $(document).ready(function() {
             }
         } // End of if
     }; // End of setTitle()
-}); // End of $(document).ready
 
-// Redirect user to login page
-$("#cancel").click(function() {
-    window.location.href = "../index.php";
-});
-
-<!-- Scripts end here -->
+    function reloadPage() {
+        location.reload();
+    };
+// Script ends here
 </script>
 </body>

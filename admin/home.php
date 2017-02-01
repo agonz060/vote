@@ -1,115 +1,15 @@
-<?php 
+<?php // Session verification 
     session_start();
-
-    /*if(!isAdmin()) {
+    require_once "event/sessionHandling.php";
+    require_once "event/redirections.php";                                                                                                                                                                  
+    if(!isAdmin()) {
         signOut();
     } else if(idleLimitReached()) {
         signOut();
     }
-    */
-
-    function idleLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
-                if(isSessionExpired()) {
-                    return 1;
-                } else { return 0; }
-            } else { // Error must have occurred
-                    return 1; }
-        } else { // Error must have occurred 
-            return 1; }
-    } // End of isValidSession() 
-
-    function isAdmin() {
-        if(!empty($_SESSION['title'])) {
-            $ADMIN = "Administrator";
-
-            if($_SESSION['title'] !== $ADMIN) {
-                return 0;
-            } else return 1;
-        }
-    }
-
-    // Check for expired activity
-    function isSessionExpired() {
-        $lastActivity = $_SESSION['LAST_ACTIVITY'];
-        $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
-        // Check if session has been active longer than IDLE_TIME_LIMIT
-        if(time() - $lastActivity >= $timeOut) {
-            return true;
-        } else { false; }   
-    }// End of isSesssionExpired()
-
-    function updateLastActivity() {
-        $_SESSION['LAST_ACTIVITY'] = time();
-        return;
-    }
-
-    function saveSessionVars() {
-        session_write_close();
-        return;
-    }
-
-    function signOut() {
-        // Destroy previous session
-        session_unset();
-        session_destroy();
-
-        // Begin new session
-        session_regenerate_id(true);
-        session_start();
-
-        // Save and redirect
-        saveSessionVars();
-        redirectToLogIn();
-    }
-    
-    function redirectToAddPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='add.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToVotePage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='vote.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToEditPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='edit/editTable.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToReviewPage() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='edit/reviewTable.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-
-    function redirectToLogIn() {
-        $jsRedirect = "<script type='text/javascript' ";
-        $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
-        $jsRedirect .= "<script>location.href='../index.php'</script>";
-        echo $jsRedirect;
-        return;
-    }
-    
-/* Session verification ends here */ 
-?>
-
+ // End Session verification?>
 <?php
-    require_once 'event/connDB.php';
+    require_once 'event/connDB.php'; 
      /* $_SERVER(POST) starts here */
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         if(!empty($_POST['action'])) {
@@ -123,16 +23,16 @@
             if(!idleLimitReached()) {
                 $action = $_POST['action'];
                 if($action == $ADD) {
-                    updateAndSave();
+                    saveSessionVars();
                     redirectToAddPage();
                 } else if($action == $CREATE) {
-                    updateAndSave();
+                    saveSessionVars();
                     redirectToVotePage();
                 } else if($action == $EDIT) {
-                    updateAndSave();
+                    saveSessionVars();
                     redirectToEditPage();      
                 } else if($action == $REVIEW) {
-                    updateAndSave();
+                    saveSessionVars();
                     redirectToReviewPage();
                 } else if($action == $SIGNOUT) {
                     signOut();
@@ -144,11 +44,6 @@
             } // End of else
         } 
     } // End of $_SERVER['REQUEST_METHOD']
-
-    function updateAndSave() {
-        updateLastActivity();
-        saveSessionVars();
-    }
 /* $_SERVER(POST) ends here */
 ?>
 <body>
@@ -218,17 +113,17 @@
     <button name="action" value="add" class="button-add pure-button">Add User</button>
     <button name="action" value="signOut" class="button-signOut pure-button">Sign Out</button>
     </form>
-</div> <!-- End displaying menu buttons -->
+</div> 
+<!-- End displaying menu buttons -->
 <!-- Scripting begins -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>    
-<script>
-        $(document).ready(function() {
-            // Set interval to reload page for user authentication purposes
-            setInterval(reloadPage,1200000); //1200000 ms = 1200 s = 20 mins
-        });
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Set interval to reload page for user authentication purposes
+        setInterval(reloadPage,1200000); //1200000 ms = 1200 s = 20 mins
+    });
 
-        function reloadPage() {
-                location.reload();
-        };                 
+    function reloadPage() {
+        location.reload();
+    };                 
 </script> <!-- Scripting ends here -->
 </body> <!-- Document body ends here -->
