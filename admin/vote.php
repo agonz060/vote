@@ -76,6 +76,7 @@
 /* Session verification ends here */ 
 ?>
 <head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 .error {color: #FF0000;}
 </style>
@@ -197,15 +198,24 @@
 ?>
 
 <!-- HTML for page Voting page elements begins here --> 
-
-<!-- Display title of page -->
-<h1 align="center">Voting</h1>
-<hr> 
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="home.php">BCOE Voting</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li><a href="home.php">Home</a></li>
+			<li class="active"><a href="vote.php">Create Poll</a></li>
+			<li><a href="edit/editTable.php">Edit Poll</a></li>
+			<li><a href="edit/reviewTable">Review Poll</a></li>
+			<li><a href="add.php">Add User</a></li>
+		</ul>
+	</div>
+</nav>
 
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
-<p><?php var_dump($_POST); ?></p> 
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 
 <div id="votingInfo"></div>
@@ -364,7 +374,6 @@ Professors Name:
 <input type="button" value="Start" onclick="pollAction(1)">
 </p>
 </form>
-<p><?php var_dump($profCmts); ?></p>
 
 <!-- Javascript/Json/Jquery begins here -->		
 <!-- Load javascript sources -->

@@ -1,7 +1,7 @@
 <?php 
     session_start();
     
-    var_dump($_SESSION);
+    //var_dump($_SESSION);
 
     if(idleTimeLimitReached()) {
         signOut();
@@ -13,7 +13,7 @@
 
     function timeSinceLastActivity() {
         $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
+        //echo "Time since last activity: $t";
         return;
     }
 
@@ -178,7 +178,7 @@
     }
 ?>
 <head>
-<<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
     .button-home {
         text-align: center;

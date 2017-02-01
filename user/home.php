@@ -1,7 +1,6 @@
 <?php 
     session_start();
-    var_dump($_SESSION);
-    //echo 'one';
+    //var_dump($_SESSION);
     timeSinceLastActivity();
 
     if(idleLimitReached()) {
@@ -25,7 +24,7 @@
 
     function timeSinceLastActivity() {
         $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
+        //echo "Time since last activity: $t";
         return;
     }
     
