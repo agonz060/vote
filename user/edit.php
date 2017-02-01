@@ -179,6 +179,8 @@
 ?>
 <head>
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
 <style>
     .button-home {
         text-align: center;
@@ -207,13 +209,19 @@
 </style>
 </head>
 <body>
-    <form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <div id="menuDiv" align="center">
-        <button name="menu" value="home" class="button-home pure-button">Home</button> 
-        <button name="menu" value="review" class="button-review pure-button">Review votes</button>
-        <button name="menu" value="signOut" class="button-signOut pure-button">Sign out</button>
-    </div>
-    </form>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="home.php">BCOE Voting</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li><a href="home.php">Home</a></li>
+			<li class="active"><a href="edit.php">Edit Poll</a></l>
+			<li><a href="review.php">Review Poll</a></li>
+		</ul>
+	</div>
+</nav>
+    
     <table class="pure-table pure-table-bordered" align="center">
         <thead>
             <tr>
@@ -324,7 +332,6 @@
                                         }
                                         echo"
                                         <form method='post' id='editForm' action='$redirect'>
-                                            <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
                                             <button class='button-edit pure-button'>Edit</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
                                         </form>

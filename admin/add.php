@@ -148,7 +148,7 @@ function cleanInput($data) {
 			<li><a href="home.php">Home</a></li>
 			<li><a href="vote.php">Create Poll</a></li>
 			<li><a href="edit/editTable.php">Edit Poll</a></li>
-			<li><a href="edit/reviewTable">Review Poll</a></li>
+			<li><a href="edit/reviewTable.php">Review Poll</a></li>
 			<li class="active"><a href="add.php">Add User</a></li>
 		</ul>
 	</div>

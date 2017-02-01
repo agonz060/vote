@@ -32,7 +32,7 @@
 			<li><a href="../home.php">Home</a></li>
 			<li><a href="../vote.php">Create Poll</a></li>
 			<li><a href="editTable.php">Edit Poll</a></li>
-			<li class="active"><a href="reviewTable">Review Poll</a></li>
+			<li class="active"><a href="reviewTable.php">Review Poll</a></li>
 			<li><a href="../add.php">Add User</a></li>
 		</ul>
 	</div>
