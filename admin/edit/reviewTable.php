@@ -12,7 +12,6 @@
 ?>
 <html>
 <head>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 	.button-review {
@@ -39,14 +38,15 @@
 </nav>
 <!-- Last change here from 'require' -> 'require_once' -->
 <?php require_once "loadEditTable.php"; ?>
-<table class="pure-table pure-table-bordered" align="center">
+<div class="container">
+<table class="table table-responsive table-bordered table-hover" align="center">
 	<thead>
 		<tr>
 			<th>Title</th>
 			<th>Description</th>
-			<th>Vote End Date</th>
+			<th>Poll Start Date</th>
+			<th>Poll End Date</th>
 			<th>Date Modified</th>
-			<th>Date Deactivated</th>
 			<th>Results</th>
 		</tr>
 	</thead>
@@ -86,7 +86,7 @@
 						</td>
 						<td>
 							<form method='post' id='reviewForm' action='../event/results.php'>
-								<button class='button-review pure-button' name='poll_id' value='$poll_id'>Results</button>
+								<button class='btn btn-success' name='poll_id' value='$poll_id'>Results</button>
 								<input type='hidden' name='title' value='$title'>
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>
@@ -102,6 +102,7 @@
 		?>
 	</tbody>
 </table>
+</div>
 <!-- End of web page HTML -->
 <!-- Start script -->
 </body>

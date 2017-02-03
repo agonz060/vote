@@ -78,7 +78,7 @@
     .button-signOut {
         text-align: center;
         color: white;
-        background: rgb(102, 153, 153);
+        background: red;
         width: 160px;
     }
     .navbar {
@@ -107,15 +107,12 @@
 <!-- Display menu options -->
 <div id="menuButtons" align="center" >
     <form id="menuForm" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <button name="action" value="create" class="button-create pure-button">Create Poll</button> 
-    <button name="action" value="edit" class="button-edit pure-button">Edit Poll</button>
-    <button name="action" value="review" class="button-review pure-button">Review results</button>
-    <button name="action" value="add" class="button-add pure-button">Add User</button>
-    <button name="action" value="signOut" class="button-signOut pure-button">Sign Out</button>
+    <button name="action" value="signOut" class="btn btn-danger">Sign Out</button>
     </form>
 </div> 
 <!-- End displaying menu buttons -->
 <!-- Scripting begins -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         // Set interval to reload page for user authentication purposes

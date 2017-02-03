@@ -24,6 +24,7 @@
 ?>
 <html>
 <head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
 	.button-review {
@@ -39,7 +40,7 @@
 <button name="home" value="home" class="pure-button">Home</button>
 </form>
 <!-- End Menu options -->
-<table class="pure-table pure-table-bordered" align="center">
+<table class="table table-bordered" align="center">
 	<thead>
 		<tr>
 			<th>Title</th>
@@ -50,7 +51,7 @@
 			<th>Results</th>
 		</tr>
 	</thead>
-	<tbody>
+	<tbody class="table-hover">
 		<?php
 			// Only display inactive polls (polls that have a start date > current date) 
 			$selectCmd="Select * from Polls";
@@ -86,7 +87,7 @@
 						</td>
 						<td>
 							<form method='post' id='reviewForm' action='results.php'>
-								<button class='button-review pure-button' name='poll_id' value='$poll_id'>Results</button>
+								<button class='btn btn-success' name='poll_id' value='$poll_id'>Results</button>
 								<input type='hidden' name='title' value='$title'>
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>

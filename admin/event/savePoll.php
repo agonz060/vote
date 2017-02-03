@@ -106,16 +106,19 @@
 		} //else { echo "savePoll.php: error votingInfo not set"; }
 	        
         if(isset($_POST["reason"])) {
-            $reason = $_POST["reason"];
+		$reason = $_POST["reason"];
+		$reason = mysqli_real_escape_string($conn,$reason);
         } else { echo "savePoll.php: error reason not set"; }
     }
     
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
+	$title = mysqli_real_escape_string($conn,$title);
     } else { echo "savePoll.php: title not set\n"; }
 
     if(isset($pollData['descr'])) {
         $descr = $pollData['descr'];
+	$descr = mysqli_real_escape_string($conn,$descr);
     } else { echo "savePoll.php: description not set\n"; }
 
 
@@ -138,7 +141,8 @@
 
 
     if(isset($pollData['name'])) {
-        $name = $pollData['name'];
+	$name = $pollData['name'];
+	$name = mysqli_real_escape_string($conn,$name);
     } else { echo "savePoll.php: professor name not set\n"; }
 
 
@@ -157,12 +161,12 @@
 
     //echo "pollId set to 30\n";
     //$pollId = 36;
-	$name = $_SESSION['userName'];
+	$userName = $_SESSION['userName'];
     if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
 
-		$history=":edit:" . "$name" . ":" . date("Y-m-d") . ":" . $reason;
+		$history=":edit:" . "$userName" . ":" . date("Y-m-d") . ":" . $reason;
 		
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
@@ -177,7 +181,7 @@
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
 		// Update modification history
-        $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
+        $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";

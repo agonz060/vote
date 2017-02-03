@@ -11,18 +11,12 @@
     }
 /* Session verification ends here */ 
 ?>
-<head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<style>
-.error {color: #FF0000;}
-</style>
 <!-- Check php comment for functionality -->
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
 	$profCmts = array();
 ?>
-<body>
 <!-- PHP that processes user input begins here -->
 <?php
     require_once 'event/connDB.php';
@@ -129,7 +123,13 @@
 		return $data;
 	}
 ?>
-
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+.error {color: #FF0000;}
+</style>
+<body>
 <!-- HTML for page Voting page elements begins here --> 
 <nav class="navbar navbar-default">
 	<div class="container-fluid">
@@ -145,56 +145,63 @@
 		</ul>
 	</div>
 </nav>
-
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+<div class="container well">
+<form class="form-horizontal" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+	<div id="votingInfo"></div>
+	<h2 class="form-heading">Create Poll</h2>
+	<!-- Title of current vote -->
+	<div class="form-group">
+		<label for="title">Poll Title</label>
+		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
+		<span id="titleErr" class="help-block error"><?php echo "$errTitle";?></span>
+	</div>
 
-<div id="votingInfo"></div>
+	<!-- Descriptions/Comments about vote -->
+	<div class="form-group">
+		<label for="description">Description</label>
+		<textarea class="form-control" id="description" name="description" maxlength="300" rows="5" cols="70"><?php
+		if(!empty($_POST["description"])) {
+			echo htmlentities($_POST["description"]);
+		} 
+		# echo $description;
+	 ?></textarea>
+	</div>
+	<!-- Date vote becomes active/inactive -->
+	<div class="form-group">
+		<label for="dateActive">Poll Start Date</label>
+		<input type="text" class="form-control" name="dateActive" id="dateActive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateActive'])) { echo htmlentities ($_POST['dateActive']); } ?>" >
+		<span id="dateActErr" class="help-block error"><?php echo "$errActDate";?></span>
+	</div>
 
-<!-- Title of current vote -->
-<p>
-Title: <input type="text" id="title" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
-<span id="titleErr" class="error"><?php echo "$errTitle";?></span> <br>
-</p>
+	<div class="form-group">
+		<label for="dateDeactive">Poll End Date</label>
+		<input type="text" class="form-control" name="dateDeactive" id="dateDeactive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateDeactive'])) { echo htmlentities ($_POST['dateDeactive']); } ?>" >
+		<span id="dateDeactErr" class="help-block error"><?php echo "$errDeactDate";?></span>
+	</div>
 
-<!-- Descriptions/Comments about vote -->
-<p>
-Description: <br><textarea id="description" name="description" rows="5" cols="70">
-<?php
-	if(isset($_POST["description"])) {
-		echo htmlentities ($_POST["description"]);
-	} 
-	# echo $description;
- ?>
-</textarea>
-</p>
+	<div class="form-group">
+		<label for="effDate">Effective Date</label>
+		<input type="text" class="form-control" name="effDate" id="effDate" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['effDate'])) { echo htmlentities ($_POST['effDate']); } ?>" >
+		<span id="effDateErr" class="help-block error"><?php echo "$errEffDate";?></span>
+	</div>
+	<div class="form-group">
+		<label for="profName">Professor's Name</label>
+		<input type="text" class="form-control" name="profName" id="profName" placeholder="Professor's Full Name" value="<?php if(isset($_POST['profName'])) { echo htmlentities ($_POST['profName']); } ?>" >
+		<span id="errProfName" class="help-block error"><?php echo "$errProfName";?></span>
+	</div>
 
-<!-- Date vote becomes active/inactive -->
-<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ><span id="dateActErr" class ="error"><?php echo "$errActDate";?></span><br>
-</p>
-
-<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" >
-<span id="dateDeactErr" class ="error"><?php echo "$errDeactDate";?></span><br>
-</p>
-
-<p>Effective Date <input type="text" id="effDate" name="effDate" value="<?php if(isset($_POST['effDate'])) {echo htmlentities ($_POST['effDate']);} ?>" >
-<span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
-</p>
-<p>
-Professors Name:
-<input type="text" id="profName" value="<?php if(isset($_POST['profName'])) { echo htmlentities($_POST['profName']); }?>">
-<span id="profNameErr" class="error"><?php echo "$errProfName";?></span><br>
-</p>
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
-    <option value="Merrit">Merrit</option>
     <option value="Promotion">Promotion</option>
+    <!---
+    <option value="Merrit">Merrit</option>
     <option value="Reappointment">Reappointment</option>
     <option value="Fifth Year Review">Fifth Year Review</option>
     <option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
-
+    -->
 </select>
 </p>
 <p>Department: 
@@ -307,7 +314,8 @@ Professors Name:
 <input type="button" value="Start" onclick="pollAction(1)">
 </p>
 </form>
-
+</div>
+</body>
 <!-- Javascript/Json/Jquery begins here -->		
 <!-- Load javascript sources -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
@@ -577,4 +585,3 @@ $(function () {
 });
 </script>
 <!-- End of javascript/jquery -->
-</body>

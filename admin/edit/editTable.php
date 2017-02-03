@@ -13,7 +13,6 @@
 ?>
 <html>
 <head>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 	.button-edit {
@@ -45,14 +44,15 @@
 </nav>
 <!-- Last change here from 'require' -> 'require_once' -->
 <?php require_once "loadEditTable.php"; ?>
-<table class="pure-table pure-table-bordered" align="center">
+<div class="container">
+<table class="table table-responsive table-hover table-bordered" align="center">
 	<thead>
 		<tr>
 			<th>Title</th>
 			<th>Description</th>
-			<th>Vote End Date</th>
+			<th>Poll Start Date</th>
+			<th>Poll End Date</th>
 			<th>Date Modified</th>
-			<th>Date Deactivated</th>
 			<th>Edit/Delete</th>
 		</tr>
 	</thead>
@@ -92,7 +92,7 @@
 						</td>
 						<td>
 							<form method='post' id='editForm' action='../vote.php'>
-								<button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
+								<button type='submit' class='btn btn-success' name='poll_id' value='$poll_id'>Edit</button>
 								<input type='hidden' name='title' value='$title'>
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>
@@ -102,19 +102,20 @@
 								<input type='hidden' name='dept' value='$dept'>
 								<input type='hidden' name='effDate' value='$effDate'>
 							</form>
-							<button class='button-delete pure-button' value='$poll_id'>Delete</button> 	
+							<button id='delButton' class='btn btn-danger' value='$poll_id'>Delete</button> 	
 						</td>			
 					</tr>";
 			}
 		?>
 	</tbody>
 </table>
+</div>
 <!-- End of web page HTML -->
 <!-- Start script -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $(".button-delete").click(function() {
+        $("#delButton").click(function() {
             var confirmation = prompt("Type DELETE if you are sure you want to delete entry");
             if(confirmation == "DELETE") { 
                 var poll_id = $(this).val();        
