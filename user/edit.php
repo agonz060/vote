@@ -221,8 +221,8 @@
 		</ul>
 	</div>
 </nav>
-    
-    <table class="pure-table pure-table-bordered" align="center">
+   <div class="container"> 
+    <table class="table table-responsive table-hover table-bordered" align="center">
         <thead>
             <tr>
                 <th>Title</th>
@@ -319,7 +319,7 @@
                                                     $redirect = '../forms/reappointment.php';
                                                 } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
                                                     $redirect = '../forms/fifthYearAppraisal.php';
-                                                } else if($polltype == $FIFTH_YEAR_REVIEW) {
+                                                } else if($pollType == $FIFTH_YEAR_REVIEW) {
                                                     $redirect = '../forms/quinquennial.php';
                                                 }
                                             } // End of if( $title == ($ASSOC || $FULL) )
@@ -332,7 +332,7 @@
                                         }
                                         echo"
                                         <form method='post' id='editForm' action='$redirect'>
-                                            <button class='button-edit pure-button'>Edit</button>
+                                            <button class='btn btn-success'>Edit</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
                                         </form>
                                     </td>           
@@ -350,5 +350,6 @@
             // End of PHP ?>
         </tbody>
     </table>
+</div>
 </body>
 <!-- End of HTML body -->

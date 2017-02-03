@@ -313,13 +313,14 @@
 		</ul>
 	</div>
 </nav>
-    <table class="pure-table pure-table-bordered" align="center">
+<div class="container">
+    <table class="table table-responsive table-hover table-bordered" align="center">
         <thead>
             <tr>
                 <th>Regarding</th>
                 <th>Type of Poll</th>
                 <th>Poll End Date</th>
-                <th>Edit</th>
+                <th>View</th>
             </tr>
         </thead>
         <tbody>
@@ -431,7 +432,7 @@
                                         echo"
                                         <form method='post' id='editPoll_$poll_id' action='$redirect'>
                                             <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
-                                            <button class='button-view pure-button'>View</button>
+                                            <button class='btn btn-success'>View</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
                                             <input type='hidden' name='_voteData' value='$voteData'>
                                         </form>
@@ -450,5 +451,6 @@
             // End of PHP ?>
         </tbody>
     </table>
+</div>
 </body>
 <!-- End of HTML body -->
