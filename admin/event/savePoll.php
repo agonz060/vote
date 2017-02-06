@@ -7,7 +7,7 @@
         signOut();
     }
     */
-
+    //print_r($_POST);
     function idleLimitReached() {
         if(!(empty($_SESSION['LAST_ACTIVITY']))) {
             if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
@@ -82,7 +82,7 @@
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
-    $effDate = $pollType = $dept = $name = $reason = $sendFlag = "";
+    $effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
 	$emailInfo = $removeList = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
@@ -106,16 +106,19 @@
 		} //else { echo "savePoll.php: error votingInfo not set"; }
 	        
         if(isset($_POST["reason"])) {
-            $reason = $_POST["reason"];
+		$reason = $_POST["reason"];
+		$reason = mysqli_real_escape_string($conn,$reason);
         } else { echo "savePoll.php: error reason not set"; }
     }
     
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
+	$title = mysqli_real_escape_string($conn,$title);
     } else { echo "savePoll.php: title not set\n"; }
 
     if(isset($pollData['descr'])) {
         $descr = $pollData['descr'];
+	$descr = mysqli_real_escape_string($conn,$descr);
     } else { echo "savePoll.php: description not set\n"; }
 
 
@@ -138,13 +141,19 @@
 
 
     if(isset($pollData['name'])) {
-        $name = $pollData['name'];
+	$name = $pollData['name'];
+	$name = mysqli_real_escape_string($conn,$name);
     } else { echo "savePoll.php: professor name not set\n"; }
 
 
     if(isset($pollData['dept'])) {
         $dept = $pollData['dept'];
     } else { echo "savePoll.php: department not set\n"; }
+    
+    if(isset($pollData['emailCmt'])) {
+        $emailCmt = $pollData['emailCmt'];
+	$emailCmt = mysqli_real_escape_string($conn,$emailCmt);
+    } else { echo "savePoll.php: emailCmt not set\n"; }
 
 
     if(isset($pollData['pollId'])) {
@@ -157,12 +166,12 @@
 
     //echo "pollId set to 30\n";
     //$pollId = 36;
-	$name = $_SESSION['userName'];
+	$userName = $_SESSION['userName'];
     if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
 
-		$history=":edit:" . "$name" . ":" . date("Y-m-d") . ":" . $reason;
+		$history=":edit:" . "$userName" . ":" . date("Y-m-d") . ":" . $reason;
 		
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
@@ -177,7 +186,7 @@
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
 		// Update modification history
-        $history="create:" ."$name" . ":" . date("Y-m-d") . ":" . $reason; 
+        $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
         $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
@@ -365,8 +374,8 @@
         $mail->Subject = "Sent from vote.php";
         
         // Compose message body
-        $bodyMsg = "Comment: <br>" . $cmt . "<br>";
-        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your "; 
+        $bodyMsg = "<h1>Comment:</h1> <br>" . $cmt . "<br>";
+        $bodyMsg .= "<hr><br>Please follow the link to access your "; 
         $voteLink = "<a href='localhost/vote/index.php'>voting documents</a><br>";
         $bodyMsg .= $voteLink;
 
@@ -389,14 +398,14 @@
 
     if($sendFlag) { // Send email to all voters participating in poll
         // User info variables
-        $name = $cmt = $email = "";
-
+        $name = $email = "";
+	//$cmt = "";
         foreach($emailInfo as $userInfo) {
             $name = $userInfo["name"];
-            $cmt = $userInfo["comment"];
+            //$cmt = $userInfo["comment"];
             $email = $userInfo["email"];
 
-            sendEmail($name,$cmt,$email);
+            sendEmail($name,$emailCmt,$email);
         }   
     } // End of sending emails
 

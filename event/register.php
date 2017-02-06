@@ -1,12 +1,5 @@
 <?php session_start(); ?>
-<head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<style>
-    .error {color: #FF0000;}
-</style>
-</head>
-<body>
-<!-- Start PHP -->
+
 <?php
 
 require_once 'connDB.php';
@@ -130,6 +123,15 @@ function cleanInput($data) {
 
 ?>
 <!-- End PHP -->
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+    .error {color: #FF0000;}
+</style>
+</head>
+<body>
+<!-- Start PHP -->
 
 <!-- Title -->
 <nav class="navbar navbar-default">
@@ -140,44 +142,52 @@ function cleanInput($data) {
 	</div>	
 </nav>
 <!-- Begin form -->
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<span id="registrationErr" class="error"><?php echo "<i>$registrationErr</i><br>";?></span>
-<!-- Enter name and email -->
-First Name: <input type="text" id="firstName" name="firstName" value="<?php if(isset($_POST['firstName'])) { echo htmlentities($_POST['firstName']); }?>">
-<span id="fNameError" class="error"><?php echo "$errFirstName";?></span>
-<br><br>
-
-Last Name: <input type="text" id="lastName" name="lastName" value="<?php if(isset($_POST['lastName'])) { echo htmlentities($_POST['lastName']); }?>">
-<span id="lNameError" class="error"><?php echo "$errLastName";?></span>
-<br><br>
+<div style="width: 30%" class="container well">
+<form class="form-signin" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+	<h2 class="form-signin-heading">Register</h2>
+	<div class="form-group">
+		<?php if(!empty($registrationErr)) { echo "<p class='error'><i>$registrationErr</i><p>"; }?>
+		<input class="form-control" name="firstName" id="firstName" placeholder="First Name" value="<?php if(isset($_POST['firstName'])) { echo htmlentities($_POST['firstName']); }?>"> 
+		<?php if(!empty($errFirstName)) { echo "<p class='error'><i>$errFirstName</i><p>"; }?>
+	</div>
+	<div class="form-group">
+		 <input class="form-control" name="lastName" id="lastName" placeholder="Last Name" value="<?php if(isset($_POST['lastName'])) { echo htmlentities($_POST['lastName']); }?>"> 
+		<?php if(!empty($errLastName)) { echo "<p class='error'><i>$errLastName</i><p>"; }?>
+	</div>
 
 <!-- Select title -->
-Title: 
-<input type="radio" name="title" id="Assistant Professor" value="Assistant Professor">Assistant Professor
-<input type="radio" name="title" id="Associate Professor" value="Associate Professor">Associate Professor
-<input type="radio" name="title" id="Full Professor" value="Full Professor">Full Professor
-<span id="titleError" class="error"><?php echo "$errTitle";?></span>
-<br><br>
-
-E-mail: <input type="text" id="email" name="email" value="<?php if(isset($_POST['email'])) { echo htmlentities($_POST['email']); }?>">
-<span id="emailError" class="error"><?php echo "$errEmail";?></span>
-<br><br>
-
-Password: <input type="password" id="pass1" name="pass1" value="<?php if(isset($_POST['pass1'])) { echo htmlentities($_POST['pass1']); }?>">
-<span id="passError1" class="error"><?php echo "$errPass1";?></span>
-<br><br>
-
-Re-enter password: <input type="password" id="pass2" name="pass2" value="<?php if(isset($_POST['pass2'])) { $_POST['pass2']; }?>">
-<span id="passError2" class="error"><?php echo "$errPass2";?></span>
-<br><br>
-
+	<div class="form-group"> 
+		<div class="radio">
+		<label><input type="radio" name="title" id="Assistant Professor" value="Assistant Professor">Assistant Professor</label>
+		</div>
+		<div class="radio">
+		<label><input type="radio" name="title" id="Associate Professor" value="Associate Professor">Associate Professor</label>
+		</div>
+		<div class="radio">
+		<label>	<input type="radio" name="title" id="Full Professor" value="Full Professor">Full Professor</label>
+		<div class="radio">
+		<?php if(!empty($errTitle)) { echo "<p class='error'><i>$errTitle</i><p>"; }?>
+	</div>
+	<div class="form-group">
+		 <input class="form-control" name="email" id="email" placeholder="Email" value="<?php if(isset($_POST['email'])) { echo htmlentities($_POST['email']); }?>"> 
+		<?php if(!empty($errEmail)) { echo "<p class='error'><i>$errEmail</i><p>"; }?>
+	</div>
+	<div class="form-group">
+		 <input class="form-control" type="password" name="pass1" id="pass1" placeholder="Enter Password"> 
+		<?php if(!empty($errPass1)) { echo "<p class='error'><i>$errPass1</i><p>"; }?>
+	</div>
+	<div class="form-group">
+		 <input class="form-control" type="password" name="pass2" id="pass2" placeholder="Confirm Password"> 
+		 <?php if(!empty($errPass2)) { echo "<p class='error'><i>$errPass2</i><p>"; }?>
+	</div>
 <!-- Submit information if all required input is valid -->
-<input type="button" id="cancel" value="Cancel">
-<input type="submit" id="createUser" value="Submit">
-
+<button type="reset" name="cancel" id="cancel" class="btn btn-danger"value="Cancel">Cancel</button>
+<button type="submit" class="btn btn-success"  value="Submit">Submit</button<
 <!-- Form ends here -->
 </form>
-
+</div>
+</body>
+</html>
 <!-- Scripts begin here -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
@@ -196,7 +206,8 @@ $(document).ready(function() {
 		} // End of if
 	}; // End of setTitle()
 }); // End of $(document).ready
-
+</script>
+<script type="text/javascript">
 // Redirect user to login page
 $("#cancel").click(function() {
     window.location.href = "../index.php";
@@ -204,4 +215,3 @@ $("#cancel").click(function() {
 
 <!-- Scripts end here -->
 </script>
-</body>

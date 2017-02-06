@@ -104,7 +104,6 @@
 ?>
 <html>
 <head>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 <style></style>
@@ -124,7 +123,8 @@
 		</ul>
 	</div>
 </nav>
-<table class="pure-table pure-table-bordered" align="center">
+<div class="container">
+<table class="table table-responsive table-hover table-bordered" align="center">
 	<thead>
 		<tr>
 			<th>
@@ -149,5 +149,6 @@
 	?>
 	</tbody>
 </table>
+</div>
 </body>
 </html>

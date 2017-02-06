@@ -11,16 +11,15 @@
     }
 /* Session verification ends here */ 
 ?>
-<head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<style>
-.error {color: #FF0000;}
-</style>
+<!-- Check php comment for functionality -->
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
 	$profCmts = array();
 
+?>
+<!-- PHP that processes user input begins here -->
+<?php
     require_once 'event/connDB.php';
     date_default_timezone_set('America/Los_Angeles');
     
@@ -125,6 +124,13 @@
 		return $data;
 	}
 ?>
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+.error {color: #FF0000;}
+</style>
+</head>
 <body>
 <!-- HTML for page Voting page elements begins here --> 
 <nav class="navbar navbar-default">
@@ -141,179 +147,171 @@
 		</ul>
 	</div>
 </nav>
-
 <!-- Form input allows the user to cancel current form data, save the data, -->
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+<div class="container well">
+<form class="form-horizontal" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+	<div id="votingInfo"></div>
+	<h2 class="form-heading">Create Poll</h2>
+	<!-- Title of current vote -->
+	<div class="form-group">
+		<label for="title">Poll Title</label>
+		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
+		<span id="titleErr" class="help-block error"><?php echo "$errTitle";?></span>
+	</div>
 
-<div id="votingInfo"></div>
+	<!-- Descriptions/Comments about vote -->
+	<div class="form-group">
+		<label for="description">Description</label>
+		<textarea class="form-control" id="description" name="description" maxlength="300" rows="5" cols="70"><?php
+		if(!empty($_POST["description"])) {
+			echo htmlentities($_POST["description"]);
+		} 
+		# echo $description;
+	 ?></textarea>
+	</div>
+	<!-- Date vote becomes active/inactive -->
+	<div class="form-group">
+		<label for="dateActive">Poll Start Date</label>
+		<input type="text" class="form-control" name="dateActive" id="dateActive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateActive'])) { echo htmlentities ($_POST['dateActive']); } ?>" >
+		<span id="dateActErr" class="help-block error"><?php echo "$errActDate";?></span>
+	</div>
 
-<!-- Title of current vote -->
-<p>
-Title: <input type="text" id="title" name="title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>"/>
-<span id="titleErr" class="error"><?php echo "$errTitle";?></span> <br>
-</p>
+	<div class="form-group">
+		<label for="dateDeactive">Poll End Date</label>
+		<input type="text" class="form-control" name="dateDeactive" id="dateDeactive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateDeactive'])) { echo htmlentities ($_POST['dateDeactive']); } ?>" >
+		<span id="dateDeactErr" class="help-block error"><?php echo "$errDeactDate";?></span>
+	</div>
 
-<!-- Descriptions/Comments about vote -->
-<p>
-Description: <br><textarea id="description" name="description" rows="5" cols="70">
-<?php
-	if(isset($_POST["description"])) {
-		echo htmlentities ($_POST["description"]);
-	} 
-	# echo $description;
- ?>
-</textarea>
-</p>
+	<div class="form-group">
+		<label for="effDate">Effective Date</label>
+		<input type="text" class="form-control" name="effDate" id="effDate" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['effDate'])) { echo htmlentities ($_POST['effDate']); } ?>" >
+		<span id="effDateErr" class="help-block error"><?php echo "$errEffDate";?></span>
+	</div>
+	<div class="form-group">
+		<label for="profName">Professor's Name</label>
+		<input type="text" class="form-control" name="profName" id="profName" placeholder="Professor's Full Name" value="<?php if(isset($_POST['profName'])) { echo htmlentities ($_POST['profName']); } ?>" >
+		<span id="profNameErr" class="help-block error"><?php echo "$errProfName";?></span>
+	</div>
+	<div class="form-group">
+		<label for="pollType">Poll Type</label>
+		<select class="form-control" id="pollType" name="pollType">
+    			<option value="Promotion">Promotion</option>
+    			<!---
+    			<option value="Merrit">Merrit</option>
+    			<option value="Reappointment">Reappointment</option>
+    			<option value="Fifth Year Review">Fifth Year Review</option>
+    			<option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
+    			-->
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="dept">Department</label>
+		<select class="form-control" id="dept" name="dept">
+    			<option>Computer Engineering</option>
+    			<option>Electrical Engineering</option>
+    			<option>Mechanical Engineering</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="emailCmt">Email</label>
+		<textarea class="form-control" maxlength="500" name="emailCmt" id="emailCmt" rows="5" cols="70"></textarea>
+	</div>
+	<!-- Begin professor selection -->
+	<label for="addProfessors">Add Professors to Poll</label>
+	<div class="form-inline" name="addProfessors">
+	<div class="form-group">
+		<!-- Selection displays the names and titles of professors -->
+		<select multiple class="form-control" id="profSel" size="20" ondblclick="addToSelected()">
+		<?php
+		$selectCmd = "SELECT user_id, fName, lName, title FROM Users";
 
-<!-- Date vote becomes active/inactive -->
-<p>Date Active <input type="text" id="dateActive" name="dateActive" value="<?php if(isset($_POST['dateActive'])) {echo htmlentities ($_POST['dateActive']);} ?>" ><span id="dateActErr" class ="error"><?php echo "$errActDate";?></span><br>
-</p>
+		$result = $conn->query($selectCmd);
 
-<p>Date Deactive <input type="text" id="dateDeactive" name="dateDeactive" value="<?php if(isset($_POST['dateDeactive'])) {echo htmlentities ($_POST['dateDeactive']);} ?>" >
-<span id="dateDeactErr" class ="error"><?php echo "$errDeactDate";?></span><br>
-</p>
-
-<p>Effective Date <input type="text" id="effDate" name="effDate" value="<?php if(isset($_POST['effDate'])) {echo htmlentities ($_POST['effDate']);} ?>" >
-<span id="effDateErr" class="error"><?php echo "$errEffDate";?></span><br>
-</p>
-<p>
-Professor's Name:
-<input type="text" id="profName" value="<?php if(isset($_POST['profName'])) { echo htmlentities($_POST['profName']); }?>">
-<span id="profNameErr" class="error"><?php echo "$errProfName";?></span><br>
-</p>
-<p>
-<!-- 
-Professor's Title: 
-<select id="profTitle" name="profTitle" class="selector">
-    <option value="Assistant Professor">Assistant Professor</option>
-    <option value="Associate Professor">Associate Professor</option>
-    <option value="Full Professor">Full Professor</option>
-</select>
-</p>
--->
-<p>Poll Type: 
-<select id="pollType" name="pollType" class="selector">
-    <option value="Promotion">Promotion</option>
-    <!-- <option value="Reappointment">Reappointment</option>
-    <option value="Merrit">Merrit</option>
-    <option value="Fifth Year Review">Fifth Year Review</option>
-    <option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
-    -->
-</select>
-</p>
-<p>Department: 
-<select id="dept" name="dept" class="selector">
-    <option>Computer Engineering</option>
-    <option>Electrical Engineering</option>
-    <option>Mechanical Engineering</option>
-</select>
-</p>
-<!-- Begin professor selection -->
-<table style="width:30%">
-<tr>
-	<td>Professors</td>
-	<td>Participating Professors</td>
-	<td>Comments</td>
-</tr>
-
-<tr>
-	<td>
-	<!-- Selection displays the names and titles of professors -->
-	<select id="profSel" size="20" ondblclick="addToSelected()">
-	<?php
-        $selectCmd = "SELECT user_id, fName, lName, title FROM Users";
-
-        $result = $conn->query($selectCmd);
-
-		# Variables used to store a professors information
-		$firstName = $lastName = $title = $email = "";
-		$fullName = $selection = "";
-		
-		# Store results from database for displaying 
-		while($row = $result->fetch_assoc()) {
-			$profId = $row["user_id"];
-			$firstName = $row["fName"];
-			$lastName = $row["lName"];
-			$title = $row["title"];
-			$fullName = $firstName." ".$lastName;
-			$selection = " ".$fullName." : ".$title." ";
+			# Variables used to store a professors information
+			$firstName = $lastName = $title = $email = "";
+			$fullName = $selection = "";
 			
-			echo "<option  value='$fullName'>".$selection."</option>";	
-			
-			// Store a mapping of professor names to professor id's 
-			// for quicker storage later on
-			$profId = array($fullName => $profId);
-			$profIds = array_merge($profIds, $profId);
-		}
-	?>
-	</select>
-	</td>
-	
-	<!-- Selection displays list of double clicked (selected) professors -->
-	<td>
-	<select id="selected" size="20" >
-	<?php 
-		if(!empty($pollId)) {
-			// Select the first name and last name of all professors participating in the current poll
-			$selectCmd = "SELECT Users.fName, Users.lName FROM Voters INNER JOIN Users";
-			$selectCmd = $selectCmd." ON Users.user_id=Voters.user_id WHERE Voters.poll_id=$pollId";
-			$result = $conn->query($selectCmd);
-			
-			
-			// Execute sql command and loop through results	
+			# Store results from database for displaying 
 			while($row = $result->fetch_assoc()) {
-				// Store basic professor information
-				$name = $row["fName"];
-				$name = $name. " ".$row["lName"];
+				$profId = $row["user_id"];
+				$firstName = $row["fName"];
+				$lastName = $row["lName"];
+				$title = $row["title"];
+				$fullName = $firstName." ".$lastName;
+				$selection = " ".$fullName." : ".$title." ";
 				
-				// Store professor comments using professors name as key
-				$prof = array($name => "");
-				$profCmts = array_merge($profCmts, $prof);
-
-				// Display voting professors name
-				echo "<option value='$name'>".$name."</option>";
+				echo "<option  value='$fullName'>".$selection."</option>";	
 				
+				// Store a mapping of professor names to professor id's 
+				// for quicker storage later on
+				$profId = array($fullName => $profId);
+				$profIds = array_merge($profIds, $profId);
 			}
-			
-			// Select all the professors id's and comments associated with "pollId"
-			$selectCmd = "SELECT user_id, comment FROM Voters WHERE Voters.poll_id=$pollId";
-			$result = $conn->query($selectCmd);
-			while($row = $result->fetch_assoc()) {
-				$id = $row["user_id"];
-				$cmt = $row["comment"];
-			
-				// Retreive professors name using the professors id	
-				// Then store comment associated with professor
-				$profName = array_search($id, $profIds); 
-				$profCmts[$profName] = $cmt;
-			}
-			// Close connection to db
-			mysqli_close($conn);
-		}
-	?>
-	</select>
-	</td>
-	
-	<td>
-	<span class="error">
-	<p id="result" name="result"></p>
-	</span>
-	<textarea id="profCmtBox" name="profCmtBox" rows="3" cols="20"></textarea> 
-	<input type="button" id="remove" name="remove" value="Remove" onclick="removeFromSelected()">
-	<input type="button" id="saveCmt" name="saveCmt" value="Save" onclick="saveProfCmt()">  	
-	</td>
-</tr>
-</table>
+		?>
+		</select>
+	</div>
+	<div class="form-group">	
+		<!-- Selection displays list of double clicked (selected) professors -->
+		<select multiple class="form-control"  id="selected" size="20" >
+		<?php 
+			if(!empty($pollId)) {
+				// Select the first name and last name of all professors participating in the current poll
+				$selectCmd = "SELECT Users.fName, Users.lName FROM Voters INNER JOIN Users";
+				$selectCmd = $selectCmd." ON Users.user_id=Voters.user_id WHERE Voters.poll_id=$pollId";
+				$result = $conn->query($selectCmd);
+				
+				
+				// Execute sql command and loop through results	
+				while($row = $result->fetch_assoc()) {
+					// Store basic professor information
+					$name = $row["fName"];
+					$name = $name. " ".$row["lName"];
+					
+					// Store professor comments using professors name as key
+					$prof = array($name => "");
+					$profCmts = array_merge($profCmts, $prof);
 
-<p>
-<a href="home.php "><input type="button" value="Cancel"></a>
-<input type="button" value="Save" onclick="pollAction(0)">
-<input type="button" value="Start" onclick="pollAction(1)">
-</p>
+					// Display voting professors name
+					echo "<option value='$name'>".$name."</option>";
+					
+				}
+				
+				// Select all the professors id's and comments associated with "pollId"
+				$selectCmd = "SELECT user_id, comment FROM Voters WHERE Voters.poll_id=$pollId";
+				$result = $conn->query($selectCmd);
+				while($row = $result->fetch_assoc()) {
+					$id = $row["user_id"];
+					$cmt = $row["comment"];
+				
+					// Retreive professors name using the professors id	
+					// Then store comment associated with professor
+					$profName = array_search($id, $profIds); 
+					$profCmts[$profName] = $cmt;
+				}
+				// Close connection to db
+				mysqli_close($conn);
+			}
+		?>
+		</select>
+			
+	</div>
+	</div>
+	<div class="form-group">
+		<a href="home.php"><button type="button" class="btn btn-danger" value="Cancel">Cancel</button></a>
+		<button type="button" class="btn btn-primary" value="Save" onclick="pollAction(0)">Save</button>
+		<button type="button" class="btn btn-success" value="Start" onclick="pollAction(1)">Start</button>
+	</div>
+	<div class="form-group">
+		<label for="profCmtBox">Comments</label>
+		<textarea class="form-control" id="profCmtBox" name="profCmtBox"></textarea> 
+		<input type="button" id="remove" name="remove" value="Remove" onclick="removeFromSelected()">
+		<input type="button" id="saveCmt" name="saveCmt" value="Save" onclick="saveProfCmt()">  
+	</div>
 </form>
-
+</div>
+</body>
 <!-- Javascript/Json/Jquery begins here -->		
 <!-- Load javascript sources -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>	
@@ -436,7 +434,8 @@ function pollAction(sendFlag) {
 	var effDate = $('#effDate').val();
 	var pollType = $('#pollType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
-	
+	var emailCmt = $('#emailCmt').val();
+		
 	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
 	var validPollType = validDept = validData = 0;
     var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
@@ -483,7 +482,8 @@ function pollAction(sendFlag) {
                         deactDate: dateDeactive,
                         effDate: effDate,
                         pollType: pollType,
-                        dept: dept,
+			dept: dept,
+			emailCmt: emailCmt,
                         name: profName, 
                     	sendFlag: sendFlag };
         
@@ -583,4 +583,3 @@ $(function () {
 });
 </script>
 <!-- End of javascript/jquery -->
-</body>
