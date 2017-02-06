@@ -16,15 +16,11 @@
 <style>
 .error {color: #FF0000;}
 </style>
-<!-- Check php comment for functionality -->
 <?php #This sets global variables 
 	$pollId = "";
 	$profIds = array();
 	$profCmts = array();
-?>
-<body>
-<!-- PHP that processes user input begins here -->
-<?php
+
     require_once 'event/connDB.php';
     date_default_timezone_set('America/Los_Angeles');
     
@@ -120,7 +116,7 @@
         if(!empty($_POST["dept"])) {
         	$dept = cleanInput($_POST["dept"]);
         } 
-	}
+	} // End of SERVER POST capture
 
 	function cleanInput($data) {
 		$data = trim($data);
@@ -129,7 +125,7 @@
 		return $data;
 	}
 ?>
-
+<body>
 <!-- HTML for page Voting page elements begins here --> 
 <nav class="navbar navbar-default">
 	<div class="container-fluid">
@@ -199,12 +195,12 @@ Professor's Title:
 -->
 <p>Poll Type: 
 <select id="pollType" name="pollType" class="selector">
-    <option value="Merrit">Merrit</option>
     <option value="Promotion">Promotion</option>
-    <option value="Reappointment">Reappointment</option>
+    <!-- <option value="Reappointment">Reappointment</option>
+    <option value="Merrit">Merrit</option>
     <option value="Fifth Year Review">Fifth Year Review</option>
     <option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
-
+    -->
 </select>
 </p>
 <p>Department: 

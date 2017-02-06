@@ -1,1 +1,0 @@
-dbError|i:0;userExists|i:0;fNameErr|i:0;lNameErr|i:0;emailErr|i:0;regErr|s:50:"Error in addUser.php: could not execute addUserCmd";userCreated|i:1;
