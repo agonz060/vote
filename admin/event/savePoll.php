@@ -7,7 +7,7 @@
         signOut();
     }
     */
-
+    //print_r($_POST);
     function idleLimitReached() {
         if(!(empty($_SESSION['LAST_ACTIVITY']))) {
             if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
@@ -82,7 +82,7 @@
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
-    $effDate = $pollType = $dept = $name = $reason = $sendFlag = "";
+    $effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
 	$emailInfo = $removeList = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
@@ -149,6 +149,11 @@
     if(isset($pollData['dept'])) {
         $dept = $pollData['dept'];
     } else { echo "savePoll.php: department not set\n"; }
+    
+    if(isset($pollData['emailCmt'])) {
+        $emailCmt = $pollData['emailCmt'];
+	$emailCmt = mysqli_real_escape_string($conn,$emailCmt);
+    } else { echo "savePoll.php: emailCmt not set\n"; }
 
 
     if(isset($pollData['pollId'])) {
@@ -369,8 +374,8 @@
         $mail->Subject = "Sent from vote.php";
         
         // Compose message body
-        $bodyMsg = "Comment: <br>" . $cmt . "<br>";
-        $bodyMsg .= "<hr><br><h1>Success</h1><br><hr><br>Please follow the link to access your "; 
+        $bodyMsg = "<h1>Comment:</h1> <br>" . $cmt . "<br>";
+        $bodyMsg .= "<hr><br>Please follow the link to access your "; 
         $voteLink = "<a href='localhost/vote/index.php'>voting documents</a><br>";
         $bodyMsg .= $voteLink;
 
@@ -393,14 +398,14 @@
 
     if($sendFlag) { // Send email to all voters participating in poll
         // User info variables
-        $name = $cmt = $email = "";
-
+        $name = $email = "";
+	//$cmt = "";
         foreach($emailInfo as $userInfo) {
             $name = $userInfo["name"];
-            $cmt = $userInfo["comment"];
+            //$cmt = $userInfo["comment"];
             $email = $userInfo["email"];
 
-            sendEmail($name,$cmt,$email);
+            sendEmail($name,$emailCmt,$email);
         }   
     } // End of sending emails
 

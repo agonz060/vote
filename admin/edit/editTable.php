@@ -14,18 +14,6 @@
 <html>
 <head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<style>
-	.button-edit {
-		color: white;
-		background: rgb(28,184,65); 
-		width: 80px;
-	}
-	.button-delete {
-		color: white;
-		background: rgb(202,60,60);
-		width: 80px;
-	}
-</style>
 </head>
 <body>
 <nav class="navbar navbar-default">
@@ -102,7 +90,7 @@
 								<input type='hidden' name='dept' value='$dept'>
 								<input type='hidden' name='effDate' value='$effDate'>
 							</form>
-							<button id='delButton' class='btn btn-danger' value='$poll_id'>Delete</button> 	
+							<button type='button' class='btn btn-danger delButton' value='$poll_id'>Delete</button> 	
 						</td>			
 					</tr>";
 			}
@@ -115,7 +103,7 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#delButton").click(function() {
+        $(".delButton").click(function() {
             var confirmation = prompt("Type DELETE if you are sure you want to delete entry");
             if(confirmation == "DELETE") { 
                 var poll_id = $(this).val();        
