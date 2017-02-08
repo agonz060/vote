@@ -31,7 +31,7 @@
 	
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
-        print_r($_POST);
+        //print_r($_POST);
 		# Check for pollId
 		# If pollId is set then it is an edit
 		# Initialize all values if edit
