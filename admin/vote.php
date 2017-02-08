@@ -16,6 +16,7 @@
 	$pollId = "";
 	$profIds = array();
 	$profCmts = array();
+
 ?>
 <!-- PHP that processes user input begins here -->
 <?php
@@ -114,7 +115,7 @@
         if(!empty($_POST["dept"])) {
         	$dept = cleanInput($_POST["dept"]);
         } 
-	}
+	} // End of SERVER POST capture
 
 	function cleanInput($data) {
 		$data = trim($data);
@@ -129,6 +130,7 @@
 <style>
 .error {color: #FF0000;}
 </style>
+</head>
 <body>
 <!-- HTML for page Voting page elements begins here --> 
 <nav class="navbar navbar-default">

@@ -345,8 +345,8 @@
         $mail->SMTPAuth = true;
 
         // Enter credentials
-        $mail->Username = "benderthesender@gmail.com";
-        $mail->Password = "bendSend1";
+        $mail->Username = "bcoevotingnotification@gmail.com";
+        $mail->Password = "compSci99";
 
         // If SMTP requires TLS encryption then set it
         $mail->SMTPSecure = "tls";
@@ -355,15 +355,15 @@
         $mail->Port = 587;
 
         //From email address and name
-        $mail->From = "benderthesender@gmail.com";
-        $mail->FromName = "Armando Gonzalez";
+        $mail->From = "bcoevotingnotification@gmail.com";
+        $mail->FromName = "BCOE Voting";
 
         //To address and name
         $mail->addAddress($email, $name);
         //$mail->addAddress("recepient1@example.com"); //Recipient name is optional
 
         //Address to which recipient will reply
-        $mail->addReplyTo("agonztest@gmail.com", "Reply");
+        $mail->addReplyTo("bcoevotingnotification@gmail.com", "Reply");
 
         //CC and BCC
         //$mail->addCC("cc@example.com");
@@ -381,13 +381,13 @@
 
         $mail->Body = $bodyMsg;
         //$mail->AltBody = "Testing plain text body of a message sent from a script";
-	$mail->SMTPOptions = array(
+	/*$mail->SMTPOptions = array(
 		'ssl' => array (
 			'verify_peer' => false,
 			'verify_peer_name' => false,
 			'allow_self_signed' => true
 		)
-	);
+	);*/
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;
