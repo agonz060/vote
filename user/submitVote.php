@@ -1,7 +1,5 @@
 <?php 
     session_start();    
-?>
-<?php
     require_once '../event/connDB.php';
     // Vote and poll variables
     $voteData = $pollData = "";
@@ -43,23 +41,81 @@
             assistantSubmit($v,$p);
         } else if($title == $ASSOC || $title == $FULL) {
             if($pollType == $PROMOTION) {
-                associatePromoSubmit($v,$p);
+                #associatePromoSubmit($v,$p);
             } else if($pollType == $REAPPOINTMENT) {
                 //reappointmentSubmit($v,$p);
             } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
-                //fifthYrAppraisalSubmit($v,$p);
+                fifthYrAppraisalSubmit($v,$p);
             } else if($polltype == $FIFTH_YEAR_REVIEW) {
                 //fifthYrReviewSubmit($v,$p);
             }
         }
     }
+
+    function fifthYrAppraisalSubmit(&$v,&$p) {
+        $error = updateFifthYrAppraisalTable($v,$p);
+        if(!$error) {
+            updateVotersTable($p);
+        } 
+    }
+
     function associatePromoSubmit(&$v,&$p) {
         $error = updateAssociatePromoTable($v,$p);
         if(!$error) {
             updateVotersTable($p);
-        } else { // Something went wrong while updating assistant data table
-            $errorMsg = "Something went wrong while updating Associate_Promotion_Data table";
+        } 
+    }
+
+    function updateFifthYrAppraisalTable($v,&$p) {
+        //print_r($v); print_r($p);
+        global $conn;
+        $poll_id = $user_id = $deactDate = $vote = "";
+        $teachingCmt = $researchCmt = $pubServiceCmt = "";
+
+        if(!empty($p['poll_id'])) {
+            $poll_id = $p['poll_id'];
+        }
+        if(!empty($p['deactDate'])) {
+            $deactDate = $p['deactDate'];
+        }
+        if(!empty($_SESSION['user_id'])) {
+            $user_id = $_SESSION['user_id'];
+        }
+        if(!empty($v['vote'])) {
+            $vote = $v['vote'];
+        }
+        if(!empty($v['teachingCmts'])) {
+            $teachingCmts = $v['teachingCmts'];
+            $teachingCmts = mysqli_real_escape_string($conn,$teachingCmts);
+        }
+        if(!empty($v['researchCmts'])) {
+            $researchCmts = $v['researchCmts'];
+            $researchCmts = mysqli_real_escape_string($conn,$researchCmts);
+        }
+        if(!empty($v['pubServiceCmts'])) {
+            $pubServiceCmts = $v['pubServiceCmts'];
+            $pubServiceCmts = mysqli_real_escape_string($conn,$pubServiceCmts);
+        }
+
+        if(!dataExists($p)) {
+            if(!isPollExpired($deactDate)) {
+                $INSERTCMD = "INSERT INTO Fifth_Year_Appraisal_Data";
+                $INSERTCMD .= "(poll_id,user_id,vote,teachingCmts,researchCmts,pubServiceCmts)";
+                $INSERTCMD .= "VALUES('$poll_id','$user_id','$vote','$teachingCmts','$researchCmts','$pubServiceCmts')";
+
+                $result = mysqli_query($conn,$INSERTCMD);
+                if(!$result) { // Error executing $INSERTCMD
+                    $errorMsg = "Could not execute: $INSERTCMD while in";
+                    $errorMsg .= " updateFifthYrAppraisalTable(...)";
+                    echo $errorMsg;
+                    return 1; // indicates error has occurred
+                } else { return 0; } // End of successful insert into Fifth_Year_Appraisal_Data table
+            } 
+        } else { // Error duplicate entry, only one submission allowed
+            $errorMsg = "Dual submission encountered. Each participating voter";
+            $errorMsg .= " may cast a vote once per poll.";
             echo $errorMsg;
+            return 1; // Indicates error has occured
         }
     }
 
@@ -193,7 +249,6 @@
             return true;
         }
     }
-
 
     function updateVotersTable($p) {
         global $conn;

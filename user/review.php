@@ -171,7 +171,7 @@
         $id = $_SESSION['user_id'];
 
         $SELECT_CMD = "SELECT * FROM Fifth_Year_Appraisal_Data WHERE user_id=$id AND ";
-        $SELECT_CMD .= "poll_id=$pollId";
+        $SELECT_CMD .= "poll_id=$poll_id";
 
         $result = mysqli_query($conn,$SELECT_CMD);
         if($result) {
