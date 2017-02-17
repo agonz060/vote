@@ -8,7 +8,7 @@
 </style>
 </head>
 <body>
-<form style="width:70%; margin: 0 auto" method="post" action=<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form style="width:70%; margin: 0 auto" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <h2 align="center">Faculty Confidential Vote To The Chairman</h2>
 <div>
 <p class="preface">

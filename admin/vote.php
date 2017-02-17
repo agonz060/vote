@@ -129,6 +129,10 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 .error {color: #FF0000;}
+.form-inline .form-group {
+	margin-left: 0;	
+	margin-right: 0;
+}
 </style>
 </head>
 <body>
@@ -196,16 +200,57 @@
 	</div>
 	<div class="form-group">
 		<label for="pollType">Poll Type</label>
-		<select class="form-control" id="pollType" name="pollType">
+		<select class="form-control" name="pollType" id="pollType">
     			<option value="Promotion">Promotion</option>
-    			<!---
     			<option value="Merrit">Merrit</option>
     			<option value="Reappointment">Reappointment</option>
     			<option value="Fifth Year Review">Fifth Year Review</option>
     			<option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
-    			-->
 		</select>
 	</div>
+	<div id="actions" class="form-group">
+		<div class="form-inline">
+		
+		<div class="form-group">
+			<label for="fromLevel">From</label>
+			<select class="form-control" name="fromLevel">
+				<option value="1">I</option>
+				<option value="2">II</option>
+				<option value="3">III</option>
+				<option value="4">IV</option>
+				<option value="5">V</option>
+				<option value="6">VI</option>
+				<option value="7">VII</option>
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label for="toLevel">To</label>
+			<select class="form-control" name="toLevel">
+				<option value="1">I</option>
+				<option value="2">II</option>
+				<option value="3">III</option>
+				<option value="4">IV</option>
+				<option value="5">V</option>
+				<option value="6">VI</option>
+				<option value="7">VII</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="accelerated">Accelerated</label>
+			<select class="form-control" name="accelerated">
+				<option value="0">No</option>
+				<option value="1">Yes</option>
+			</select>
+		</div>
+	
+		<div class="form-group">
+			<button type="button" class="btn btn-success addAction"><span class="glyphicon glyphicon-plus"></span></button>
+		</div>
+		</div>
+		
+	</div>
+		
 	<div class="form-group">
 		<label for="dept">Department</label>
 		<select class="form-control" id="dept" name="dept">
@@ -252,7 +297,7 @@
 		?>
 		</select>
 	</div>
-	<div class="form-group">	
+	<div id="pollActions" name="pollActions" class="form-group">	
 		<!-- Selection displays list of double clicked (selected) professors -->
 		<select multiple class="form-control"  id="selected" size="20" >
 		<?php 
@@ -303,12 +348,14 @@
 		<button type="button" class="btn btn-primary" value="Save" onclick="pollAction(0)">Save</button>
 		<button type="button" class="btn btn-success" value="Start" onclick="pollAction(1)">Start</button>
 	</div>
+	<!--
 	<div class="form-group">
 		<label for="profCmtBox">Comments</label>
 		<textarea class="form-control" id="profCmtBox" name="profCmtBox"></textarea> 
 		<input type="button" id="remove" name="remove" value="Remove" onclick="removeFromSelected()">
 		<input type="button" id="saveCmt" name="saveCmt" value="Save" onclick="saveProfCmt()">  
 	</div>
+	-->
 </form>
 </div>
 </body>
@@ -422,24 +469,37 @@ function addToSelected() {
 	}
 }; // End of addToSelected()
 
+function getActions() {
+	var fromLevel = toLevel = accelerated = ret = [];
+	$('#actions select[name="toLevel"]').each(function(index) {
+		ret[index] = {
+			toLevel : $(this).val(),
+			fromLevel : $('#actions select[name="fromLevel"]').eq(index).val(),
+			accelerated : $('#actions select[name="accelerated"]').eq(index).val()
+		};
+	});	
+	return ret;
+}
+
 function pollAction(sendFlag) {
 	//alert("in savePoll")
-	
+	var actions = [];
 	// Grab all input field data
 	var title = $('#title').val();
 	var description = $('#description').val();
 	var dateActive = $('#dateActive').val();
 	var dateDeactive = $('#dateDeactive').val();
-    var profName = $('#profName').val();
+    	var profName = $('#profName').val();
 	var effDate = $('#effDate').val();
 	var pollType = $('#pollType option:selected').text();	
 	var dept = $('#dept option:selected').text();	
 	var emailCmt = $('#emailCmt').val();
+	if(pollType == 'Promotion') { actions = getActions(); }
 		
 	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
 	var validPollType = validDept = validData = 0;
-    var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
-    var validName = validPollType = validDept = validData = 0;
+    	var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
+    	var validName = validPollType = validDept = validData = 0;
     
     if(!title || title.length == 0) {
         $("#titleErr").text("* Title required");
@@ -517,7 +577,7 @@ function pollAction(sendFlag) {
     if(validData == 1) {
         var _reason = prompt("Why did you create/edit this page?"); 
         if(_reason) {
-            $.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, reason: _reason }
+            $.post("event/savePoll.php", { pollData: _pollData, votingInfo: _votingInfo, actions: actions, reason: _reason }
                     , function(data) { 
                 		if(data) { 
                 			alert(data); 
@@ -544,7 +604,7 @@ function createProfCmtField(profName,cmt) {
 
 	document.getElementById("votingInfo").appendChild(prof);	 
 };
-
+/*
 // Remove the selected professor from the list
 function removeFromSelected() {
 	// Select highlighted professor from list for removal
@@ -570,6 +630,7 @@ function saveProfCmt() {
 		document.getElementById(name).value = cmt;
 	}
 };
+ */
 </script>
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -580,6 +641,39 @@ $(function () {
 	$( "#dateActive" ).datepicker({ dateFormat: 'yy-mm-dd' });
 	$( "#dateDeactive" ).datepicker( {dateFormat: 'yy-mm-dd' });
 	$( "#effDate" ).datepicker( {dateFormat: 'yy-mm-dd' });
+});
+function clonePollAction() {
+	//form-inline
+	var count = $("[name='toLevel']").size();
+	//console.log(count);
+	if(count < 3) {	
+		var par = $(this).parent().parent();
+		var clone = par.clone(true,true);
+		$(this).removeClass("btn-success addAction").addClass("btn-danger delAction");
+		$(this).children().eq(0).removeClass("glyphicon-plus").addClass("glyphicon-minus");
+		$(this).off('click',clonePollAction);
+		$(this).on('click',removePollAction);
+		par.parent().append(clone);
+	}
+};
+function removePollAction() {
+	$(this).parent().parent().remove();
+};
+$(".addAction").on('click',clonePollAction);
+$(".delAction").on('click',removePollAction);
+$("#pollType").change(function() {
+	if($(this).val() === "Promotion") { 
+		$("#actions").show();
+	}
+	else {
+		$("#actions").hide();
+	}
+});
+//Remove selected professors from hidden input(votingInfo)
+$("#selected").dblclick(function() {
+	var name = $("#selected option:selected").val();
+	document.getElementById(name).remove();	
+	$("#selected option:selected").remove();
 });
 </script>
 <!-- End of javascript/jquery -->

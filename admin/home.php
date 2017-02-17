@@ -46,41 +46,23 @@
     } // End of $_SERVER['REQUEST_METHOD']
 /* $_SERVER(POST) ends here */
 ?>
+<?php
+    function getOutstandingVotes($conn, $user_id) {
+	    $outstandingVotes = 0;
+	    $query = "SELECT count(user_id) AS COUNT FROM Voters WHERE user_id=?";
+	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+	    mysqli_stmt_bind_param($stmt, "s", $user_id) or die(mysqli_error($conn));
+	    mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+	    mysqli_stmt_bind_result($stmt, $outstandingVotes) or die(mysqli_error($conn));
+	    mysqli_stmt_fetch($stmt);
+	    return $outstandingVotes;
+    }
+    $outstandingVotes = getOutstandingVotes($conn, $_SESSION['user_id']);
+?>
 <body>
 <head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <style>
-    .button-edit {
-        text-align: center;
-        color: white;
-        background: rgb(28,184,65);
-    	width: 160px;
-	}
-    .button-review {
-        text-align: center;
-        color: white;
-        background: rgb(202,60,60);
-    	width: 160px;
-	}
-	.button-create {
-        text-align: center;
-		color: white;
-		background: rgb(66,184,221);
-		width: 160px;
-	}
-    .button-add {
-        text-align: center;
-        color: white;
-        background: rgb(255,140,0);
-        width: 160px;
-    }
-    .button-signOut {
-        text-align: center;
-        color: white;
-        background: red;
-        width: 160px;
-    }
     .navbar {
 	margin-bottom: 0px;
     }
@@ -102,7 +84,7 @@
 </nav>
 <div class="jumbotron">
 	<h1>Welcome <?php echo htmlspecialchars($_SESSION["userName"]); ?>!</h1>
-	<p>You have # polls to vote on.</p>
+	<p>You have <?php echo $outstandingVotes; ?> polls to vote on.</p>
 </div>
 <!-- Display menu options -->
 <div id="menuButtons" align="center" >

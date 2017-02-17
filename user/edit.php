@@ -247,7 +247,6 @@
                 }
 
                 // Poll data
-                $pollData = array();
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
 
@@ -259,8 +258,9 @@
                     updateAndSaveSession();
                     redirectToHomePage();
                 } else {
-                    foreach($ids as $id) {
-                        // Only display inactive polls
+                    foreach($ids as $id) {	    
+                	$pollData = array();
+			// Only display inactive polls
                         $selectCmd = "SELECT * FROM Polls WHERE CURDATE() <= deactDate ";
                         $selectCmd .= "AND poll_id=$id";
                         $result = mysqli_query($conn,$selectCmd);
