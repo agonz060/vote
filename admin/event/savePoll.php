@@ -76,7 +76,7 @@
 /* Session verification ends here */ 
 	//echo "Entering savePoll.php\n";
 	require_once 'connDB.php';
-    require_once "../mailer/autoload.php";
+    	require_once "../mailer/autoload.php";
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";
@@ -84,8 +84,7 @@
 	$emailInfo = $removeList = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
-    $voters = [];
-	
+    	$voters = []; $actions = [];	
 	//Set Timezone
 	date_default_timezone_set('America/Los_Angeles');
 
@@ -103,11 +102,15 @@
 			//echo " votingInfo: "; print_r($votingInfo);
 		} //else { echo "savePoll.php: error votingInfo not set"; }
 	        
-        if(isset($_POST["reason"])) {
-		$reason = $_POST["reason"];
-		$reason = mysqli_real_escape_string($conn,$reason);
-        } else { echo "savePoll.php: error reason not set"; }
-    }
+		if(isset($_POST["reason"])) {
+			$reason = $_POST["reason"];
+			$reason = mysqli_real_escape_string($conn,$reason);
+		} else { echo "savePoll.php: error reason not set"; }
+		if(isset($_POST["actions"])) {
+			$actions= ($_POST["actions"]);
+		} else { echo "savePoll.php: actions not set"; }
+
+	}
     
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
@@ -164,7 +167,7 @@
 
     //echo "pollId set to 30\n";
     //$pollId = 36;
-	$userName = $_SESSION['userName'];
+    $userName = $_SESSION['userName'];
     if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
@@ -183,7 +186,7 @@
 		
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
-		// Update modification history
+	// Update modification history
         $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
@@ -207,7 +210,21 @@
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
         } else { echo "savePoll.php: could not execute INSERT command $cmd\n"; } 
 	}// End of updating Polls table
-        
+    
+    if($actions) {
+	    $actionNum = $fromLevel = $toLevel = $accelerated = -1;
+	    $query = "INSERT INTO Poll_Actions(poll_id, action_num, fromLevel, toLevel, accelerated) VALUES(?,?,?,?,?)";
+	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+	    mysqli_stmt_bind_param($stmt, "iiiii", $pollId, $actionNum, $fromLevel, $toLevel, $accelerated) or die(mysqli_error($conn));
+	    for($i=0; $i < count($actions); $i++) {
+		    $actionNum = $i + 1;
+		    $fromLevel = $actions[$i]["fromLevel"];
+		    $toLevel = $actions[$i]["toLevel"];
+		    $accelerated = $actions[$i]["accelerated"];
+		    mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+	    }	    
+    } 		
+		
     if($votingInfo) {// Update Voters table
         //echo "Updating Voters table\n";
         // votingInfo = { "profName" => "comment" } 
@@ -298,23 +315,23 @@
                     
                     // Store information for sending emails 
                     $e = array( "name" => $name,
-                                "comment" => $cmt,
+                                //"comment" => $cmt,
                                 "email" => $email );
                     $emailInfo[] = $e;
                     
                     // Voter already part of current vote then UPDATE voters data 
                     if(in_array($id, $voters)) {
                         //echo 'update voter: '.$id." comment\n";
-                        $updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
-                        $result = mysqli_query($conn, $updateVoter);
+                        //$updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
+                        //$result = mysqli_query($conn, $updateVoter);
 
-                        if(!$result) { echo "savePoll.php: could not update voter: $id info"; } 
+                        //if(!$result) { echo "savePoll.php: could not update voter: $id info"; } 
                     } else { // Voter is new to poll, i.e INSERT voter into poll
                         //echo "inserting new voter: $id into Voters table\n";
                         //echo "voters: ";print_r($voters);
                         // Add id to voters[] for use when sending emails
-                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, pollEndDate, comment, voteFlag) ";
-                        $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','$cmt','0')";
+                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, pollEndDate, voteFlag) ";
+                        $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','0')";
                         $result = mysqli_query($conn,$addToPollCmd);
                         
                         if(!$result) { echo "savePoll.php: could not insert user_id='$id' into poll using: $addToPollCmd\n"; }
@@ -385,7 +402,7 @@
 			'verify_peer_name' => false,
 			'allow_self_signed' => true
 		)
-	);
+	); // End of $mail->SMTPOptions()
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;
