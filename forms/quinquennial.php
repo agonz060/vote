@@ -88,7 +88,7 @@
             $dept = $pollData['dept'];
             $effDate = $pollData['effDate'];
         } else { // Error  
-            $alertMsg = "fifthYearReview.php: error loading pollData";
+            $alertMsg = "quinquennial.php: error loading pollData";
             alertAndRedirect($alertMsg);
         }
 
@@ -162,12 +162,12 @@ Satisfactory: <input type="radio" name="vote" id="satisfactory" value="1"></br>
 (Please state qualifications below. A Satisfactory with qualification(s) vote can not be cast unless reasons for qualification(s)
 are discussed at the department meeting)</br>
 </p>
-<!--<textarea id="qualifications" name="qualifications" row="8" style="width:100%; display:none" value=""></textarea> -->
 Unsatisfactory: <input type="radio" name="vote" id="unsatisfactory" value="2"></br>
 Abstain: <input type="radio" name="vote" id="abstain" value="3"></br>
 <hr/>
 Comments:</br>
-<textarea id="comments" name="comments" rows="8" style="width:100%"></textarea>
+<textarea id="voteCmt" rows="8" style="width:100%"><?php 
+        if(!empty($_voteData['voteCmt'])) { echo $_voteData['voteCmt']; } ?></textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -183,20 +183,15 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
     ?>
 </p>
 </form>
+</body>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
-$(function() {
-	$( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
-});
+// Load vote data from server if available
+loadVoteData();
 
-$("#submitButton").click(function() { 
-	getVoteData();
-	//submitVote(); 
-}); // End submitButton action
-
-$(function() {
+$(function() { // Document
 	$("input[type='radio'][name='vote']").change(function() {
 		if(this.value == 1) {
 			$('#satPreface').show();
@@ -204,33 +199,80 @@ $(function() {
 		else {
 			$('#satPreface').hide();
 		}
-	});
+	}); // End of voteDisplay change
+    $("#submitButton").click(function() { 
+        //getVoteData();
+        submitVote(); 
+    }); // End submitButton action
+    $( "#effDate" ).datepicker( { dateFormat: 'yy-mm-dd' } );
 });
+
+function loadVoteData() {
+    var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+                            else { echo 0; } ?>;
+    if(loadData) {  // Load and display user data from server     
+        var vote = <?php if(!empty($_voteData['vote'])) 
+                            { echo $_voteData['vote']; } 
+                            else { echo 0; } ?>;
+        $('input[name=vote][value='+vote+']').attr('checked','checked');
+    }  
+}
 
 function getVoteData() {
 	var IN_FAVOR_VOTE = 2;
     var _vote = $("input[name=vote]:checked").val();
-    var _comments = $("#comments").val();
-    //alert("vote:"+_vote+" teaching:"+_teachingCmts+" research:"+_researchCmts+" public: "+_pubServiceCmts);
+    var _voteCmt = $("#voteCmt").val();
+    //alert("vote:"+_vote+" _comments:"+_comments);
 
-    if(_vote.length == 0 || !_vote.trim()) {
-    	var noCmtEntered = "Comment(s) required to submit vote.";
-    	alert(noCmtEntered);
-    	return 0;
-    } 
+    if(_vote) {
+        if(_voteCmt.length == 0 || !_voteCmt.trim()) {
+        	var noCmtEntered = "Comment(s) required to submit vote.";
+        	alert(noCmtEntered);
+        	return 0;
+        } 
 
-    if(_vote > 0 && _vote <= 3) {
-        var voteData = { vote: _vote, comments: _comments };
-        var voteDataStr = "vote: "+_vote;
-        	voteDataStr += "comments: " + _comments;
-		//alert(voteDataStr);
-        return voteData;
+        if(_vote > 0 && _vote <= 3) {
+            var voteData = { vote: _vote, voteCmt: _voteCmt };
+            /*var voteDataStr = "vote: "+_vote;
+            	voteDataStr += "comments: " + _comments; */
+    		//alert(voteDataStr);
+            return voteData;
+        }
     } else { // Vote missing 
         var voteMissing = "Please select a voting option before submitting.";
         alert(voteMissing);
         return 0;
     }
 }
+
+function submitVote() {
+        var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+                                else { echo 0; } ?>;
+        if(!isReadOnly) {
+        var userVoteData = getVoteData();
+        if(userVoteData) {
+            //alert(userVoteData);
+            var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
+            //alert(_pollData);
+            if(_pollData) {
+                $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
+                            , function(data) { 
+                                if(data) { // Error occured during submission
+                                    alert(data);
+                                } else { // Successful submission
+                                    alert("Thank you for voting!");
+                                    window.location.href = "../user/edit.php";
+                                } 
+                            }) // End of function()
+                        .fail(function() {
+                            var msg = "asst.php : error posting to submitVote.php";
+                            alert(msg);
+                }); // End of $.post(...)
+            }
+        } else { // Error while getting vote data
+            alert("Something went wrong while collecting vote information.");
+        }
+        } // End of if(!isReadOnly)   
+} // End of submitVote()
 </script>
-</body>
 </html>
