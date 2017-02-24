@@ -63,9 +63,6 @@
         echo $jsRedirect;
         return;
     }
-// End session verification  
-?>
-<?php
     // Form data 
     // * NOTE: $_voteData is user data previously submitted by the user
     //                     sent from review.php
@@ -169,11 +166,17 @@ Opposed: <input type="radio" id="opposedVote" name="vote" value="3"><br>
 Abstain: <input type="radio" id="abstainVote" name="vote" value="4"><br>
 <hr/>
 <strong>TEACHING</strong> (Please list positive and negative aspects):<br>
-<textarea id="teachingCmts" name="teaching" rows="8" style="width:100%"></textarea>
+<textarea id="teachingCmts" name="teaching" rows="8" style="width:100%">
+    <?php if(!empty($_voteData)) { echo $_voteData['teachingCmts']; } ?>
+</textarea>
 <strong>RESEARCH</strong> (Please list positive and negative aspects):<br>
-<textarea id="researchCmts" name="research" rows="8" style="width:100%"></textarea>
+<textarea id="researchCmts" name="research" rows="8" style="width:100%">
+    <?php if(!empty($_voteData)) { echo $_voteData['researchCmts']; } ?>
+</textarea>
 <strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):<br>
-<textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%"></textarea>
+<textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%">
+    <?php if(!empty($_voteData)) { echo $_voteData['pubServiceCmts']; } ?>
+</textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -193,27 +196,22 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <!-- End of HTML body -->
 <!-- Scripting begins -->
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
-<script>
+<script> 
     loadVoteData();
-
     // Document ready
     $(function() {
         var IN_FAVOR_VOTE = 2;
 		$("input[type=radio][name=vote]").change(function() {
 			if(this.value == IN_FAVOR_VOTE) {
-				$('#qualifications').show();
-				$('#qualifications').prop('required',true);
 				$('#posPreface').show();
 			}
 			else {
-				$('#qualifications').hide();
-				$('#qualifications').prop('required',false);
 				$('#posPreface').hide();
 			}
 		});
 		$("#submitButton").click(function() { 
-			getVoteData();
-			//submitVote(); 
+			//getVoteData();
+			submitVote(); 
 		});
     }); // End of document ready
 
@@ -224,17 +222,20 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             var vote = <?php if(!empty($_voteData['vote'])) 
                                 { echo $_voteData['vote']; } 
                                 else { echo 0; } ?>;
+
             $("input[name=vote][value="+vote+"]").attr('checked','checked');
         }  
     }
 
     function getVoteData() {
     	var IN_FAVOR_VOTE = 2;
-        var _vote = $("input[type=radio][name=vote]").val();
+        var _vote = $("input[name=vote]:checked").val();
         var _teachingCmts = $("#teachingCmts").val();
         var _researchCmts = $("#researchCmts").val();
         var _pubServiceCmts = $("#pubServiceCmts").val();
         
+        //alert("vote:"+_vote+" teaching:"+_teachingCmts+" research:"+_researchCmts+" public: "+_pubServiceCmts);
+
         if(_teachingCmts.length == 0 || !_teachingCmts.trim()) {
         	var noCmtEntered = "Teaching comments are required to submit vote.";
         	alert(noCmtEntered);
@@ -249,21 +250,22 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         	return 0;
         }
 
-        if(_vote) {
+        if(_vote > 0 && _vote <= 4) {
             var voteData = { vote: _vote, teachingCmts: _teachingCmts 
             				, researchCmts: _researchCmts
             				, pubServiceCmts: _pubServiceCmts };
             var voteDataStr = "vote: "+_vote;
             	voteDataStr += "teach: "+_teachingCmts+" research: "+_researchCmts;
             	voteDataStr += " pubSerCmts: "+_pubServiceCmts;
-			alert(voteDataStr);
-            //return voteData;
+			//alert(voteDataStr);
+            return voteData;
         } else { // Vote missing 
             var voteMissing = "Please select a voting option before submitting.";
             alert(voteMissing);
             return 0;
         }
     }
+
     // Helper functions begin here
     function submitVote() {
         var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
@@ -271,10 +273,11 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(!isReadOnly) {
         var userVoteData = getVoteData();
         if(userVoteData) {
-            //alert(userVoteData);
+            alert(userVoteData);
             var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
             //alert(_pollData);
             if(_pollData) {
+                //alert(_pollData);
                 $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
                             , function(data) { 
                                 if(data) { // Error occured during submission
@@ -289,9 +292,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                             alert(msg);
                 }); // End of $.post(...)
             }
-        } else { // Error while getting vote data
-            alert("Something went wrong while collecting vote information.");
-        }
+        } 
         } // End of if(!isReadOnly)   
     }
 </script>

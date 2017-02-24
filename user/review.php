@@ -159,7 +159,62 @@
             return -1;
         }
     }
+    function getReappointmentData($poll_id) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
 
+        $SELECT_CMD = "SELECT * FROM Reappointment_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$poll_id";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; pr  int_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Reappointment Data table';
+            alertMsg($msg);
+            return -1;
+        }
+    }
+    function getFifthYearReviewData($poll_id) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Fifth_Year_Review_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$poll_id";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; pr  int_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Fifth Year Review Data table';
+            alertMsg($msg);
+            return -1;
+        }
+    }
     function getFifthYearAppraisalData($poll_id) {
         if(empty($_SESSION['user_id'])) {
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
@@ -171,7 +226,7 @@
         $id = $_SESSION['user_id'];
 
         $SELECT_CMD = "SELECT * FROM Fifth_Year_Appraisal_Data WHERE user_id=$id AND ";
-        $SELECT_CMD .= "poll_id=$pollId";
+        $SELECT_CMD .= "poll_id=$poll_id";
 
         $result = mysqli_query($conn,$SELECT_CMD);
         if($result) {
@@ -183,7 +238,7 @@
             //return $data;     
         } else { // Error occured while executing command
             $msg = 'review.php: error - failure while retreiving data from ';
-            $msg .= 'Assistant Data table';
+            $msg .= 'Fifth Year Appraisal Data table';
             alertMsg($msg);
             return -1;
         }
@@ -211,7 +266,7 @@
             //return $data;     
         } else { // Error occured while executing command
             $msg = 'review.php: error - failure while retreiving data from ';
-            $msg .= 'Assistant Data table';
+            $msg .= 'Promotion Data table';
             alertMsg($msg);
             return -1;
         }

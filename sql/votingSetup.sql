@@ -61,9 +61,9 @@ CREATE TABLE Fifth_Year_Appraisal_Data (
 	poll_id INT NOT NULL,
 	user_id INT NOT NULL,
 	vote INT NOT NULL,
-	teachingCmt varchar(500),
-	researchCmt varchar(500),
-	pubServiceCmt varchar(500),
+	teachingCmts varchar(500),
+	researchCmts varchar(500),
+	pubServiceCmts varchar(500),
 	PRIMARY KEY(user_id,poll_id)
 );
 

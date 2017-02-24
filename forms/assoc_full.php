@@ -64,9 +64,7 @@
         echo $jsRedirect;
         return;
     }
-// End session verification  
-?>
-<?php
+
     // Form data 
     // * NOTE: $_voteData is user data previously submitted by the user
     //                     sent from review.php
@@ -294,6 +292,6 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             alert("Something went wrong while collecting vote information.");
         }
         } // End of if(!isReadOnly)   
-    }
+    } // End of submitVote()
 </script>
 </html>

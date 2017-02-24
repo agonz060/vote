@@ -74,8 +74,6 @@
     }
     
 /* Session verification ends here */ 
-?>
-<?php 
 	//echo "Entering savePoll.php\n";
 	require_once 'connDB.php';
     	require_once "../mailer/autoload.php";
@@ -436,14 +434,14 @@
         $bodyMsg .= $voteLink;
 
         $mail->Body = $bodyMsg;
-        $mail->AltBody = "Testing plain text body of a message sent from a script";
+        //$mail->AltBody = "Testing plain text body of a message sent from a script";
 	$mail->SMTPOptions = array(
 		'ssl' => array (
 			'verify_peer' => false,
 			'verify_peer_name' => false,
 			'allow_self_signed' => true
 		)
-	);
+	); // End of $mail->SMTPOptions()
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;

@@ -10,16 +10,11 @@
         signOut();
     }
 /* Session verification ends here */ 
-?>
-<!-- Check php comment for functionality -->
-<?php #This sets global variables 
+
 	$pollId = "";
 	$profIds = array();
 	$profCmts = array();
 
-?>
-<!-- PHP that processes user input begins here -->
-<?php
     require_once 'event/connDB.php';
     date_default_timezone_set('America/Los_Angeles');
     
@@ -331,14 +326,12 @@
 					echo "<option value='$name'>".$name."</option>";
 					
 				}
-				
 				// Select all the professors id's and comments associated with "pollId"
 				$selectCmd = "SELECT user_id, comment FROM Voters WHERE Voters.poll_id=$pollId";
 				$result = $conn->query($selectCmd);
 				while($row = $result->fetch_assoc()) {
 					$id = $row["user_id"];
 					$cmt = $row["comment"];
-				
 					// Retreive professors name using the professors id	
 					// Then store comment associated with professor
 					$profName = array_search($id, $profIds); 

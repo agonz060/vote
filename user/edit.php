@@ -79,7 +79,6 @@
         unset($GLOBALS['_SESSION'][$DEACT_DATE]);
         unset($GLOBALS['_SESSION'][$READ_ONLY]);
         unset($GLOBALS['_SESSION'][$DEPT]);
-
     }
 
     function signOut() {
@@ -101,9 +100,7 @@
         $jsRedirect .= "<script>location.href='../index.php'</script>";
         echo $jsRedirect;
         return;
-    }
-?>
-<?php 
+    } 
     require_once '../event/connDB.php';
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -266,14 +263,14 @@
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
+                                $pollData = array( "poll_id" => $row['poll_id'],
+                                                "deactDate" => $row['deactDate'],
+                                                "name" => $row['name'],
+                                                "pollType" => $row['pollType'],
+                                                "dept" => $row['dept'],
+                                                "effDate" => $row['effDate'] );
                                 $pollTitle = $row["title"];
                                 $description = $row["description"];
-                                $pollData['poll_id'] = $row["poll_id"];
-                                $pollData['deactDate'] = $row["deactDate"];
-                                $pollData['name'] = $row["name"];
-                                $pollData['pollType'] = $row["pollType"];
-                                $pollData['dept'] = $row["dept"];
-                                $pollData['effDate'] = $row["effDate"];
                                 echo "<tr>
                                         <td>
                                             $pollTitle
