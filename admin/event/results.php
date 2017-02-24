@@ -54,6 +54,72 @@
 		}
 		return $eligible;
 	}
+	//Merrits and Promotions
+	function getMultiActionCounts($pollId, $pollDataTable, $conn) {
+		$multiVoteCounts = [];
+		$eligibleVotes = getEligibleVotes($pollId,$conn);
+		$stmt = "SELECT * from Poll_Actions WHERE poll_id=$pollId";
+		$result = $conn->query($stmt) or die($conn->error);
+		while($row = $result->fetch_assoc()) {
+			$action_num = $row["action_num"];
+			$multiVoteCounts[$action_num]['fromLevel'] = $row["fromLevel"];
+			$multiVoteCounts[$action_num]['toLevel'] = $row["toLevel"];
+			$multiVoteCounts[$action_num]['accelerated'] = $row["toLevel"];
+		}
+		foreach($multiVoteCounts as $key => $item) {
+			$totalVotes = 0;
+			$multiVoteCounts[$key]['for']= $multiVoteCounts[$key]['against'] = $multiVoteCounts[$key]['abstain'] = 0;
+			$stmt = "SELECT vote, count(vote) as voteCount FROM $pollDataTable WHERE poll_id=$pollId AND action_num=$key GROUP BY vote";
+			$result = $conn->query($stmt) or die($conn->error);
+			while($row = $result->fetch_assoc()) {
+				$vote = $row["vote"];
+				$voteCount = $row["voteCount"];
+				$totalVotes = $totalVotes - $voteCount;
+				if($vote == "0") {
+					$multiVoteCounts[$key]['for'] = $voteCount;
+				}
+				if($vote == "1") {
+					$multiVoteCounts[$key]['against'] = $voteCount;
+				}
+				if($vote == "2") {
+					$multiVoteCounts[$key]['abstain'] = $voteCount;
+				}
+			}
+			$multiVoteCounts[$key]['eligible'] = $eligibleVotes;
+			$multiVoteCounts[$key]['total'] = $totalVotes;
+		}		
+		return $multiVoteCounts;
+	}
+	//The rest of the poll types
+	function getVoteCounts($pollId, $pollDataTable, $conn) {
+		$voteCounts = array("for"=> 0,"eligible"=>0,"against"=>0, "abstain"=>0, "total"=>0);
+		$voteCounts['eligible'] =  getEligibleVotes($pollId,$conn);
+		$vote = $voteCount = 0;
+		$totalVotes = $voteCounts['eligible'];
+		$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
+		$result = $conn->query($stmt) or die($conn->error);
+		while($row = $result->fetch_assoc()) {
+			$vote = $row["vote"];
+			$voteCount = $row["voteCount"];
+			$totalVotes = $totalVotes - $voteCount;
+			if($vote == "0") {
+				$voteCounts['for'] = $voteCount;
+			}
+			if($vote == "1") {
+				$voteCounts['against'] = $voteCount;
+			}
+			if($vote == "2") {
+				$voteCounts['abstain'] = $voteCount;
+			}
+		}
+		if(!$result) {
+			return "";
+		}
+		$voteCounts['total'] = $totalVotes;
+		return $voteCounts;
+
+	}
+	
 
 	$poll_id = $pollType = $profName= $dept = "";
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -70,37 +136,7 @@
 			$dept = cleanInput($_POST["dept"]);
 		}
 	}
-	$pollDataTable = pollTypeToTable($pollType);
-	if(empty($pollDataTable)) {
-		echo 'No Table for this pollType';
-	}
-
-	$eligibleVotes =  getEligibleVotes($pollId,$conn);
-	$vote = $voteCount = $forCount = $againstCount = $abstainCount = 0;
-	$totalVotes = $eligibleVotes;
-	$stmt = "SELECT toLevel, vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
-	$result = $conn->query($stmt) or die($conn->error);
-	while($row = $result->fetch_assoc()) {
-		$vote = $row["vote"];
-		$voteCount = $row["voteCount"];
-		$toLevel = $row["toLevel"];
-		$totalVotes = $totalVotes - $voteCount;
-		if($vote == "0") {
-			$forCount = $voteCount;
-		}
-		if($vote == "1") {
-			$againstCount = $voteCount;
-		}
-		if($vote == "2") {
-			$abstainCount = $voteCount;
-		}
-	}
-	if(!$result) {
-		echo 'returned empty';
-	}
-	if(empty($toLevel)) {
-		$toLevel = "";
-	}
+	
 ?>
 <html>
 <head>
@@ -123,32 +159,81 @@
 		</ul>
 	</div>
 </nav>
-<div class="container">
-<table class="table table-responsive table-hover table-bordered" align="center">
-	<thead>
-		<tr>
-			<th>
-			<?php echo $profName . ', Step ' . intToRoman($toLevel); ?> 
-			</th>
-			<th>Eligible</th>
-			<th>For</th>
-			<th>Against</th>
-			<th>Abstain</th>
-			<th>Not Voting/Unvailable</th>
-		</tr>
-	</thead>
-	<tbody>
-	<?php echo	"<tr>
-			<td>Vote: </td>
-			<td>$eligibleVotes</td>
-			<td>$forCount</td>
-			<td>$againstCount</td>
-			<td>$abstainCount</td>
-			<td>$totalVotes</td>
-		</tr>";
-	?>
-	</tbody>
-</table>
-</div>
+<?php 
+	$pollDataTable = pollTypeToTable($pollType);
+	if(empty($pollDataTable)) {
+		echo 'No Table for this pollType';
+	}
+	if($pollType == "Merrit" || $pollType == "Promotion") {
+		$multiActionCounts = getMultiActionCounts($pollId, $pollDataTable, $conn);
+		foreach($multiActionCounts as $key => $item) {
+			$eligibleVotes = $multiActionCounts[$key]['eligible'];
+			$forCount = $multiActionCounts[$key]['for'];
+			$againstCount = $multiActionCounts[$key]['against'];
+			$abstainCount = $multiActionCounts[$key]['abstain'];
+			$totalVotes = $multiActionCounts[$key]['total'];
+			$toLevel = $multiActionCounts[$key]['toLevel'];
+			$fromLevel = $multiActionCounts[$key]['fromLevel'];
+			$accelerated = $multiActionCounts[$key]['accelerated'];
+			echo '<div class="container">
+			<table class="table table-responsive table-hover table-bordered" align="center">
+				<thead>
+					<tr>
+						<th>'.$profName.' Step '.$fromLevel.' to '.$toLevel.'</th>
+						<th>Eligible</th>
+						<th>For</th>
+						<th>Against</th>
+						<th>Abstain</th>
+						<th>Not Voting/Unvailable</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Vote: </td>
+						<td>'.$eligibleVotes.'</td>
+						<td>'.$forCount.'</td>
+						<td>'.$againstCount.'</td>
+						<td>'.$abstainCount.'</td>
+						<td>'.$totalVotes.'</td>
+					</tr>
+				</tbody>
+			</table>
+			</div>';
+		}
+	}
+	else {
+		$voteCounts = getVoteCounts($pollId, $pollDataTable,$conn);
+		$eligibleVotes = $voteCounts['eligible'];
+		$forCount = $voteCounts['for'];
+		$againstCount = $voteCounts['against'];
+		$abstainCount = $voteCounts['abstain'];
+		$totalVotes = $voteCounts['total'];
+		echo '<div class="container">
+		<table class="table table-responsive table-hover table-bordered" align="center">
+			<thead>
+				<tr>
+					<th>'.$profName.'</th>
+					<th>Eligible</th>
+					<th>For</th>
+					<th>Against</th>
+					<th>Abstain</th>
+					<th>Not Voting/Unvailable</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Vote: </td>
+					<td>'.$eligibleVotes.'</td>
+					<td>'.$forCount.'</td>
+					<td>'.$againstCount.'</td>
+					<td>'.$abstainCount.'</td>
+					<td>'.$totalVotes.'</td>
+				</tr>
+			</tbody>
+		</table>
+		</div>';
+	}
+?>
+
 </body>
 </html>

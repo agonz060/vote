@@ -497,7 +497,7 @@ function pollAction(sendFlag) {
 	var profTitle = $('#profTitle option:selected').text();
 	var dept = $('#dept option:selected').text();	
 	var emailCmt = $('#emailCmt').val();
-	if(pollType == 'Promotion') { actions = getActions(); }
+	if(pollType == 'Promotion' || pollType == 'Merrit') { actions = getActions(); }
 		
 	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
 	var validPollType = validDept = validData = 0;
@@ -666,7 +666,7 @@ function removePollAction() {
 $(".addAction").on('click',clonePollAction);
 $(".delAction").on('click',removePollAction);
 $("#pollType").change(function() {
-	if($(this).val() === "Promotion") { 
+	if($(this).val() === "Promotion" || $(this).val() === "Merrit") { 
 		$("#actions").show();
 	}
 	else {
