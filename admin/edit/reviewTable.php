@@ -68,6 +68,7 @@
 				$pollType=$row["pollType"];
 				$dept=$row["dept"];
 				$effDate=$row["effDate"];
+				$profTitle=$row["profTitle"];
 				echo "<tr>
 						<td>
 							$title
@@ -95,6 +96,7 @@
 								<input type='hidden' name='pollType' value='$pollType'>
 								<input type='hidden' name='dept' value='$dept'>
 								<input type='hidden' name='effDate' value='$effDate'>
+								<input type='hidden' name='profTitle' value='$profTitle'>
 							</form>
 						</td>			
 					</tr>";

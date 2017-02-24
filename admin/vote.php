@@ -199,6 +199,15 @@
 		<span id="profNameErr" class="help-block error"><?php echo "$errProfName";?></span>
 	</div>
 	<div class="form-group">
+		<label for="profTitle">Professor Title</label>
+		<select class="form-control" id="profTitle" name="profTitle">
+    			<option>Full Professor</option>
+    			<option>Associate Professor</option>
+    			<option>Assistant Professor</option>
+		</select>
+	</div>
+
+	<div class="form-group">
 		<label for="pollType">Poll Type</label>
 		<select class="form-control" name="pollType" id="pollType">
     			<option value="Promotion">Promotion</option>
@@ -270,7 +279,7 @@
 		<!-- Selection displays the names and titles of professors -->
 		<select multiple class="form-control" id="profSel" size="20" ondblclick="addToSelected()">
 		<?php
-		$selectCmd = "SELECT user_id, fName, lName, title FROM Users";
+		$selectCmd = "SELECT user_id, fName, lName, title FROM Users WHERE title !='Administrator'";
 
 		$result = $conn->query($selectCmd);
 
@@ -492,6 +501,7 @@ function pollAction(sendFlag) {
     	var profName = $('#profName').val();
 	var effDate = $('#effDate').val();
 	var pollType = $('#pollType option:selected').text();	
+	var profTitle = $('#profTitle option:selected').text();
 	var dept = $('#dept option:selected').text();	
 	var emailCmt = $('#emailCmt').val();
 	if(pollType == 'Promotion') { actions = getActions(); }
@@ -540,7 +550,8 @@ function pollAction(sendFlag) {
                     	descr: description,
                         actDate: dateActive,
                         deactDate: dateDeactive,
-                        effDate: effDate,
+			effDate: effDate,
+			profTitle: profTitle,
                         pollType: pollType,
 			dept: dept,
 			emailCmt: emailCmt,
