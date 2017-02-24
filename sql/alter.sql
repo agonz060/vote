@@ -1,7 +1,16 @@
 USE Voting;
 DROP TABLE IF EXISTS Fifth_Year_Appraisal_Data;
 DROP TABLE IF EXISTS Fifth_Year_Review_Data;
+DROP TABLE IF EXISTS Merit_Data;
 
+CREATE TABLE Merit_Data (
+    poll_id INT NOT NULL,
+    user_id INT NOT NULL,
+    vote INT NOT NULL,
+    voteCmt varchar(500),
+    PRIMARY KEY(poll_id,user_id)
+
+);
 CREATE TABLE Fifth_Year_Appraisal_Data (
 	poll_id INT NOT NULL,
 	user_id INT NOT NULL,

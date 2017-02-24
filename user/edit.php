@@ -290,7 +290,7 @@
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
                                             // Poll types
-                                            $MERRIT = "Merrit";
+                                            $MERIT = "Merit";
                                             $PROMOTION = "Promotion";
                                             $REAPPOINTMENT = "Reappointment";
                                             $FIFTH_YEAR_REVIEW = "Fifth Year Review";
@@ -303,8 +303,8 @@
                                             $pollData = json_encode($pollData);
 
                                             if($title == $ASST) {
-                                                if($pollType == $MERRIT) {
-                                                    $redirect = '../forms/merrit.php';
+                                                if($pollType == $MERIT) {
+                                                    $redirect = '../forms/merit.php';
                                                 } else { // Only other form available to Assistant professors 
                                                     //$redirect = '../forms/test.php';
                                                     $redirect = '../forms/asst.php';
