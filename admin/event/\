@@ -74,12 +74,14 @@
     }
     
 /* Session verification ends here */ 
+?>
+<?php 
 	//echo "Entering savePoll.php\n";
 	require_once 'connDB.php';
     	require_once "../mailer/autoload.php";
 
 	// Poll data
-	$pollId = $title = $descr = $actDate = $deactDate = $profTitle = "";
+	$pollId = $title = $descr = $actDate = $deactDate = "";
     	$effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
 	$emailInfo = $removeList = [];
 	// Voting data
@@ -125,38 +127,16 @@
 
     if(isset($pollData['actDate'])) {
         $actDate = $pollData['actDate'];
-	$tmpActDate = new DateTime($actDate);
-	list($year,$month,$day) =  explode('-',$actDate);
-	if(!checkdate($month,$day,$year) ) {
-		echo "savePoll.php: Invalid activation date\n";
-	}
     } else { echo "savePoll.php: activation date not set\n"; }
 
 
     if(isset($pollData['deactDate'])) {
         $deactDate = $pollData['deactDate'];
-        $tmpDeactDate = new DateTime($deactDate);
-	list($year,$month,$day) =  explode('-',$deactDate);
-	if(!checkdate($month,$day,$year) ) {
-		echo "savePoll.php: Invalid deactivation date\n";
-	}
     } else { echo "savePoll.php: deactivation date not set\n"; }
 
     if($pollData['effDate']) {
         $effDate = $pollData['effDate'];
-   	$tmpEffDate = new DateTime($effDate);
-	list($year,$month,$day) =  explode('-',$effDate);
-	if(!checkdate($month,$day,$year) ) {
-		echo "savePoll.php: Invalid effective date\n";
-	}
-    } else { echo "savePoll.php: effective date not set\n"; }
-    if($tmpDeactDate < $tmpActDate) {
-	   echo "Activation date must come before deactivation date.\n"; 
     }
-	
-    if(isset($pollData['profTitle'])) {
-        $profTitle = $pollData['profTitle'];
-    } else { echo "savePoll.php: profTitle not set\n"; }
 
     if(isset($pollData['pollType'])) {
         $pollType = $pollData['pollType'];
@@ -199,7 +179,7 @@
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history'), effDate='$effDate',";
-        $cmd .= " name='$name', dept='$dept', pollType='$pollType' profTitle='$profTitle' WHERE poll_id='$pollId'";	
+        $cmd .= " name='$name', dept='$dept', pollType='$pollType' WHERE poll_id='$pollId'";	
         //echo "updating cmd: $cmd\n";
 		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
@@ -212,8 +192,8 @@
         $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle)";
-	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$profTitle')";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history)";
+	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history')";
 	//echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	
@@ -241,15 +221,15 @@
 	    mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
 	    mysqli_stmt_bind_result($stmt, $oldActionCount) or die(mysqli_error($conn));
 	    mysqli_stmt_fetch($stmt);
-	    mysqli_stmt_close($stmt);
-	    //echo $oldActionCount; 
+	    echo $oldActionCount; 
+	    /*
 	    if($oldActionCount) {
 	    	   $query = "DELETE FROM Poll_Actions WHERE poll_id=?";
 		   $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
 	    	   mysqli_stmt_bind_param($stmt, "i", $pollId) or die(mysqli_error($conn));
 		   mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
-	    	   mysqli_stmt_close($stmt);
 	    }
+	     */
 	    $actionNum = $fromLevel = $toLevel = $accelerated = -1;
 	    $query = "INSERT INTO Poll_Actions(poll_id, action_num, fromLevel, toLevel, accelerated) VALUES(?,?,?,?,?)";
 	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
@@ -261,7 +241,6 @@
 		    $accelerated = $actions[$i]["accelerated"];
 		    mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
 	    }	
-	    mysqli_stmt_close($stmt);
     } 		
 		
     if($votingInfo) {// Update Voters table
@@ -434,14 +413,14 @@
         $bodyMsg .= $voteLink;
 
         $mail->Body = $bodyMsg;
-        //$mail->AltBody = "Testing plain text body of a message sent from a script";
+        $mail->AltBody = "Testing plain text body of a message sent from a script";
 	$mail->SMTPOptions = array(
 		'ssl' => array (
 			'verify_peer' => false,
 			'verify_peer_name' => false,
 			'allow_self_signed' => true
 		)
-	); // End of $mail->SMTPOptions()
+	);
         if(!$mail->send()) {
             echo "Mailer Error: " . $mail->ErrorInfo;
             return;

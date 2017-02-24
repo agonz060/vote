@@ -1,7 +1,7 @@
 USE Voting;
 
 DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Polls, Professors;
-DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data, Fifth_Year_Review_Data, Reappointment_Data; 
+DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data, Fifth_Year_Review_Data, Reappointment_Data, Poll_Actions; 
 
 CREATE TABLE Polls (
     poll_id int NOT NULL AUTO_INCREMENT,
@@ -15,6 +15,7 @@ CREATE TABLE Polls (
     dept varchar(30) NOT NULL,
     history text,
     dateModified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    profTitle varchar(30) NOT NULL,
     PRIMARY KEY(poll_id)
     
 );
@@ -81,4 +82,12 @@ CREATE TABLE Reappointment_Data (
 	vote INT NOT NULL,
 	voteCmt varchar(500),
 	PRIMARY KEY(poll_id,user_id)
+);
+CREATE TABLE Poll_Actions (
+	poll_id INT NOT NULL,
+	action_num INT NOT NULL,
+	fromLevel INT NOT NULL,
+	toLevel INT NOT NULL,
+	accelerated INT NOT NULL,
+	PRIMARY KEY(poll_id,action_num)
 );

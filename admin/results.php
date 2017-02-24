@@ -32,6 +32,9 @@
 		if(isset($_POST["dept"])) {
 			$dept = cleanInput($_POST["dept"]);
 		}
+		if(isset($_POST["profTitle"])) {
+			$profTitle = cleanInput($_POST["profTitle"]);
+		}
 	}// End Server POST data capture
 
 	function cleanInput($data) {
@@ -77,6 +80,29 @@
 			$eligible = $row["Eligible"];
 		}
 		return $eligible;
+	}
+	function getVotes($pollDataTable, $pollId, $conn) {
+		$eligibleVotes =  getEligibleVotes($pollId,$conn);
+		$vote = $voteCount = $forCount = $againstCount = $abstainCount = 0;
+		$totalVotes = $eligibleVotes;
+		// Load data from appropiate database
+		$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
+		$result = $conn->query($stmt) or die($conn->error);
+		while($row = $result->fetch_assoc()) {
+			$vote = $row["vote"];
+			$voteCount = $row["voteCount"];
+			$totalVotes = $totalVotes - $voteCount;
+			if($vote == "1") {
+				$forCount = $voteCount;
+			}
+			if($vote == "2") {
+				$againstCount = $voteCount;
+			}
+			if($vote == "3") {
+				$abstainCount = $voteCount;
+			}
+		}
+
 	}
 	// End Helper functions
 
