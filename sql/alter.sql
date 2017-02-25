@@ -2,6 +2,11 @@ USE Voting;
 DROP TABLE IF EXISTS Fifth_Year_Appraisal_Data;
 DROP TABLE IF EXISTS Fifth_Year_Review_Data;
 DROP TABLE IF EXISTS Merit_Data;
+DROP TABLE IF EXISTS Poll_Actions;
+
+CREATE TABLE Poll_Actions (
+    poll_id INT NOT NULL,
+       
 
 CREATE TABLE Merit_Data (
     poll_id INT NOT NULL,

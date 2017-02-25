@@ -57,32 +57,6 @@
         saveSessionVars();
     }
 
-    function unsetPollVariables() {
-        // Session variables accessed
-        $CMT = "cmt";
-        $PROF_NAME = "profName";
-        $DESCRIPTION = "description";
-        $EFF_DATE = "effDate";
-        $POLL_ID = "poll_id";
-        $POLL_TYPE = "pollType";
-        $PROF_NAME = "profName";
-        $ACT_DATE = "actDate";
-        $DEACT_DATE = "deactDate";
-        $READ_ONLY = "READ_ONLY";
-        $DEPT = "dept";
-
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DESCRIPTION]);
-        unset($GLOBALS['_SESSION'][$CMT]);
-        unset($GLOBALS['_SESSION'][$POLL_ID]);
-        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
-        unset($GLOBALS['_SESSION'][$READ_ONLY]);
-        unset($GLOBALS['_SESSION'][$DEPT]);
-
-    }
-
     function redirectToLogIn() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
@@ -105,8 +79,6 @@
         redirectToLogIn();
     }
 /* End of session verification */
-?>
-<?php 
     require_once '../event/connDB.php';
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         $HOME = "home";
@@ -159,6 +131,33 @@
             return -1;
         }
     }
+    function getMeritData($poll_id) {
+        if(empty($_SESSION['user_id'])) {
+            $msg = 'review.php: error - user_id not set. Redirecting to log in...';
+            alertMsg($msg);
+            signOut();
+        }
+        global $conn;
+        $data = array();
+        $id = $_SESSION['user_id'];
+
+        $SELECT_CMD = "SELECT * FROM Merit_Data WHERE user_id=$id AND ";
+        $SELECT_CMD .= "poll_id=$poll_id";
+
+        $result = mysqli_query($conn,$SELECT_CMD);
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $data = $row;
+            }
+            //echo 'Vote data: '; print_r($data);
+            return json_encode($data);
+            //return $data;     
+        } else { // Error occured while executing command
+            $msg = 'review.php: error - failure while retreiving data from ';
+            $msg .= 'Merit Data table';
+            alertMsg($msg);
+            return -1;
+        }
     function getReappointmentData($poll_id) {
         if(empty($_SESSION['user_id'])) {
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
@@ -442,7 +441,7 @@
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
                                             // Poll types
-                                            $MERRIT = "Merrit";
+                                            $MERIT = "Merit";
                                             $PROMOTION = "Promotion";
                                             $REAPPOINTMENT = "Reappointment";
                                             $FIFTH_YEAR_REVIEW = "Fifth Year Review";
@@ -456,14 +455,18 @@
                                             $pollData = json_encode($pollData);
                                             //echo "json_encode(pollData): $pollData";
                                             if($title == $ASST) {
-                                                if($pollType == $MERRIT) {
-                                                    $redirect = '../forms/merrit.php';
+                                                if($pollType == $MERIT) {
+                                                    $voteData = getMeritData($poll_id);
+                                                    $redirect = '../forms/merit.php';
                                                 } else { // Only other form available to Assistant professors 
                                                     $voteData = getAssistantData($poll_id);
                                                     $redirect = '../forms/asst.php';
                                                 }
                                             } else if($title == $ASSOC || $title == $FULL) {
-                                                if($pollType == $PROMOTION) {
+                                                if($pollType == $MERIT) {
+                                                    $voteData = getMeritData($poll_id);
+                                                    $redirect = '../forms/merit.php';
+                                                } else if($pollType == $PROMOTION) {
                                                     $voteData = getPromotionData($poll_id);
                                                     $redirect = '../forms/assoc_full.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
