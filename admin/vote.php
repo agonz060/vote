@@ -206,7 +206,7 @@
 		<label for="pollType">Poll Type</label>
 		<select class="form-control" name="pollType" id="pollType">
     			<option value="Promotion">Promotion</option>
-    			<option value="Merrit">Merrit</option>
+    			<option value="Merit">Merit</option>
     			<option value="Reappointment">Reappointment</option>
     			<option value="Fifth Year Review">Fifth Year Review</option>
     			<option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
