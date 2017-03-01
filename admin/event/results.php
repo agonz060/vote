@@ -29,7 +29,7 @@
 	function pollTypeToTable($pollType) {
 		switch($pollType) {
 			case "Merrit":
-				return "";
+				return "Merrit_Data";
 			case "Promotion":
 				return "Associate_Promotion_Data";
 			case "Reappointment":
@@ -67,7 +67,7 @@
 			$multiVoteCounts[$action_num]['accelerated'] = $row["toLevel"];
 		}
 		foreach($multiVoteCounts as $key => $item) {
-			$totalVotes = 0;
+			$totalVotes = $eligibleVotes;
 			$multiVoteCounts[$key]['for']= $multiVoteCounts[$key]['against'] = $multiVoteCounts[$key]['abstain'] = 0;
 			$stmt = "SELECT vote, count(vote) as voteCount FROM $pollDataTable WHERE poll_id=$pollId AND action_num=$key GROUP BY vote";
 			$result = $conn->query($stmt) or die($conn->error);
@@ -175,11 +175,13 @@
 			$toLevel = $multiActionCounts[$key]['toLevel'];
 			$fromLevel = $multiActionCounts[$key]['fromLevel'];
 			$accelerated = $multiActionCounts[$key]['accelerated'];
+			$accelText = "";
+			if($accelerated) { $accelText = " Accelerated ";}
 			echo '<div class="container">
 			<table class="table table-responsive table-hover table-bordered" align="center">
 				<thead>
 					<tr>
-						<th>'.$profName.' Step '.$fromLevel.' to '.$toLevel.'</th>
+						<th>'.$profName.'\'s'.$accelText.$pollType.' From Step '.$fromLevel.' to '.$toLevel.'</th>
 						<th>Eligible</th>
 						<th>For</th>
 						<th>Against</th>
@@ -212,7 +214,7 @@
 		<table class="table table-responsive table-hover table-bordered" align="center">
 			<thead>
 				<tr>
-					<th>'.$profName.'</th>
+					<th>'.$profName.'\'s'.$pollType.'</th>
 					<th>Eligible</th>
 					<th>For</th>
 					<th>Against</th>

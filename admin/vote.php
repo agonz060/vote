@@ -156,7 +156,7 @@
 	<!-- Title of current vote -->
 	<div class="form-group">
 		<label for="title">Poll Title</label>
-		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
+		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" maxlength="30" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
 		<span id="titleErr" class="help-block error"><?php echo "$errTitle";?></span>
 	</div>
 

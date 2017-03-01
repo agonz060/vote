@@ -506,7 +506,7 @@
                         }
                     } // End of displaying user edit table
                 }
-            // End of PHP ?>
+            ?>
         </tbody>
     </table>
 </div>

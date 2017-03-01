@@ -108,7 +108,7 @@
 		} else { echo "savePoll.php: error reason not set"; }
 		if(isset($_POST["actions"])) {
 			$actions= ($_POST["actions"]);
-		} else { echo "savePoll.php: actions not set"; }
+		} //else { echo "savePoll.php: actions not set"; }
 
 	}
     
@@ -199,12 +199,12 @@
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history'), effDate='$effDate',";
-        $cmd .= " name='$name', dept='$dept', pollType='$pollType' profTitle='$profTitle' WHERE poll_id='$pollId'";	
+        $cmd .= " name='$name', dept='$dept', pollType='$pollType', profTitle='$profTitle' WHERE poll_id='$pollId'";	
         //echo "updating cmd: $cmd\n";
 		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
 			
-		if(!$result) { echo "savePoll.php: could not update Polls table\n"; }
+		if(!$result) { echo "savePoll.php: could not update Polls table\n".mysqli_error($conn)."\n"; }
 		
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
