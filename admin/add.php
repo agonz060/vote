@@ -75,7 +75,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     } else { $tmpPass1 = cleanInput($_POST['pass1']); }
 
     if(empty($_POST['pass2'])) {
-        $errPass2 = "** requried";
+        $errPass2 = "* Password requried";
     } else { $tmpPass2 = cleanInput($_POST['pass2']); }
 
     // Check if passwords are identical
@@ -85,7 +85,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashPass = password_hash($tmpPass1, PASSWORD_DEFAULT);
         } else {
             $errPass1 = "* Passwords do not match";
-            $errPass2 = "**";
+            $errPass2 = "* Passwords do not match";
         }
     }
 

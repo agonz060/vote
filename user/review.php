@@ -9,7 +9,7 @@
         signOut();
     } else {
         //echo 'two';
-        unsetPollVariables();
+        //unsetPollVariables();
         //timeSinceLastActivity();
         updateLastActivity();
     }
@@ -157,7 +157,8 @@
             $msg .= 'Merit Data table';
             alertMsg($msg);
             return -1;
-        }
+	}
+    }
     function getReappointmentData($poll_id) {
         if(empty($_SESSION['user_id'])) {
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
@@ -489,7 +490,6 @@
                                         }
                                         echo"
                                         <form method='post' id='editPoll_$poll_id' action='$redirect'>
-                                            <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
                                             <button class='btn btn-success'>View</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
                                             <input type='hidden' name='_voteData' value='$voteData'>
