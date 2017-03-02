@@ -1,7 +1,7 @@
 USE Voting;
 
 DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Polls, Professors;
-DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data, Fifth_Year_Review_Data, Reappointment_Data, Poll_Actions; 
+DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data, Fifth_Year_Review_Data, Reappointment_Data, Poll_Actions, Merrit_Data; 
 
 CREATE TABLE Polls (
     poll_id int NOT NULL AUTO_INCREMENT,
@@ -36,15 +36,16 @@ CREATE TABLE Voters (
     pollEndDate date NOT NULL,
     comment varchar(300),
     voteFlag int NOT NULL DEFAULT '0',
-    PRIMARY KEY(user_id,poll_id)
+    PRIMARY KEY(user_id,poll_id),
+    FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Assistant_Data (
 	poll_id INT NOT NULL,
 	user_id INT NOT NULL,
 	voteCmt varchar(500),
-	PRIMARY KEY(poll_id,user_id)
-
+	PRIMARY KEY(poll_id,user_id),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Associate_Promotion_Data (
@@ -54,7 +55,10 @@ CREATE TABLE Associate_Promotion_Data (
 	toLevel INT NOT NULL,
 	vote INT NOT NULL,
 	voteCmt varchar (500),
-	PRIMARY KEY(user_id,poll_id)
+	action_num INT NOT NULL,
+	PRIMARY KEY(user_id,poll_id,action_num),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE,
+	FOREIGN KEY(action_num) REFERENCES Poll_Actions(action_num) ON DELETE CASCADE
 );
 
 CREATE TABLE Fifth_Year_Appraisal_Data (
@@ -64,7 +68,8 @@ CREATE TABLE Fifth_Year_Appraisal_Data (
 	teachingCmts varchar(500),
 	researchCmts varchar(500),
 	pubServiceCmts varchar(500),
-	PRIMARY KEY(user_id,poll_id)
+	PRIMARY KEY(user_id,poll_id),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Fifth_Year_Review_Data (
@@ -73,7 +78,8 @@ CREATE TABLE Fifth_Year_Review_Data (
 	vote INT NOT NULL,
 	qualificationsCmt varchar(500),
 	voteCmt varchar(500),
-	PRIMARY KEY(poll_id,user_id)
+	PRIMARY KEY(poll_id,user_id),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Reappointment_Data (
@@ -81,7 +87,8 @@ CREATE TABLE Reappointment_Data (
 	user_id INT NOT NULL,
 	vote INT NOT NULL,
 	voteCmt varchar(500),
-	PRIMARY KEY(poll_id,user_id)
+	PRIMARY KEY(poll_id,user_id),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
 CREATE TABLE Poll_Actions (
 	poll_id INT NOT NULL,
@@ -89,5 +96,16 @@ CREATE TABLE Poll_Actions (
 	fromLevel INT NOT NULL,
 	toLevel INT NOT NULL,
 	accelerated INT NOT NULL,
-	PRIMARY KEY(poll_id,action_num)
+	PRIMARY KEY(poll_id,action_num),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
+);
+CREATE TABLE Merrit_Data (
+	poll_id INT NOT NULL,
+	user_id INT NOT NULL,
+	vote INT NOT NULL,
+	voteCmt varchar(500),
+	action_num INT NOT NULL,
+	PRIMARY KEY(poll_id,user_id,action_num),
+	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE,
+	FOREIGN KEY(action_num) REFERENCES Poll_Actions(action_num) ON DELETE CASCADE
 );

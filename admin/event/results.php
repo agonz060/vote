@@ -21,8 +21,10 @@
 			return "";
 		}
 		$romanArr = array();
-		$romanArr[1] = "I"; $romanArr[2] = "II"; $romanArr[3]= "III";
-		$romanArr[4] = "IV"; $romanArr[5] = "V";
+		$romanArr[1] = "I"; $romanArr[2] = "II"; $romanArr[3] = "III";
+		$romanArr[4] = "IV"; $romanArr[5] = "V"; $romanArr[6] = "VI";
+		$romanArr[7] = "VII"; $romanArr[8] = "VIII"; $romanArr[9] = "IX";
+		$romanArr[10] = "X";
 		return $romanArr[$num];
 	}
 	//Returns the appropriate SQL table to be used for each pollType
@@ -144,6 +146,9 @@
 		if(isset($_POST["dept"])) {
 			$dept = cleanInput($_POST["dept"]);
 		}
+		if(isset($_POST["profTitle"])) {
+			$profTitle = cleanInput($_POST["profTitle"]);
+		}
 	}
 	
 ?>
@@ -188,8 +193,8 @@
 			$againstCount = $multiActionCounts[$key]['against'];
 			$abstainCount = $multiActionCounts[$key]['abstain'];
 			$totalVotes = $multiActionCounts[$key]['total'];
-			$toLevel = $multiActionCounts[$key]['toLevel'];
-			$fromLevel = $multiActionCounts[$key]['fromLevel'];
+			$toLevel = intToRoman($multiActionCounts[$key]['toLevel']);
+			$fromLevel = intToRoman($multiActionCounts[$key]['fromLevel']);
 			$accelerated = $multiActionCounts[$key]['accelerated'];
 			$accelText = "";
 			if($accelerated) { $accelText = "Accelerated ";}
@@ -197,7 +202,7 @@
 			<table class="table table-responsive table-hover table-bordered" align="center">
 				<thead>
 					<tr>
-						<th>'.$profName.'\'s '.$accelText.$pollType.' From Step '.$fromLevel.' to '.$toLevel.'</th>
+						<th>'.$profName.'\'s '.$accelText.$pollType.' From '.$profTitle.' Step '.$fromLevel.' to '.$toLevel.'</th>
 						<th>Eligible</th>
 						<th>For</th>
 						<th>Against</th>
@@ -247,7 +252,7 @@
 		<table class="table table-responsive table-hover table-bordered" align="center">
 			<thead>
 				<tr>
-					<th>'.$profName.'\'s'.$pollType.'</th>
+					<th>'.$profName.'\'s '.$pollType.' for '.$profTitle.'</th>
 					<th>Eligible</th>
 					<th>For</th>
 					<th>Against</th>
