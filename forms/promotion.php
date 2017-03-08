@@ -288,24 +288,38 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
     });
 
     function loadVoteData() {
-        var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
-                                else { echo 0; } ?>;
-        
-        if(loadData) {        
-            var fromLevel = <?php if(!empty($_voteData['fromLevel'])) 
-                                { echo $_voteData['fromLevel']; } 
-                                else { echo 0; } ?>;
-            var toLevel = <?php if(!empty($_voteData['toLevel'])) 
-                                { echo $_voteData['toLevel']; } 
-                                else { echo 0; } ?>;
-            var vote = <?php if(!empty($_voteData['vote'])) 
-                                { echo $_voteData['vote']; } 
-                                else { echo 0; } ?>;
-        
-            $('#fromLevel option[value='+fromLevel+']').attr('selected','selected');
-            $('#toLevel option[value='+toLevel+']').attr('selected','selected');
-            $('input[name=vote][value='+vote+']').attr('checked','checked');
-        }  
+        var ERROR = -1;
+        var displayCount = 0;
+        var numActions = 0;
+        var loadData = <?php if(empty($pollData['READ_ONLY'])) { echo 0; }
+                                else { echo 1; } ?>;
+        var voteData = <?php if(isset($_voteData)) {
+                                echo json_encode($_voteData);
+                            } else { echo 0; }?>;
+        if(loadData && voteData) { 
+            voteData = JSON.parse(voteData);
+            console.log(voteData);
+
+            numActions = <?php if(isset($numActions)) { 
+                                echo $numActions; 
+                            }   else { echo -1; } ?>;
+
+            if(numActions == ERROR) {
+                alert("Could not retrieve $numActions from server");
+            }  else {  // Proceed to Display action data    
+                while(displayCount < numActions) { /*
+                    var vote = <?php if(!empty($_voteData['vote'])) 
+                                        { echo $_voteData['vote']; } 
+                                        else { echo 0; } ?>;
+
+                
+                    $('#fromLevel option[value='+fromLevel+']').attr('selected','selected');
+                    $('#toLevel option[value='+toLevel+']').attr('selected','selected');
+                    $('input[name=vote][value='+vote+']').attr('checked','checked');
+                    */
+                } // End of while(displayCount < numActions)
+            } // End of else(...)
+        } // End if(loadData) 
     }
 
     function getVoteData() {
@@ -314,13 +328,12 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         var voteDataArray = [];
         var actionErrors = [];
 
-        var numActions = <?php if(isset($numActions)) { echo $numActions; } 
-                                else { echo -1; } ?>;
+        var numActions = <?php if(isset($numActions)) { 
+                                echo $numActions; 
+                            }   else { echo -1; } ?>;
         //console.log(actionInfoArray);
         if(numActions == ERROR) {
             alert("Could not retrieve $numActions from server");
-        } else if(actionInfoArray == ERROR ) {
-            alert("Could not retrieve $actionInfoArray from server")
         } else {
             // Begin by adding action information to voteData
             //console.log(voteDataArray);
@@ -346,18 +359,6 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                 actionCount += 1;
             } // End of while loop = End of extracting data from form
         } // End of else ...
-        //console.log(voteDataArray);
-        /* For testing
-        try {
-            var voteDataAlert = JSON.stringify(voteDataArray);
-            var actionErrorAlert = JSON.stringify(actionErrors);
-            alert("voteData: " + voteDataAlert + " ActionError: " + actionErrorAlert);
-        } catch(error) {
-            var name = error.name;
-            var message = error.message;
-            alert(name+": "+message);
-        }
-        */
         // Notify user of any actions that require votes
         var reqVotes = "";
         $.each(actionErrors, function(index,value) {

@@ -33,6 +33,39 @@
             return true;
         } else { false; }   
     }// End of isSesssionExpired()
+    
+    function getActionCount($pollId) {
+        global $conn;
+        $actionCount = 0;
+        $query = "SELECT count(action_num) FROM Poll_Actions WHERE poll_id=?";
+        $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+        mysqli_stmt_bind_param($stmt, "i", $pollId) or die(mysqli_error($conn));
+        mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+        mysqli_stmt_bind_result($stmt, $actionCount) or die(mysqli_error($conn));
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $actionCount;
+    }
+
+    function getActionInfo($pollId) {
+        global $conn;
+        $actionInfoArray = array();
+        $fromLevel = $toLevel = $accelerated = "";
+
+        $query = "SELECT fromLevel,toLevel,accelerated FROM Poll_Actions WHERE poll_id=?";
+        $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+        mysqli_stmt_bind_param($stmt, "i", $pollId) or die(mysqli_error($conn));
+        mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+        mysqli_stmt_bind_result($stmt,$fromLevel,$toLevel,$accelerated) or die(mysqli_error($conn));
+        while(mysqli_stmt_fetch($stmt)) {
+            $actionInfo = array( "fromLevel" => $fromLevel,
+                            "toLevel" => $toLevel,
+                            "accelerated" => $accelerated );
+            $actionInfoArray[] = $actionInfo;
+        }
+        mysqli_stmt_close($stmt); 
+        return $actionInfoArray;
+    }
 
     function updateLastActivity() {
         $_SESSION['LAST_ACTIVITY'] = time();
@@ -251,7 +284,7 @@
         $result = mysqli_query($conn,$SELECT_CMD);
         if($result) {
             while($row = $result->fetch_assoc()) {
-                $data = $row;
+                $data[] = $row;
             }
             //echo 'Vote data: '; print_r($data);
             return json_encode($data);
@@ -376,13 +409,17 @@
                 $ASST = "Assistant Professor";
                 $ASSOC = "Associate Professor";
                 $FULL = "Full Professor";
-
+                // Poll types
+                $MERIT = "Merit";
+                $PROMOTION = "Promotion";
+                $REAPPOINTMENT = "Reappointment";
+                $FIFTH_YEAR_REVIEW = "Fifth Year Review";
+                $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
                 if(empty($_SESSION['title'])) {
                     $msg = 'User title not set. Redirecting to log in page...';
                     alertMsg($msg);
                     signOut();
                 }
-
                 // Poll data
                 $poll_id = $title = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
@@ -401,8 +438,6 @@
                     foreach($ids as $id) {
                         // Only display inactive polls
                         $selectCmd = "SELECT * FROM Polls WHERE poll_id=$id";
-                        //$selectCmd .= "OR CURDATE() >= deactDate";
-
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
                             while($row = $result->fetch_assoc()) {
@@ -412,14 +447,27 @@
                                 $pollType = $row["pollType"];
                                 $dept = $row["dept"];
                                 $effDate = $row["effDate"];
+                                $profTitle = $row['profTitle'];
                                 $pollData = array("READ_ONLY" => $READ_ONLY,
                                                 "poll_id" => $poll_id,
                                                 "deactDate" => $deactDate,
                                                 "name" => $name,
                                                 "pollType" => $pollType,
                                                 "dept" => $dept,
-                                                "effDate" => $effDate );
-                                //echo "pollData: ";print_r($pollData);
+                                                "effDate" => $effDate,
+                                                "profTitle" => $profTitle
+                                                ); // End $pollData array
+                                // Get additional pollData if neccessary
+                                if($pollType == $MERIT || $pollType == $PROMOTION) {
+                                    $numActions = getActionCount($id);
+                                    $actionInfoArray = getActionInfo($id);
+                                    $pollData['numActions'] = $numActions;
+                                    $pollData['actionInfoArray'] = $actionInfoArray;
+                                    //print_r($actionInfoArray);
+                                }
+                                // Encode $pollData array for storage/transfer
+                                $pollDataEncoded = json_encode($pollData);
+                                // End Loading poll data
                                 echo "<tr>
                                         <td>".
                                             $pollData['name']
@@ -433,19 +481,11 @@
                                         "</td>
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
-                                            // Poll types
-                                            $MERIT = "Merit";
-                                            $PROMOTION = "Promotion";
-                                            $REAPPOINTMENT = "Reappointment";
-                                            $FIFTH_YEAR_REVIEW = "Fifth Year Review";
-                                            $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
-
                                             // Vars
                                             $redirect = $voteData = '';
                                             $title = $_SESSION['title'];
                                             $pollType = $pollData['pollType'];
                                             $poll_id = $pollData['poll_id'];
-                                            $pollData = json_encode($pollData);
                                             //echo "json_encode(pollData): $pollData";
                                             if($title == $ASST) {
                                                 if($pollType == $MERIT) {
@@ -484,7 +524,7 @@
                                         echo"
                                         <form method='post' id='editPoll_$poll_id' action='$redirect'>
                                             <button class='btn btn-success'>View</button>
-                                            <input type='hidden' name='pollData' value='$pollData'>
+                                            <input type='hidden' name='pollData' value='$pollDataEncoded'>
                                             <input type='hidden' name='_voteData' value='$voteData'>
                                         </form>
                                     </td>           

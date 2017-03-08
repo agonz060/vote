@@ -212,7 +212,7 @@
         $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle)";
 	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$profTitle')";
 	//echo "$cmd";
 

@@ -255,7 +255,6 @@
                     alertMsg($msg);
                     signOut();
                 }
-
                 // Poll data
                 $poll_id = $title = $description = $endDate  = "";
                 $name = $effDate = $pollType = $dept = "";
@@ -270,7 +269,7 @@
                 } else {
                     foreach($ids as $id) {	    
                 	$pollData = array();
-			// Only display inactive polls
+			             // Only display inactive polls
                         $selectCmd = "SELECT * FROM Polls WHERE CURDATE() <= deactDate ";
                         $selectCmd .= "AND poll_id=$id";
                         $result = mysqli_query($conn,$selectCmd);
@@ -296,7 +295,9 @@
                                     $pollData['numActions'] = $numActions;
                                     $pollData['actionInfoArray'] = $actionInfoArray;
                                     //print_r($actionInfoArray);
-                                } else { $numActions = 0; }
+                                }
+                                // Encode $pollData array for storage/transfer
+                                $pollDataEncoded = json_encode($pollData);
                                 // End Loading poll data
                                 // Start displaying table
                                 $pollTitle = $row["title"];
@@ -322,8 +323,7 @@
                                             // Var's
                                             $redirect = '';
                                             $userTitle = $_SESSION['title'];                
-                                            $pollData = json_encode($pollData);
-
+                            
                                             if($userTitle == $ASST) {
                                                 if($pollType == $MERIT) {
                                                     $redirect = '../forms/merit.php';

@@ -98,10 +98,9 @@
 
     function associatePromoSubmit(&$v,&$p) {
         $error = updateAssociatePromoTable($v,$p);
-        /*if(!$error) {
+        if(!$error) {
             updateVotersTable($p);
-        }
-        */ 
+        } 
     }
     
     function updateMeritTable($v,&$p) {
@@ -288,14 +287,13 @@
 
     function updateAssociatePromoTable($v,&$p) {
         // Testing
-        print_r($v);
+        //print_r($p);
         // Function variables
-        $ACTION_INFO_ARRAY = "actionInfoArray";
         global $conn;
-        $poll_id = $user_id = $fromLevel = $toLevel = "";
-        $vote = $voteCmt = $deactDate = $numActions = "";
-        $actionInfoArray = "";
-        $numActions = $insertCount = 0;
+        $poll_id = $user_id = $vote = $voteCmt = "";
+        $deactDate = $numActions = "";
+        $insertCount = 0;
+        $actionInsertErrors = array();
         // Extract user session data
         if(!empty($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
@@ -317,30 +315,32 @@
         // Insert all actions into table, if poll is not expired and 
         if(!dataExists($p)) {
             if(!isPollExpired($deactDate)) {
-                $test = [];
                 while($insertCount < $numActions) {
+                    // Extract action array from vote data ($v)
                     $index = $insertCount;
-                    $fromLevel = $action['fromLevel'];
-                    $toLEvel = $action['toLevel'];
+                    $action = $v[$index];
+                    $actionNum = $index + 1;
+                    // Extract action data
                     $vote = $action['vote'];
                     $voteCmt = $action['voteCmt'];
-                    $actionNum = $action['actionNum'];
-                    
+                    // Insert action data into database
                     $INSERTCMD = "INSERT INTO Associate_Promotion_Data(poll_id,";
-                    $INSERTCMD .= "user_id,fromLevel,toLevel,vote,voteCmt,actionNum) ";
-                    $INSERTCMD .= "VALUES('$poll_id','$user_id','$fromLevel',";
-                    $INSERTCMD .= "'$toLevel','$vote','$voteCmt','$actionNum')";
-                    $result = mysqli_query($conn,$INSERTCMD);
+                    $INSERTCMD .= "user_id,vote, voteCmt, action_num) ";
+                    $INSERTCMD .= "VALUES('$poll_id','$user_id', ";
+                    $INSERTCMD .= "'$vote','$voteCmt','$actionNum')";
+                    $result = mysqli_query($conn,$INSERTCMD) or die (mysqli_error($conn));
                     if(!$result) { // Error executing $INSERTCMD
-                        $errorMsg = "Could not execute INSERT_CMD: $INSERTCMD while in";
-                        $errorMsg .= " updateAssociatePromoTable(...)";
-                        echo $errorMsg;
-                        return 1; // indicates error has occurred
-                    } else { return 0; } // End of successful insert into Assistant_Data table
-                    */$insertCount += 1;
+                        $actionInsertErrors[] = $actionNum;
+                    } 
+                    $insertCount += 1;
                 } 
-                //print_r($test);
-            }
+            } else {
+                date_default_timezone_set("America/Los_Angeles");
+                $currentTime = date("h:i:sa");
+                $errorMsg = "Poll has expired. Current time: $currentTIme";
+                echo $errorMsg;
+                return 1; 
+            } // End of else if(...)
         } else { // Error duplicate entry, only one submission allowed
             $errorMsg = "Dual submission encountered. Each participating voter";
             $errorMsg .= " may cast a vote once per poll.";
@@ -383,7 +383,7 @@
                 $errorMsg = "Poll expired before submitting vote.";
                 echo $errorMsg;
                 return 1; // Indicates an error has occurred
-            }
+            } // End of else if([pollExpired])
         } else { // Error duplicate entry, only one submission allowed
             $errorMsg = "Dual submission encountered. Each participating voter";
             $errorMsg .= " may cast a vote once per poll.";
