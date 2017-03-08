@@ -9,14 +9,7 @@
         signOut();
     } else {
         //echo 'two';
-        //timeSinceLastActivity();
         updateLastActivity();
-    }
-
-    function timeSinceLastActivity() {
-        $t = time() - $_SESSION['LAST_ACTIVITY'];
-        echo "Time since last activity: $t";
-        return;
     }
 
     function idleLimitReached() {
@@ -468,8 +461,8 @@
                                                     $redirect = '../forms/merit.php';
                                                 } else if($pollType == $PROMOTION) {
                                                     $voteData = getPromotionData($poll_id);
-                                                    $redirect = '../forms/assoc_full.php';
-                                                    //$redirect = '../forms/promotion.php';
+                                                    //$redirect = '../forms/assoc_full.php';
+                                                    $redirect = '../forms/promotion.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
                                                     $voteData = getReappointmentData($poll_id);
                                                     $redirect = '../forms/reappointment.php';
@@ -490,7 +483,6 @@
                                         }
                                         echo"
                                         <form method='post' id='editPoll_$poll_id' action='$redirect'>
-                                            <p id='testingRedirect'><font color='green'><h3>Redirect: $redirect</h3></font></p>
                                             <button class='btn btn-success'>View</button>
                                             <input type='hidden' name='pollData' value='$pollData'>
                                             <input type='hidden' name='_voteData' value='$voteData'>
@@ -507,7 +499,7 @@
                         }
                     } // End of displaying user edit table
                 }
-            // End of PHP ?>
+            ?>
         </tbody>
     </table>
 </div>

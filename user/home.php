@@ -155,17 +155,24 @@
     $outstandingVotes = getOutstandingVotes($conn, $_SESSION['user_id']);	    
 ?>
 <head>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
-    .button-signOut {
-        text-align: center;
-        color: white;
-        background: rgb(202,60,60);
-        width: 160px;
-    }
     .navbar {
 	margin-bottom: 0px;
+    }
+    div.jumbotron {
+    	background-image: url('http://newsroom.ucr.edu/images/releases/2787_0hi.jpg');
+	background-size: cover;
+	color: white;
+        background-repeat: no-repeat;
+        text-shadow: black 1px 1px 1px;
+	min-height: 100vh;
+	text-align: center;
+	margin-bottom: 0;
+    }
+    .btn-transparent {
+    	background-color: transparent;
+	border-color: white;
     }
 </style>
 </head>
@@ -186,12 +193,13 @@
 <div class="jumbotron">
 	<h1>Welcome <?php echo htmlspecialchars($_SESSION["userName"]); ?>!</h1>
 	<p>You have <?php echo $outstandingVotes; ?>  polls to vote on.</p>
+	<form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+	<div id="menu" name="menu" align="center">
+	    <button name="action" value="signOut" class="btn btn-transparent">Sign out</button>
+	</div>
+	</form>
+		
 </div>
-<form  method="POST" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-<div id="menu" name="menu" align="center">
-    <button name="action" value="signOut" class="button-signOut pure-button">Sign out</button>
-</div>
-</form>
 <!-- Web page HTML ends here -->
 <!-- JS begins here -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>    

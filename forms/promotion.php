@@ -323,7 +323,6 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             alert("Could not retrieve $actionInfoArray from server")
         } else {
             // Begin by adding action information to voteData
-            voteDataArray['actionInfoArray'] = actionInfoArray; 
             //console.log(voteDataArray);
             // get user input, one action at the time
             while(actionCount < numActions) {

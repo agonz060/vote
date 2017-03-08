@@ -83,7 +83,7 @@
     	$effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
 	$emailInfo = $removeList = [];
 	// Voting data
-	$profName = $fName = $lName = $profId = $pollData = $votingInfo = $numActions = "";
+	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
     	$voters = []; $actions = [];	
 	//Set Timezone
 	date_default_timezone_set('America/Los_Angeles');
@@ -108,9 +108,9 @@
 		} else { echo "savePoll.php: error reason not set"; }
 		if(isset($_POST["actions"])) {
 			$actions= ($_POST["actions"]);
-			$numActions = count($actions);
-		} else { $numActions = 0; }
-	}
+		} 
+	 //else { echo "savePoll.php: actions not set"; }
+    } // End of if($_SERVER(..))
     
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
@@ -199,12 +199,12 @@
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history'), effDate='$effDate',";
-        $cmd .= " name='$name', dept='$dept', pollType='$pollType', profTitle='$profTitle',numActions='$numActions' WHERE poll_id='$pollId'";	
+        $cmd .= " name='$name', dept='$dept', pollType='$pollType', profTitle='$profTitle' WHERE poll_id='$pollId'";	
         //echo "updating cmd: $cmd\n";
 		//echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
 			
-		if(!$result) { echo "savePoll.php: could not update Polls table\n"; }
+		if(!$result) { echo "savePoll.php: could not update Polls table\n".mysqli_error($conn)."\n"; }
 		
 	} else { // Create new Poll in database
         //echo "Poll id not found. Creating new poll\n";
@@ -212,8 +212,8 @@
         $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle,numActions)";
-	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$profTitle','$numActions')";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle";
+	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$profTitle')";
 	//echo "$cmd";
 
         $result = mysqli_query($conn,$cmd);	

@@ -66,6 +66,20 @@
     .navbar {
 	margin-bottom: 0px;
     }
+    div.jumbotron {
+	background-image: url('http://newsroom.ucr.edu/images/releases/2787_0hi.jpg');
+	background-size: cover;
+	color: white;
+	background-repeat: no-repeat;
+	text-shadow: black 1px 1px 1px;	
+	min-height: 100%;
+	text-align: center;
+	margin-bottom: 0;
+    }
+    .btn-transparent {
+    	background-color: transparent;
+	border-color: white;
+    }
 </style>
 </head>
 <nav class="navbar navbar-default">
@@ -84,14 +98,17 @@
 </nav>
 <div class="jumbotron">
 	<h1>Welcome <?php echo htmlspecialchars($_SESSION["userName"]); ?>!</h1>
+	<!-- Display menu options -->
+	<div id="menuButtons" align="center" >
+    		<form id="menuForm" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    			<button name="action" value="signOut" class="btn btn-transparent">Sign Out</button>
+    		</form>
+	</div> 
+
+	<!--
 	<p>You have <?php echo $outstandingVotes; ?> polls to vote on.</p>
+	-->
 </div>
-<!-- Display menu options -->
-<div id="menuButtons" align="center" >
-    <form id="menuForm" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <button name="action" value="signOut" class="btn btn-danger">Sign Out</button>
-    </form>
-</div> 
 <!-- End displaying menu buttons -->
 <!-- Scripting begins -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>

@@ -28,73 +28,41 @@
 	# User input processing begins here
 	if($_SERVER["REQUEST_METHOD"] == "POST") {
         //print_r($_POST);
-		# Check for pollId
-		# If pollId is set then it is an edit
-		# Initialize all values if edit
-		if(isset($_POST["poll_id"])) {
-			$pollId = cleanInput($_POST["poll_id"]);
-		}
+	# Check for pollId
+	# If pollId is set then it is an edit
+	# Initialize all values if edit
+	if(isset($_POST["poll_id"])) {
+		$pollId = cleanInput($_POST["poll_id"]);
+	}
+
+	# Check for title input; error if not provided
+	if(!empty($_POST["title"])) {
+		$title = cleanInput($_POST["title"]);
+		$validTitle = true;
+	}
+
+	# Check for valid activation date input
+	if(!empty($_POST["dateActive"])) {
+		$dateAct = $_POST["dateActive"];
+		$validActDate = true;
+	}	
+ 	
+ 	# Check for valid deactivation date input
+	if(!empty($_POST["dateDeactive"])) {
+		$dateDeact = $_POST["dateDeactive"];
+		$validDeactDate = true; 
+	}
+
+	# Check for valid Effective Date
+	if(!empty($_POST["effDate"])) {
+		$effDate = $_POST["effDate"];
+		$validEffDate = true;
+	}
 	
-		# Check for title input; error if not provided
-		if(empty($_POST["title"])) {
-			$errTitle = "* Title is required";
-		} else {
-			$title = cleanInput($_POST["title"]);
-			$validTitle = true;
-		}
-
-		# Check for valid activation date input
-		if(empty($_POST["dateActive"])) {
-			$errActDate = "* Invalid Activation Date";
-		} else {
-			$dateAct = $_POST["dateActive"];
-			$tmp_dateAct = new DateTime($dateAct);
-			list($year, $month, $day) = explode("-",$dateAct);
-			if(checkdate($month,$day,$year)) {
-				$validActDate = true;
-			} else {
-				$errActDate = "* Invalid Activation Date";
-			}
-		}	
-	 	
-	 	# Check for valid deactivation date input
-		if(empty($_POST["dateDeactive"])) {
-			$errDeactDate = "* Invalid Deactivation Date";  
-		} else {
-			$dateDeact = $_POST["dateDeactive"];
-			$tmp_dateDeact = new DateTime($dateDeact);
-			list($year,$month,$day) =explode("-",$dateDeact);	
-			if(checkdate($month,$day,$year)) {
-				if($tmp_dateAct && $tmp_dateDeact < $tmp_dateAct) {
-					$errDeactDate = "* Deactivation Date cannot come before Activation Date.";
-					$dateDeact = "";
-					$validDeactDate = false;
-				}		
-				$validDeactDate = true; 
-			}
-			else {
-				$errDeactDate = "* Invalid Deactivation Date";
-			}
-		}
-
-		# Check for valid Effective Date
-		if(empty($_POST["effDate"])) {
-			$errEffDate = "* Invalid Effective Date";
-		} else {
-			$effDate = $_POST["effDate"];
-			$tmp_effDate = new DateTime($effDate);
-			list($year, $month, $day) = explode("-",$effDate);
-			if(checkdate($month,$day,$year)) {
-				$validEffDate = true;
-			} else {
-				$errEffDate = "* Invalid Effective Date";
-			}
-		}
-		
-		# Process comment for selected professors
-		if(!empty($_POST["description"])) {
-			$description = cleanInput($_POST["description"]);
-		}
+	# Process comment for selected professors
+	if(!empty($_POST["description"])) {
+		$description = cleanInput($_POST["description"]);
+	}
 
         # Check for professor's name
         if(!empty($_POST["profName"])) {
@@ -124,7 +92,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 .error {color: #FF0000;}
-.form-inline .form-group {
+.form-inline .actionGroup {
 	margin-left: 0;	
 	margin-right: 0;
 }
@@ -150,14 +118,14 @@
 <!-- or process the data; User information remains in input area incase form -->
 <!-- data needs to be modified before being submitted -->
 <div class="container well">
-<form class="form-horizontal" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
+<form class="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
 	<div id="votingInfo"></div>
 	<h2 class="form-heading">Create Poll</h2>
 	<!-- Title of current vote -->
 	<div class="form-group">
 		<label for="title">Poll Title</label>
-		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
-		<span id="titleErr" class="help-block error"><?php echo "$errTitle";?></span>
+		<input type="text" class="form-control" name="title" id="title" placeholder="Poll Title" maxlength="30" value="<?php if(isset($_POST['title'])) { echo htmlentities ($_POST['title']); } ?>" >
+		<span id="titleErr" class="help-block error"></span>
 	</div>
 
 	<!-- Descriptions/Comments about vote -->
@@ -174,24 +142,24 @@
 	<div class="form-group">
 		<label for="dateActive">Poll Start Date</label>
 		<input type="text" class="form-control" name="dateActive" id="dateActive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateActive'])) { echo htmlentities ($_POST['dateActive']); } ?>" >
-		<span id="dateActErr" class="help-block error"><?php echo "$errActDate";?></span>
+		<span id="dateActErr" class="help-block error"></span>
 	</div>
 
 	<div class="form-group">
 		<label for="dateDeactive">Poll End Date</label>
 		<input type="text" class="form-control" name="dateDeactive" id="dateDeactive" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['dateDeactive'])) { echo htmlentities ($_POST['dateDeactive']); } ?>" >
-		<span id="dateDeactErr" class="help-block error"><?php echo "$errDeactDate";?></span>
+		<span id="dateDeactErr" class="help-block error"></span>
 	</div>
 
 	<div class="form-group">
 		<label for="effDate">Effective Date</label>
 		<input type="text" class="form-control" name="effDate" id="effDate" placeholder="YYYY-MM-DD" value="<?php if(isset($_POST['effDate'])) { echo htmlentities ($_POST['effDate']); } ?>" >
-		<span id="effDateErr" class="help-block error"><?php echo "$errEffDate";?></span>
+		<span id="effDateErr" class="help-block error"></span>
 	</div>
 	<div class="form-group">
 		<label for="profName">Professor's Name</label>
 		<input type="text" class="form-control" name="profName" id="profName" placeholder="Professor's Full Name" value="<?php if(isset($_POST['profName'])) { echo htmlentities ($_POST['profName']); } ?>" >
-		<span id="profNameErr" class="help-block error"><?php echo "$errProfName";?></span>
+		<span id="profNameErr" class="help-block error"></span>
 	</div>
 	<div class="form-group">
 		<label for="profTitle">Professor Title</label>
@@ -215,7 +183,7 @@
 	<div id="actions" class="form-group">
 		<div class="form-inline">
 		
-		<div class="form-group">
+		<div class="form-group actionGroup">
 			<label for="fromLevel">From</label>
 			<select class="form-control" name="fromLevel">
 				<option value="1">I</option>
@@ -228,7 +196,7 @@
 			</select>
 		</div>
 
-		<div class="form-group">
+		<div class="form-group actionGroup">
 			<label for="toLevel">To</label>
 			<select class="form-control" name="toLevel">
 				<option value="1">I</option>
@@ -240,7 +208,7 @@
 				<option value="7">VII</option>
 			</select>
 		</div>
-		<div class="form-group">
+		<div class="form-group actionGroup">
 			<label for="accelerated">Accelerated</label>
 			<select class="form-control" name="accelerated">
 				<option value="0">No</option>
@@ -248,7 +216,7 @@
 			</select>
 		</div>
 	
-		<div class="form-group">
+		<div class="form-group actionGroup">
 			<button type="button" class="btn btn-success addAction"><span class="glyphicon glyphicon-plus"></span></button>
 		</div>
 		</div>
@@ -345,6 +313,7 @@
 			
 	</div>
 	</div>
+	<br>
 	<div class="form-group">
 		<a href="home.php"><button type="button" class="btn btn-danger" value="Cancel">Cancel</button></a>
 		<button type="button" class="btn btn-primary" value="Save" onclick="pollAction(0)">Save</button>

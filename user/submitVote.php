@@ -320,7 +320,7 @@
                 $test = [];
                 while($insertCount < $numActions) {
                     $index = $insertCount;
-                    /*$fromLevel = $action['fromLevel'];
+                    $fromLevel = $action['fromLevel'];
                     $toLEvel = $action['toLevel'];
                     $vote = $action['vote'];
                     $voteCmt = $action['voteCmt'];
