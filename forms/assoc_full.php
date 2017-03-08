@@ -1,4 +1,3 @@
-<html>
 <?php 
     session_start();
     //var_dump($_SESSION);
@@ -88,7 +87,7 @@
 
             $name = $pollData['name'];
             $pollType = $pollData['pollType'];
-            $profTitle = "<font color='red'>TO DO</font>";
+            $profTitle = $pollData['profTitle'];
             $dept = $pollData['dept'];
             $effDate = $pollData['effDate'];
         } else { // Error  
@@ -123,6 +122,7 @@
     }
 // End of PHP 
 ?> 
+<html>
 <head>
 <title>Faculty Confidential Advisory Vote To The Chair</title>
 <style>

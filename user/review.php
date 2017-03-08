@@ -9,7 +9,6 @@
         signOut();
     } else {
         //echo 'two';
-        unsetPollVariables();
         //timeSinceLastActivity();
         updateLastActivity();
     }
@@ -157,7 +156,8 @@
             $msg .= 'Merit Data table';
             alertMsg($msg);
             return -1;
-        }
+	}
+    }
     function getReappointmentData($poll_id) {
         if(empty($_SESSION['user_id'])) {
             $msg = 'review.php: error - user_id not set. Redirecting to log in...';
@@ -469,6 +469,7 @@
                                                 } else if($pollType == $PROMOTION) {
                                                     $voteData = getPromotionData($poll_id);
                                                     $redirect = '../forms/assoc_full.php';
+                                                    //$redirect = '../forms/promotion.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
                                                     $voteData = getReappointmentData($poll_id);
                                                     $redirect = '../forms/reappointment.php';

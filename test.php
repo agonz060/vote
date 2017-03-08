@@ -1,8 +1,11 @@
 <?php 
 	session_start();
 	require_once 'testInclude.php';
-	test();
-	test();
+	require_once 'event/connDB.php';
+
+	cd 
+	//test();
+	//test();
 	/*$_SESSION['title'] = "Success sucka!!";
 	// Test $SESSION variables on ajax post
 	// will vars hold their value?

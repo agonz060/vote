@@ -1,12 +1,10 @@
 <?php 
     session_start();
-    
     //var_dump($_SESSION);
 
     if(idleTimeLimitReached()) {
         signOut();
     } else { 
-        unsetPollVariables();
         //timeSinceLastActivity();
         updateLastActivity(); 
     }
@@ -56,31 +54,6 @@
         saveSessionVars();
     }
 
-    function unsetPollVariables() {
-        // Session variables accessed
-        $CMT = "cmt";
-        $PROF_NAME = "profName";
-        $DESCRIPTION = "description";
-        $EFF_DATE = "effDate";
-        $POLL_ID = "poll_id";
-        $POLL_TYPE = "pollType";
-        $PROF_NAME = "profName";
-        $ACT_DATE = "actDate";
-        $DEACT_DATE = "deactDate";
-        $READ_ONLY = "READ_ONLY";
-        $DEPT = "dept";
-
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DESCRIPTION]);
-        unset($GLOBALS['_SESSION'][$CMT]);
-        unset($GLOBALS['_SESSION'][$POLL_ID]);
-        unset($GLOBALS['_SESSION'][$POLL_TYPE]);
-        unset($GLOBALS['_SESSION'][$PROF_NAME]);
-        unset($GLOBALS['_SESSION'][$DEACT_DATE]);
-        unset($GLOBALS['_SESSION'][$READ_ONLY]);
-        unset($GLOBALS['_SESSION'][$DEPT]);
-    }
-
     function signOut() {
         // Destroy previous session
         session_unset();
@@ -101,7 +74,41 @@
         echo $jsRedirect;
         return;
     } 
+
     require_once '../event/connDB.php';
+    // Start helper functions
+    function getActionCount($pollId) {
+        global $conn;
+        $actionCount = 0;
+        $query = "SELECT count(action_num) FROM Poll_Actions WHERE poll_id=?";
+        $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+        mysqli_stmt_bind_param($stmt, "i", $pollId) or die(mysqli_error($conn));
+        mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+        mysqli_stmt_bind_result($stmt, $actionCount) or die(mysqli_error($conn));
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $actionCount;
+    }
+
+    function getActionInfo($pollId) {
+        global $conn;
+        $actionInfoArray = array();
+        $fromLevel = $toLevel = $accelerated = "";
+
+        $query = "SELECT fromLevel,toLevel,accelerated FROM Poll_Actions WHERE poll_id=?";
+        $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
+        mysqli_stmt_bind_param($stmt, "i", $pollId) or die(mysqli_error($conn));
+        mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
+        mysqli_stmt_bind_result($stmt,$fromLevel,$toLevel,$accelerated) or die(mysqli_error($conn));
+        while(mysqli_stmt_fetch($stmt)) {
+            $actionInfo = array( "fromLevel" => $fromLevel,
+                            "toLevel" => $toLevel,
+                            "accelerated" => $accelerated );
+            $actionInfoArray[] = $actionInfo;
+        }
+        mysqli_stmt_close($stmt); 
+        return $actionInfoArray;
+    }
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         $HOME = "home";
@@ -236,6 +243,12 @@
                 $ASST = "Assistant Professor";
                 $ASSOC = "Associate Professor";
                 $FULL = "Full Professor";
+                // Poll types
+                $MERIT = "Merit";
+                $PROMOTION = "Promotion";
+                $REAPPOINTMENT = "Reappointment";
+                $FIFTH_YEAR_REVIEW = "Fifth Year Review";
+                $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
 
                 if(empty($_SESSION['title'])) {
                     $msg = 'User title not set. Redirecting to log in page...';
@@ -262,13 +275,30 @@
                         $selectCmd .= "AND poll_id=$id";
                         $result = mysqli_query($conn,$selectCmd);
                         if($result) { // Get poll data for displaying
+
                             while($row = $result->fetch_assoc()) {
+                                // Start loading poll data
+                                $numActions = 0;
+                                $actionInfoArray = 0;
+                                $pollType = $row['pollType'];
                                 $pollData = array( "poll_id" => $row['poll_id'],
                                                 "deactDate" => $row['deactDate'],
                                                 "name" => $row['name'],
-                                                "pollType" => $row['pollType'],
+                                                "pollType" => $pollType,
                                                 "dept" => $row['dept'],
-                                                "effDate" => $row['effDate'] );
+						                        "effDate" => $row['effDate'],
+					                            "profTitle" => $row['profTitle']	
+						                        ); // End $pollData array
+                                
+                                if($pollType == $MERIT || $pollType == $PROMOTION) {
+                                    $numActions = getActionCount($id);
+                                    $actionInfoArray = getActionInfo($id);
+                                    $pollData['numActions'] = $numActions;
+                                    $pollData['actionInfoArray'] = $actionInfoArray;
+                                    //print_r($actionInfoArray);
+                                } else { $numActions = 0; }
+                                // End Loading poll data
+                                // Start displaying table
                                 $pollTitle = $row["title"];
                                 $description = $row["description"];
                                 echo "<tr>
@@ -281,37 +311,29 @@
                                         <td>".
                                             $pollData['name']."
                                         </td>
-                                        <td>".
-                                            $pollData['pollType']."
+                                        <td>
+                                            $pollType
                                         </td>
                                         <td>".
                                             $pollData['deactDate']."
                                         </td>
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
-                                            // Poll types
-                                            $MERIT = "Merit";
-                                            $PROMOTION = "Promotion";
-                                            $REAPPOINTMENT = "Reappointment";
-                                            $FIFTH_YEAR_REVIEW = "Fifth Year Review";
-                                            $FIFTH_YEAR_APPRAISAL = "Fifth Year Appraisal";
-
                                             // Var's
                                             $redirect = '';
-                                            $title = $_SESSION['title'];                
-                                            $pollType = $pollData['pollType'];
+                                            $userTitle = $_SESSION['title'];                
                                             $pollData = json_encode($pollData);
 
-                                            if($title == $ASST) {
+                                            if($userTitle == $ASST) {
                                                 if($pollType == $MERIT) {
                                                     $redirect = '../forms/merit.php';
                                                 } else { // Only other form available to Assistant professors 
-                                                    //$redirect = '../forms/test.php';
                                                     $redirect = '../forms/asst.php';
                                                 }
-                                            } else if($title == $ASSOC || $title == $FULL) {
+                                            } else if($userTitle == $ASSOC || $userTitle == $FULL) {
                                                 if($pollType == $PROMOTION) {
-                                                    $redirect = '../forms/assoc_full.php';
+                                                    $redirect = '../forms/promotion.php';
+                                                    //$redirect = '../forms/assoc_full.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
                                                     $redirect = '../forms/reappointment.php';
                                                 } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
@@ -319,7 +341,7 @@
                                                 } else if($pollType == $FIFTH_YEAR_REVIEW) {
                                                     $redirect = '../forms/quinquennial.php';
                                                 }
-                                            } // End of if( $title == ($ASSOC || $FULL) )
+                                            } // End of if( $userTitle == ($ASSOC || $FULL) )
                                         } else { // $_SESSION['title'] not set, have user 
                                                 // log in to reload data
                                             $msg = "edit.php: error - user title not set.\n";
@@ -335,6 +357,7 @@
                                     </td>           
                                 </tr>";
                             } // End of while loop
+                            // End displaying table
                         } else { // Error executing select cmd 
                             $msg = "edit.php: error when executing selectCmd.\n";
                             $msg .= "Could not display table. Redirecting to home page...";

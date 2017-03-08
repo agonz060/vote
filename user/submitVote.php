@@ -5,6 +5,7 @@
     // Vote and poll variables
     $voteData = $pollData = "";
     if($_SERVER["REQUEST_METHOD"] == "POST") {
+        //print_r($_POST);
         if(!empty($_POST['voteData'])) {
             $voteData = $_POST['voteData'];
         } else { echo "voteData was not provided"; return; }
@@ -56,7 +57,17 @@
             }
         }
     }
-    
+
+
+    function assistantSubmit(&$v,&$p) {
+        $error = updateAssistantTable($v,$p);
+        if($error) {
+            $errorMsg = "Something went wrong while updating Assistant_Data table";
+            echo $errorMsg;
+        } else { 
+            updateVotersTable($p);
+        }
+    }
     function meritSubmit(&$v,&$p) {
         $error = updateMeritTable($v,$p);
         if(!$error) {
@@ -87,9 +98,10 @@
 
     function associatePromoSubmit(&$v,&$p) {
         $error = updateAssociatePromoTable($v,$p);
-        if(!$error) {
+        /*if(!$error) {
             updateVotersTable($p);
-        } 
+        }
+        */ 
     }
     
     function updateMeritTable($v,&$p) {
@@ -275,46 +287,60 @@
     }
 
     function updateAssociatePromoTable($v,&$p) {
+        // Testing
+        print_r($v);
+        // Function variables
+        $ACTION_INFO_ARRAY = "actionInfoArray";
         global $conn;
         $poll_id = $user_id = $fromLevel = $toLevel = "";
-        $vote = $voteCmt = $deactDate = "";
-
-        if(!empty($p['poll_id'])) {
-            $poll_id = $p['poll_id'];
-        }
+        $vote = $voteCmt = $deactDate = $numActions = "";
+        $actionInfoArray = "";
+        $numActions = $insertCount = 0;
+        // Extract user session data
         if(!empty($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
         }
-        if(!empty($v['fromLevel'])) {
-            $fromLevel = $v['fromLevel'];
-        }
-        if(!empty($v['toLevel'])) {
-            $toLevel = $v['toLevel'];
-        }
-        if(!empty($v['vote'])) {
-            $vote = $v['vote'];
-        }
-        if(!empty($v['voteCmt'])) {
-            $voteCmt = $v['voteCmt'];
+        // Extract Poll data
+        if(!empty($p['poll_id'])) {
+            $poll_id = $p['poll_id'];
         }
         if(!empty($p['deactDate'])) {
             $deactDate = $p['deactDate'];
         }
+        if(!empty($p['numActions'])) {
+            $numActions = $p['numActions'];
+        }
+        // Extract vote data
+        //$actionInfoArray = json_decode($v[$ACTION_INFO_ARRAY]);
+        //print_r($actionInfoArray);
 
+        // Insert all actions into table, if poll is not expired and 
         if(!dataExists($p)) {
             if(!isPollExpired($deactDate)) {
-                $INSERTCMD = "INSERT INTO Associate_Promotion_Data(poll_id,";
-                $INSERTCMD .= "user_id,fromLevel,toLevel,vote,voteCmt) ";
-                $INSERTCMD .= "VALUES('$poll_id','$user_id','$fromLevel',";
-                $INSERTCMD .= "'$toLevel','$vote','$voteCmt')";
-                $result = mysqli_query($conn,$INSERTCMD);
-                if(!$result) { // Error executing $INSERTCMD
-                    $errorMsg = "Could not execute INSERT_CMD: $INSERTCMD while in";
-                    $errorMsg .= " updateAssociatePromoTable(...)";
-                    echo $errorMsg;
-                    return 1; // indicates error has occurred
-                } else { return 0; } // End of successful insert into Assistant_Data table
-            } 
+                $test = [];
+                while($insertCount < $numActions) {
+                    $index = $insertCount;
+                    /*$fromLevel = $action['fromLevel'];
+                    $toLEvel = $action['toLevel'];
+                    $vote = $action['vote'];
+                    $voteCmt = $action['voteCmt'];
+                    $actionNum = $action['actionNum'];
+                    
+                    $INSERTCMD = "INSERT INTO Associate_Promotion_Data(poll_id,";
+                    $INSERTCMD .= "user_id,fromLevel,toLevel,vote,voteCmt,actionNum) ";
+                    $INSERTCMD .= "VALUES('$poll_id','$user_id','$fromLevel',";
+                    $INSERTCMD .= "'$toLevel','$vote','$voteCmt','$actionNum')";
+                    $result = mysqli_query($conn,$INSERTCMD);
+                    if(!$result) { // Error executing $INSERTCMD
+                        $errorMsg = "Could not execute INSERT_CMD: $INSERTCMD while in";
+                        $errorMsg .= " updateAssociatePromoTable(...)";
+                        echo $errorMsg;
+                        return 1; // indicates error has occurred
+                    } else { return 0; } // End of successful insert into Assistant_Data table
+                    */$insertCount += 1;
+                } 
+                //print_r($test);
+            }
         } else { // Error duplicate entry, only one submission allowed
             $errorMsg = "Dual submission encountered. Each participating voter";
             $errorMsg .= " may cast a vote once per poll.";
@@ -323,15 +349,6 @@
         }
     }
 
-    function assistantSubmit(&$v,&$p) {
-        $error = updateAssistantTable($v,$p);
-        if(!$error) {
-            updateVotersTable($p);
-        } else { // Something went wrong while updating assistant data table
-            $errorMsg = "Something went wrong while updating Assistant_Data table";
-            echo $errorMsg;
-        }
-    }
 
     function updateAssistantTable($v,&$p) {
         global $conn;
