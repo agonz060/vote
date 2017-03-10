@@ -144,7 +144,7 @@
 <?php
     function getOutstandingVotes($conn, $user_id) {
     	    $outstandingVotes = 0;
-	    $query = "SELECT count(user_id) AS COUNT FROM Voters WHERE user_id=?";
+	    $query = "SELECT count(user_id) AS COUNT FROM Voters WHERE user_id=? AND voteFlag=0";
 	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
 	    mysqli_stmt_bind_param($stmt, "s", $user_id) or die(mysqli_error($conn));
 	    mysqli_stmt_execute($stmt) or die($conn->error) or die(mysqli_error($conn));
@@ -155,6 +155,7 @@
     $outstandingVotes = getOutstandingVotes($conn, $_SESSION['user_id']);	    
 ?>
 <head>
+<title>Home</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
     .navbar {

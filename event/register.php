@@ -125,6 +125,7 @@ function cleanInput($data) {
 <!-- End PHP -->
 <html>
 <head>
+<title>Register</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
     .error {color: #FF0000;}

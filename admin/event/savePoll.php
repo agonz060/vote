@@ -234,7 +234,7 @@
 				//echo "savePoll.php: could not execute INSERT command $cmd\n"; 
 		} 
 	}// End of updating Polls table
-    
+   //If Multiple Actions are set in forms(Only applicable for Merrit and Promotion) 
     if($actions) {
 	    $oldActionCount = 0;
 	    $query = "SELECT count(action_num) FROM Poll_Actions WHERE poll_id=?";
@@ -245,6 +245,7 @@
 	    mysqli_stmt_fetch($stmt);
 	    mysqli_stmt_close($stmt);
 	    //echo $oldActionCount; 
+	    //Deletes old Poll Actions 
 	    if($oldActionCount) {
 	    	   $query = "DELETE FROM Poll_Actions WHERE poll_id=?";
 		   $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
@@ -252,6 +253,7 @@
 		   mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
 	    	   mysqli_stmt_close($stmt);
 	    }
+	    //Insert new Poll Actions
 	    $actionNum = $fromLevel = $toLevel = $accelerated = -1;
 	    $query = "INSERT INTO Poll_Actions(poll_id, action_num, fromLevel, toLevel, accelerated) VALUES(?,?,?,?,?)";
 	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
@@ -265,12 +267,10 @@
 	    }	
 	    mysqli_stmt_close($stmt);
     } 		
-		
+    //****Get rid of voter comments		
     if($votingInfo) {// Update Voters table
         //echo "Updating Voters table\n";
-        // votingInfo = { "profName" => "comment" } 
         $profNames = array_keys($votingInfo);
-        //echo 'profNames: '; print_r($profNames);
 
         // Get all previously saved participants of the current vote
         $getProfsCmd = "SELECT user_id FROM Voters WHERE poll_id='$pollId'";
