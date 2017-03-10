@@ -1,5 +1,0 @@
-assoc_full|lastName|evalType|title|fromLevel|toLevel|dept|dept|vote|comment
-asst|lastName|comment
-fifthYearAppraisal|lastName|dept|effDate|vote|teaching|research|pubService
-quinquennial|lastName|dept|effDate|vote|qualifications|comment
-reappointment|lastName|dept|effDate|vote|comment

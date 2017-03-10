@@ -75,7 +75,7 @@
         //print_r($_POST);
         //echo "here";
         if(!empty($_POST['cancelVote'])) {
-            echo "canceling vote";
+            //echo "canceling vote";
             cancelVote();
         }
 
@@ -129,7 +129,7 @@
 </style>
 </head>
 <body>
-<form id="myForm" style="width:70%; margin: 0 auto" method="post" action=<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form id="myForm" style="width:70%; margin: 0 auto" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <h2 align="center">Faculty Confidential Advisory To Vote To The Chair</h2>
 <h2 align="center">**PLEASE CAST A VOTE ON ALL DECISION**</h2>
 <div>

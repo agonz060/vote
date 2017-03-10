@@ -46,7 +46,9 @@
                 assistantSubmit($v,$p);
             }
         } else if($title == $ASSOC || $title == $FULL) {
-            if($pollType == $PROMOTION) {
+            if($pollType == $MERIT) {
+                meritSubmit($v,$p);
+            } else if($pollType == $PROMOTION) {
                 associatePromoSubmit($v,$p);
             } else if($pollType == $REAPPOINTMENT) {
                 reappointmentSubmit($v,$p);
@@ -105,39 +107,53 @@
     
     function updateMeritTable($v,&$p) {
         global $conn;
-        $poll_id = $user_id = $deactDate = $vote = "";
-        $voteCmt = "";
-
+        $poll_id = $user_id = $vote = $voteCmt = "";
+        $deactDate = $numActions = "";
+        $insertCount = 0;
+        $actionInsertErrors = array();
+        // Extract user session data
+        if(!empty($_SESSION['user_id'])) {
+            $user_id = $_SESSION['user_id'];
+        }
+        // Extract Poll data
         if(!empty($p['poll_id'])) {
             $poll_id = $p['poll_id'];
         }
         if(!empty($p['deactDate'])) {
             $deactDate = $p['deactDate'];
         }
-        if(!empty($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
+        if(!empty($p['numActions'])) {
+            $numActions = $p['numActions'];
         }
-        if(!empty($v['vote'])) {
-            $vote = $v['vote'];
-        }
-        if(!empty($v['voteCmt'])) {
-            $voteCmt = $v['voteCmt'];
-            $voteCmt = mysqli_real_escape_string($conn,$voteCmt);
-        }
+        // Insert all actions into table, if poll is not expired and 
         if(!dataExists($p)) {
             if(!isPollExpired($deactDate)) {
-                $INSERTCMD = "INSERT INTO Merit_Data";
-                $INSERTCMD .= "(poll_id,user_id,vote,voteCmt)";
-                $INSERTCMD .= "VALUES('$poll_id','$user_id','$vote','$voteCmt')";
-
-                $result = mysqli_query($conn,$INSERTCMD);
-                if(!$result) { // Error executing $INSERTCMD
-                    $errorMsg = "Could not execute: $INSERTCMD while in";
-                    $errorMsg .= " updateReappointmentTable(...)";
-                    echo $errorMsg;
-                    return 1; // indicates error has occurred
-                } else { return 0; } // End of successful insert into Merit_Data table
-            } 
+                while($insertCount < $numActions) {
+                    // Extract action array from vote data ($v)
+                    $index = $insertCount;
+                    $action = $v[$index];
+                    $actionNum = $index + 1;
+                    // Extract action data
+                    $vote = $action['vote'];
+                    $voteCmt = $action['voteCmt'];
+                    // Insert action data into database
+                    $INSERTCMD = "INSERT INTO Merit_Data(poll_id,";
+                    $INSERTCMD .= "user_id,vote, voteCmt, action_num) ";
+                    $INSERTCMD .= "VALUES('$poll_id','$user_id', ";
+                    $INSERTCMD .= "'$vote','$voteCmt','$actionNum')";
+                    $result = mysqli_query($conn,$INSERTCMD) or die (mysqli_error($conn));
+                    if(!$result) { // Error executing $INSERTCMD
+                        $actionInsertErrors[] = $actionNum;
+                    } 
+                    $insertCount += 1;
+                } 
+            } else {
+                date_default_timezone_set("America/Los_Angeles");
+                $currentTime = date("h:i:sa");
+                $errorMsg = "Poll has expired. Current time: $currentTIme";
+                echo $errorMsg;
+                return 1; 
+            } // End of else if(...)
         } else { // Error duplicate entry, only one submission allowed
             $errorMsg = "Dual submission encountered. Each participating voter";
             $errorMsg .= " may cast a vote once per poll.";
@@ -286,8 +302,6 @@
     }
 
     function updateAssociatePromoTable($v,&$p) {
-        // Testing
-        //print_r($p);
         // Function variables
         global $conn;
         $poll_id = $user_id = $vote = $voteCmt = "";
@@ -308,10 +322,6 @@
         if(!empty($p['numActions'])) {
             $numActions = $p['numActions'];
         }
-        // Extract vote data
-        //$actionInfoArray = json_decode($v[$ACTION_INFO_ARRAY]);
-        //print_r($actionInfoArray);
-
         // Insert all actions into table, if poll is not expired and 
         if(!dataExists($p)) {
             if(!isPollExpired($deactDate)) {

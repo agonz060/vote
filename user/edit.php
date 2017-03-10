@@ -257,7 +257,7 @@
                 }
                 // Poll data
                 $poll_id = $title = $description = $endDate  = "";
-                $name = $effDate = $pollType = $dept = "";
+                $name = $effDate = $pollType = $dept = $profTitle = "";
 
                 $ids = getPollIDs();
                 if($ids == -1) {
@@ -280,15 +280,16 @@
                                 $numActions = 0;
                                 $actionInfoArray = 0;
                                 $pollType = $row['pollType'];
+                                $profTitle = $row['profTitle'];
                                 $pollData = array( "poll_id" => $row['poll_id'],
                                                 "deactDate" => $row['deactDate'],
                                                 "name" => $row['name'],
                                                 "pollType" => $pollType,
                                                 "dept" => $row['dept'],
 						                        "effDate" => $row['effDate'],
-					                            "profTitle" => $row['profTitle']	
+					                            "profTitle" => $profTitle	
 						                        ); // End $pollData array
-                                
+                                //print_r($pollData);
                                 if($pollType == $MERIT || $pollType == $PROMOTION) {
                                     $numActions = getActionCount($id);
                                     $actionInfoArray = getActionInfo($id);
@@ -298,6 +299,7 @@
                                 }
                                 // Encode $pollData array for storage/transfer
                                 $pollDataEncoded = json_encode($pollData);
+
                                 // End Loading poll data
                                 // Start displaying table
                                 $pollTitle = $row["title"];
@@ -320,18 +322,86 @@
                                         </td>
                                         <td>";
                                         if(!empty($_SESSION['title'])) {
-                                            // Var's
+                                            // Relative path to forms
+                                            $ASST_FORM = '../forms/asst.php';
+                                            $ADVISORY_VOTE_FORM = "../forms/assoc_full.php";
+                                            $REAPPOINTMENT_FORM = "../forms/reappointment.php";
+                                            $PROMOTION_FORM = '../forms/promotion.php';
+                                            $MERIT_FORM = '../forms/merit.php'; 
+                                            $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
+                                            // Variables
                                             $redirect = '';
                                             $userTitle = $_SESSION['title'];                
-                            
-                                            if($userTitle == $ASST) {
+                                            // Logic structure to determine who 
+                                            if($pollType == $REAPPOINTMENT) {
+                                                if($userTitle == $ASST) {
+                                                    if($profTitle == $ASST || $profTitle == $ASSOC) {
+                                                        $redirect = $REAPPOINTMENT_FORM;
+                                                    } else { $redirect = $ASST_FORM; }
+                                                } else { // $userTitle == $ASSOC || $userTitle == $FULL 
+                                                    $redirect = $REAPPOINTMENT_FORM;
+                                                }
+                                            } else if($pollType == $PROMOTION || $pollType == $FIFTH_YEAR_REVIEW) {
+                                                if($userTitle == $ASST) {
+                                                    if($profTitle == $ASSOC) {
+                                                        $redirect = $PROMOTION_FORM;
+                                                    } else if($profTitle == $FULL) { 
+                                                        $redirect == $ASST_FORM; 
+                                                    }
+                                                } else if($userTitle == $ASSOC) {
+                                                    if($profTitle == $ASSOC) {
+                                                        if($pollType == $PROMOTION) {
+                                                            $redirect = $PROMOTION_FORM;
+                                                        } else if ($pollType == $FIFTH_YEAR_REVIEW) {
+                                                            $redirect = $FIFTH_YEAR_REVIEW_FORM;
+                                                        }
+                                                    } else if($profTitle == $FULL) {
+                                                        $redirect = $ASST_FORM;
+                                                    }
+                                                } else if($userTitle == $FULL) {
+                                                    if($profTitle == $ASSOC || $profTitle == $FULL) {
+                                                        if($pollType == $PROMOTION) {
+                                                            $redirect = $PROMOTION_FORM;
+                                                        } else if($pollType == $FIFTH_YEAR_REVIEW) {
+                                                            $redirect = $FIFTH_YEAR_REVIEW_FORM;
+                                                        }
+                                                    }
+                                                }
+                                            } else if($pollType == $MERIT) {
+                                                if($userTitle == $ASST) {
+                                                    if($profTitle == $ASST || $profTitle == $ASSOC) {
+                                                        $redirect = $MERIT_FORM;
+                                                    } else if($profTitle == $FULL) {
+                                                        $redirect = $ASST_FORM;
+                                                    }
+                                                } else if($userTitle == $ASSOC) {
+                                                    if($profTitle == $ASST || $profTitle == $ASSOC) {
+                                                        $redirect = $MERIT_FORM;
+                                                    } else if($profTitle == $FULL) {
+                                                        $redirect = $ASST;
+                                                    }
+                                                } else if($userTitle == $FULL) {
+                                                    $redirect = $MERIT_FORM;
+                                                }
+                                            } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
+                                                if($userTitle == $ASST) {
+                                                    if($profTitle == $ASSOC) {
+                                                        $redirect = $FIFTH_YEAR_APPRAISALagi_FORM;
+                                                    }
+                                                } else if($userTitle == $ASSOC || $userTitle == $FULL) {
+                                                    $redirect = $FIFTH_YEAR_APPRAISAL_FORM;
+                                                }
+                                            } 
+                                            /*if($userTitle == $ASST) {
                                                 if($pollType == $MERIT) {
                                                     $redirect = '../forms/merit.php';
                                                 } else { // Only other form available to Assistant professors 
                                                     $redirect = '../forms/asst.php';
                                                 }
                                             } else if($userTitle == $ASSOC || $userTitle == $FULL) {
-                                                if($pollType == $PROMOTION) {
+                                                if($pollType == $MERIT) {
+                                                    $redirect = '../forms/merit.php';
+                                                } else if($pollType == $PROMOTION) {
                                                     $redirect = '../forms/promotion.php';
                                                     //$redirect = '../forms/assoc_full.php';
                                                 } else if($pollType == $REAPPOINTMENT) {
@@ -342,6 +412,7 @@
                                                     $redirect = '../forms/quinquennial.php';
                                                 }
                                             } // End of if( $userTitle == ($ASSOC || $FULL) )
+                                            */
                                         } else { // $_SESSION['title'] not set, have user 
                                                 // log in to reload data
                                             $msg = "edit.php: error - user title not set.\n";
@@ -350,9 +421,10 @@
                                             signOut();
                                         }
                                         echo"
+                                        redirect: $redirect
                                         <form method='post' id='editForm' action='$redirect'>
                                             <button class='btn btn-success'>Edit</button>
-                                            <input type='hidden' name='pollData' value='$pollData'>
+                                            <input type='hidden' name='pollData' value='$pollDataEncoded'>
                                         </form>
                                     </td>           
                                 </tr>";

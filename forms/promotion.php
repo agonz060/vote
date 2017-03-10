@@ -88,8 +88,8 @@
             $pollType = $pollData['pollType'];
             $profTitle = $pollData['profTitle'];
             $dept = $pollData['dept'];
-	       $effDate = $pollData['effDate'];
-	       $numActions = $pollData['numActions'];
+	        $effDate = $pollData['effDate'];
+	        $numActions = $pollData['numActions'];
 
             if(isset($pollData['actionInfoArray'])) {
                 $actionInfoArray = $pollData['actionInfoArray'];
@@ -185,21 +185,11 @@ Comments not discussed at the meeting will not be reflected in the department le
 </div>
 <hr>
 <!-- Start voting options -->
-<?php  // Displaying voting options in PHP
-    
+<?php  // Displaying voting options in PHP  
     // Voting options are broken up into HTML strings stored in variables
     // to be display appropiate actions (i.e if a vote has 2 actions, then
     // $action = $intro, $step, $outro, $voteOptions, $completeVoteComment will  
     // be displayed twice) 
-    $outro = " in the Department of $dept, effective $effDate <br>\n</p>";
-    
-    $userVoteCmtArray = "";
-
-    if(empty($pollData['READ_ONLY'])) {
-        if(isset($_voteData["voteCmts"])) {
-            $userVoteCmtArray = $_voteData["voteCmts"];
-        }
-    }
     $displayActions = array();
     // 
     if($numActions > 0 && $numActions <= 3) {
@@ -220,44 +210,33 @@ Comments not discussed at the meeting will not be reflected in the department le
                 // Accelerted intro
                 $intro = "<div>\n<p>\nI cast my vote regarding the recomendation for $name's Accelerated $pollType from $profTitle, ";
             } 
-
+            // Setup var's
             $fromLevel = intToRoman($actionInfo['fromLevel']);
             $toLevel = intToRoman($actionInfo['toLevel']);
+            // Setup the rest of html strings using variable data
             $step = "Step ".$fromLevel." (OS) to Professor, Step ".$toLevel;
-            
+            $outro = " in the Department of $dept, effective $effDate <br>\n</p>";
             $voteOptions = "In Favor: <input type='radio' name='".$voteNum."' value='1'>&nbsp;&nbsp;&nbsp;  
                             Opposed: <input type='radio' name='".$voteNum."' value='2'>&nbsp;&nbsp;&nbsp;
                             Abstain: <input type='radio' name='".$voteNum."' value='3'><br>\n<hr>";
             $startVoteComment = "Comments:<br>
                                 <textarea id= 'voteCmt".$actionNum."' rows='8' style='width:100%'>";
             $endVoteComment = "</textarea>\n</div>\n<hr>";
-
-            $completeVoteComment = "";
-            if(empty($userVoteCmtArray)) { 
-                // User has not submitted form before,ie there is no user comment data
-                $completeVoteComment = $startVoteComment . $endVoteComment;
-            } else { // User has submitted this form before, so load data
-                $cmtIndex = $actionCount + 1;
-                if($cmtIndex < count($userVoteCmtArray)) {
-                    $completeVoteComment = $starVoteComment;
-                    $completeVoteComment .= $userVoteCmtArray[$cmtIndex];
-                    $completeVoteComment .= $endVoteComment;
-                }
-            }
-
+            // Combine comment parts
+            $completeVoteComment = $startVoteComment . $endVoteComment;
+            // Tie everything together
             $action = $intro . $step . $outro . $voteOptions . $completeVoteComment;
-
+            // Add action to action array
             $displayActions[] = $action;
             $actionCount += 1;
         } // End of while
-
+        // Display actions
         $displayCount = 0;
         while($displayCount < $numActions) {
             echo $displayActions[$displayCount];
             $displayCount += 1;
         }
     } // End of Displaying Actions
-
 // End displaying voting options in PHP ?>
 <!-- End voting options -->
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -275,31 +254,35 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 </body>
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
 <script>
-
-    //loadVoteData();
-
     // Document ready
     $(function() {
         $("#submitButton").click(function() {
             //getVoteData();
             submitVote();
         });
-        // Check if form can be modified
+        loadVoteData();
     });
 
     function loadVoteData() {
         var ERROR = -1;
+        var VOTE = "vote";
+        var VOTECMT = "voteCmt";
         var displayCount = 0;
         var numActions = 0;
+        var index = 0;
+        var actionNum = 0;
+        var vote = 0;
+        var voteCmt = "";
+        var voteSeletor = "";
+        var voteCmtSelector = "";
+        var voteData = [];
         var loadData = <?php if(empty($pollData['READ_ONLY'])) { echo 0; }
                                 else { echo 1; } ?>;
-        var voteData = <?php if(isset($_voteData)) {
+        var voteDataArray = <?php if(isset($_voteData)) {
                                 echo json_encode($_voteData);
                             } else { echo 0; }?>;
+        //console.log(voteData);
         if(loadData && voteData) { 
-            voteData = JSON.parse(voteData);
-            console.log(voteData);
-
             numActions = <?php if(isset($numActions)) { 
                                 echo $numActions; 
                             }   else { echo -1; } ?>;
@@ -307,21 +290,32 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             if(numActions == ERROR) {
                 alert("Could not retrieve $numActions from server");
             }  else {  // Proceed to Display action data    
-                while(displayCount < numActions) { /*
-                    var vote = <?php if(!empty($_voteData['vote'])) 
-                                        { echo $_voteData['vote']; } 
-                                        else { echo 0; } ?>;
-
-                
-                    $('#fromLevel option[value='+fromLevel+']').attr('selected','selected');
-                    $('#toLevel option[value='+toLevel+']').attr('selected','selected');
-                    $('input[name=vote][value='+vote+']').attr('checked','checked');
-                    */
+                while(displayCount < numActions) {
+                    index = displayCount;
+                    actionNum = index + 1;
+                    voteData = voteDataArray[index];
+                    // Extract vote and vote comment from voteData array
+                    try {
+                        // Setup voteSelector
+                        vote = voteData[VOTE];
+                        voteSelector = "input[name=vote" + actionNum + "]";
+                        voteSelector += "[value=" + vote + "]";
+                        // Setup voteCmtSelector
+                        voteCmt = voteData[VOTECMT];
+                        voteCmtSelector = "#voteCmt" + actionNum;
+                        // Load data
+                        $(voteSelector).attr('checked','checked');
+                        $(voteCmtSelector).html(voteCmt);
+                    } catch(error) {
+                        // This is to prevent any notifications that might
+                        // occur from voteData not containing data being accessed
+                        // in the try section
+                    }
+                    displayCount += 1;
                 } // End of while(displayCount < numActions)
             } // End of else(...)
         } // End if(loadData) 
     }
-
     function getVoteData() {
         var ERROR = -1;
         var actionCount = 0;
@@ -383,10 +377,10 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(!isReadOnly) {
         var userVoteData = getVoteData();
             if(userVoteData) {
-                console.log(userVoteData);
+                //console.log(userVoteData);
                 //alert(userVoteData);
                 var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
-                console.log(_pollData);
+                //console.log(_pollData);
                 //alert(_pollData);
                 if(_pollData) {
                     $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
