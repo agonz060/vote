@@ -1,7 +1,7 @@
 USE Voting;
 DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Professors;
 DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data;
-DROP TABLE IF EXISTS Fifth_Year_Review_Data, Reappointment_Data, Poll_Actions, Merrit_Data; 
+DROP TABLE IF EXISTS Fifth_Year_Review_Data, Reappointment_Data, Poll_Actions, Merit_Data; 
 DROP TABLE IF EXISTS Polls;
 CREATE TABLE Polls (
     poll_id int NOT NULL AUTO_INCREMENT,
@@ -92,7 +92,7 @@ CREATE TABLE Poll_Actions (
 	PRIMARY KEY(poll_id,action_num),
 	FOREIGN KEY(poll_id) REFERENCES Polls(poll_id) ON DELETE CASCADE
 );
-CREATE TABLE Merrit_Data (
+CREATE TABLE Merit_Data (
 	poll_id INT NOT NULL,
 	user_id INT NOT NULL,
 	vote INT NOT NULL,
