@@ -89,6 +89,7 @@
 ?>
 <html>
 <head>
+<title>Create Poll</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 .error {color: #FF0000;}
@@ -242,7 +243,7 @@
 		<!-- Selection displays the names and titles of professors -->
 		<select multiple class="form-control" id="profSel" size="20" ondblclick="addToSelected()">
 		<?php
-		$selectCmd = "SELECT user_id, fName, lName, title FROM Users WHERE title !='Administrator'";
+		$selectCmd = "SELECT user_id, fName, lName, title FROM Users WHERE title !='Administrator' ORDER BY fName ASC";
 
 		$result = $conn->query($selectCmd);
 

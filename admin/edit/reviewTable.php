@@ -12,6 +12,7 @@
 ?>
 <html>
 <head>
+<title>Review Polls</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 	.button-review {
@@ -52,8 +53,7 @@
 	</thead>
 	<tbody>
 		<?php
-			// Only display inactive polls (polls that have a start date > current date) 
-			$selectCmd="Select * from Polls";
+			$selectCmd="Select * from Polls ORDER BY actDate DESC, title ASC";
 			$result = $conn->query($selectCmd);
 
 			// Get poll data for displaying

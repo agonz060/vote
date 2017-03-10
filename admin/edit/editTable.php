@@ -13,6 +13,7 @@
 ?>
 <html>
 <head>
+<title>Edit Polls</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head>
 <body>
@@ -47,7 +48,7 @@
 	<tbody>
 		<?php
 			// Only display inactive polls (polls that have a start date > current date) 
-			$selectCmd="Select * from Polls Where deactDate > CURDATE()";
+			$selectCmd="Select * from Polls Where deactDate > CURDATE() ORDER BY actDate DESC, title ASC";
 			$result = $conn->query($selectCmd);
 
 			// Get poll data for displaying
