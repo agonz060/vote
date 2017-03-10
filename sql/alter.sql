@@ -6,8 +6,12 @@ DROP TABLE IF EXISTS Poll_Actions;
 
 CREATE TABLE Poll_Actions (
     poll_id INT NOT NULL,
-       
-
+    action_num INT NOT NULL,
+    fromLevel INT NOT NULL,
+    toLevel INT NOT NULL,
+    accelerated INT NOT NULL,
+    PRIMARY KEY(poll_id,action_num)
+);
 CREATE TABLE Merit_Data (
     poll_id INT NOT NULL,
     user_id INT NOT NULL,

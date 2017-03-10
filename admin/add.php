@@ -1,7 +1,7 @@
 <?php 
     session_start();
 
-    require_once "event/sessionHandling.php";
+   /* require_once "event/sessionHandling.php";
     require_once "event/redirections.php";
 
     if(!isAdmin()) {
@@ -9,8 +9,7 @@
     } else if(idleLimitReached()) {
         signOut();
     }
-?>
-<?php
+    */
 require_once 'event/connDB.php';
 #<!-- Define variables -->
 $firstName = $lastName = $email = $title = $pass1 = $pass2 = $hashPass = "";

@@ -76,7 +76,7 @@
 /* Session verification ends here */ 
 	//echo "Entering savePoll.php\n";
 	require_once 'connDB.php';
-    	require_once "../mailer/autoload.php";
+   	require_once "../mailer/autoload.php";
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = $profTitle = "";
@@ -108,9 +108,9 @@
 		} else { echo "savePoll.php: error reason not set"; }
 		if(isset($_POST["actions"])) {
 			$actions= ($_POST["actions"]);
-		} //else { echo "savePoll.php: actions not set"; }
-
-	}
+		} 
+	 //else { echo "savePoll.php: actions not set"; }
+    } // End of if($_SERVER(..))
     
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
@@ -230,7 +230,9 @@
                 //echo 'New pollId: '.$pollId."\n";
                 //echo "Finished updating Polls table\n";
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
-        } else { echo "savePoll.php: could not execute INSERT command $cmd\n"; } 
+        } else { echo mysqli_error($conn); 
+				//echo "savePoll.php: could not execute INSERT command $cmd\n"; 
+		} 
 	}// End of updating Polls table
    //If Multiple Actions are set in forms(Only applicable for Merrit and Promotion) 
     if($actions) {
