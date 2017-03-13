@@ -273,7 +273,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(!isReadOnly) {
         var userVoteData = getVoteData();
         if(userVoteData) {
-            alert(userVoteData);
+            //alert(userVoteData);
             var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
             //alert(_pollData);
             if(_pollData) {

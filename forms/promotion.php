@@ -73,7 +73,7 @@
     $READ_ONLY = "";
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
-        //print_r($_POST);
+        print_r($_POST);
         //echo "here";
         if(!empty($_POST['cancelVote'])) {
             echo "canceling vote";

@@ -233,9 +233,7 @@ function getVoteData() {
 
         if(_vote > 0 && _vote <= 3) {
             var voteData = { vote: _vote, voteCmt: _voteCmt };
-            /*var voteDataStr = "vote: "+_vote;
-            	voteDataStr += "comments: " + _comments; */
-    		//alert(voteDataStr);
+            //console.log(voteData);
             return voteData;
         }
     } else { // Vote missing 
