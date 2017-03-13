@@ -6,7 +6,7 @@
     
     if(!isAdmin()) {
         signOut();
-    } else if(idleLimitReached()) {
+    } elseif(idleLimitReached()) {
         signOut();
     }
 /* Session verification ends here */ 
@@ -414,7 +414,7 @@ $(document).ready(function() {
 function addToSelected() {
 	// Get the name of the professor that was doubled clicked
     var profName = $("#profSel").val();
-    console.log(profName);
+    //console.log(profName);
     if(profName != null) {
 		// Check to the 'selected' list so that duplicates are not add to the list
 		var selectedProfs = document.getElementById("selected");
