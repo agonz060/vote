@@ -330,7 +330,6 @@
                                             $PROMOTION_FORM = '../forms/promotion.php';
                                             $MERIT_FORM = '../forms/merit.php'; 
                                             $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
-                                            $FIFTH_YEAR_APPRAISAL_FORM = '../forms/fifthYearAppraisal.php';
                                             // Variables
                                             $redirect = '';
                                             $userTitle = $_SESSION['title'];                
