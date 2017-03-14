@@ -489,7 +489,8 @@
                                             $PROMOTION_FORM = '../forms/promotion.php';
                                             $MERIT_FORM = '../forms/merit.php'; 
                                             $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
-                                            // Vars
+					    $FIFTH_YEAR_APPRAISAL_FORM = "../forms/fifthYearAppraisal.php";
+					    // Vars
                                             $redirect = $voteData = '';
                                             $userTitle = $_SESSION['title'];
                                             $poll_id = $pollData['poll_id'];

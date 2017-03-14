@@ -330,7 +330,8 @@
                                             $PROMOTION_FORM = '../forms/promotion.php';
                                             $MERIT_FORM = '../forms/merit.php'; 
                                             $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
-                                            // Variables
+					    $FIFTH_YEAR_APPRAISAL_FORM = "../forms/fifthYearAppraisal.php";
+					    // Variables
                                             $redirect = '';
                                             $userTitle = $_SESSION['title'];                
                                             // Logic structure to determine who 
@@ -387,7 +388,7 @@
                                             } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
                                                 if($userTitle == $ASST) {
                                                     if($profTitle == $ASSOC) {
-                                                        $redirect = $FIFTH_YEAR_APPRAISALagi_FORM;
+                                                        $redirect = $FIFTH_YEAR_APPRAISAL_FORM;
                                                     }
                                                 } else if($userTitle == $ASSOC || $userTitle == $FULL) {
                                                     $redirect = $FIFTH_YEAR_APPRAISAL_FORM;

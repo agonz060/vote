@@ -54,7 +54,7 @@
                 reappointmentSubmit($v,$p);
             } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
                 fifthYrAppraisalSubmit($v,$p);
-            } else if($polltype == $FIFTH_YEAR_REVIEW) {
+            } else if($pollType == $FIFTH_YEAR_REVIEW) {
                 fifthYrReviewSubmit($v,$p);
             }
         }

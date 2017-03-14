@@ -133,7 +133,7 @@
 		$totalVotes = $voteCounts['eligible'];
 		$stmt = "SELECT $pollDataTable.vote, count($pollDataTable.vote) as voteCount FROM $pollDataTable INNER JOIN Users ON Users.user_id=$pollDataTable.user_id";
 		$stmt .= " WHERE Users.title $titleRestriction AND $pollDataTable.poll_id=$pollId GROUP BY $pollDataTable.vote";
-		$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
+		//$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
 		$result = $conn->query($stmt) or die($conn->error);
 		while($row = $result->fetch_assoc()) {
 			$vote = $row["vote"];
