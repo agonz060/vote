@@ -230,7 +230,7 @@
             while($row = $result->fetch_assoc()) {
                 $data = $row;
             }
-            //echo 'Vote data: '; pr  int_r($data);
+            //echo 'Vote data: '; print_r($data);
             return json_encode($data);
             //return $data;     
         } else { // Error occured while executing command
@@ -489,8 +489,7 @@
                                             $PROMOTION_FORM = '../forms/promotion.php';
                                             $MERIT_FORM = '../forms/merit.php'; 
                                             $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
-					    $FIFTH_YEAR_APPRAISAL_FORM = "../forms/fifthYearAppraisal.php";
-					    // Vars
+                                            // Variables
                                             $redirect = $voteData = '';
                                             $userTitle = $_SESSION['title'];
                                             $poll_id = $pollData['poll_id'];
@@ -510,8 +509,13 @@
                                             } else if($pollType == $PROMOTION || $pollType == $FIFTH_YEAR_REVIEW) {
                                                 if($userTitle == $ASST) {
                                                     if($profTitle == $ASSOC) {
-                                                        $voteData = getPromotionData($poll_id);
-                                                        $redirect = $PROMOTION_FORM;
+                                                        if($pollType == $PROMOTION) {
+                                                            $voteData = getPromotionData($poll_id);
+                                                            $redirect = $PROMOTION_FORM;
+                                                        } else if($pollType == $FIFTH_YEAR_REVIEW) {
+                                                            $voteData = getFifthYearReviewData($poll_id);
+                                                            $redirect = $FIFTH_YEAR_REVIEW_FORM;
+                                                        }
                                                     } else if($profTitle == $FULL) { 
                                                         $voteData = getAssistantData($poll_id);
                                                         $redirect == $ASST_FORM; 
