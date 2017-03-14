@@ -165,20 +165,20 @@
 	<div class="form-group">
 		<label for="profTitle">Professor Title</label>
 		<select class="form-control" id="profTitle" name="profTitle">
-    			<option>Full Professor</option>
-    			<option>Associate Professor</option>
-    			<option>Assistant Professor</option>
+    			<option value="Assistant Professor">Assistant Professor</option>
+    			<option value="Associate Professor">Associate Professor</option>
+    			<option value="Full Professor">Full Professor</option>
 		</select>
 	</div>
 
 	<div class="form-group">
 		<label for="pollType">Poll Type</label>
 		<select class="form-control" name="pollType" id="pollType">
-    			<option value="Promotion">Promotion</option>
-    			<option value="Merit">Merit</option>
-    			<option value="Reappointment">Reappointment</option>
-    			<option value="Fifth Year Review">Fifth Year Review</option>
+       			<option value="Fifth Year Review">Fifth Year Review</option>
     			<option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
+    			<option value="Merit">Merit</option>
+			<option value="Promotion">Promotion</option>
+			<option value="Reappointment">Reappointment</option>
 		</select>
 	</div>
 	<div id="actions" class="form-group">
@@ -638,8 +638,15 @@ $(".delAction").on('click',removePollAction);
 $("#pollType").change(function() {
 	if($(this).val() === "Promotion" || $(this).val() === "Merit") { 
 		$("#actions").show();
+		if($(this).val() === "Promotion") {
+			$("#profTitle option[value='Assistant Professor']").hide();	
+		}
+		else {
+			$("#profTitle option[value='Assistant Professor']").show();
+		}
 	}
 	else {
+		$("#profTitle option[value='Assistant Professor']").show();
 		$("#actions").hide();
 	}
 });
