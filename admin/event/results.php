@@ -30,8 +30,8 @@
 	//Returns the appropriate SQL table to be used for each pollType
 	function pollTypeToTable($pollType) {
 		switch($pollType) {
-			case "Merrit":
-				return "Merrit_Data";
+			case "Merit":
+				return "Merit_Data";
 			case "Promotion":
 				return "Associate_Promotion_Data";
 			case "Reappointment":
@@ -79,7 +79,7 @@
 		}
 		return $eligible;
 	}
-	//Merrits and Promotions
+	//Merits and Promotions
 	function getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType, $conn, $advisoryFlag=0) {
 		$titleRestriction = getTitleRestrictions($profTitle, $pollType,$advisoryFlag);
 		$multiVoteCounts = [];
@@ -108,13 +108,13 @@
 				$vote = $row["vote"];
 				$voteCount = $row["voteCount"];
 				$totalVotes = $totalVotes - $voteCount;
-				if($vote == "0") {
+				if($vote == "1") {
 					$multiVoteCounts[$key]['for'] = $voteCount;
 				}
-				if($vote == "1") {
+				if($vote == "2") {
 					$multiVoteCounts[$key]['against'] = $voteCount;
 				}
-				if($vote == "2") {
+				if($vote == "3") {
 					$multiVoteCounts[$key]['abstain'] = $voteCount;
 				}
 			}
@@ -139,13 +139,13 @@
 			$vote = $row["vote"];
 			$voteCount = $row["voteCount"];
 			$totalVotes = $totalVotes - $voteCount;
-			if($vote == "0") {
+			if($vote == "1") {
 				$voteCounts['for'] = $voteCount;
 			}
-			if($vote == "1") {
+			if($vote == "2") {
 				$voteCounts['against'] = $voteCount;
 			}
-			if($vote == "2") {
+			if($vote == "3") {
 				$voteCounts['abstain'] = $voteCount;
 			}
 		}
@@ -205,7 +205,7 @@
 	if(empty($pollDataTable)) {
 		echo 'No Table for this pollType';
 	}
-	if($pollType == "Merrit" || $pollType == "Promotion") {
+	if($pollType == "Merit" || $pollType == "Promotion") {
 		$multiActionCounts = getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn);
 		$multiAdActionCounts = getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn,1); 
 		foreach($multiActionCounts as $key => $item) {
