@@ -121,10 +121,10 @@
             if($menuOption == $HOME) {
                 updateAndSaveSession();
                 redirectToHomePage();
-            } else if($menuOption == $REVIEW) {
+            } elseif($menuOption == $REVIEW) {
                 updateAndSaveSession();
                 redirectToReviewPage();
-            } else if($menuOption == $SIGN_OUT) {
+            } elseif($menuOption == $SIGN_OUT) {
                 signOut();
             }
         }
@@ -332,7 +332,8 @@
                                             $FIFTH_YEAR_REVIEW_FORM = "../forms/quinquennial.php";
                                             // Variables
                                             $redirect = '';
-                                            $userTitle = $_SESSION['title'];                
+                                            $userTitle = $_SESSION['title']; 
+                                            print("pollType: $pollType userTitle: $userTitle");               
                                             // Logic structure to determine who 
                                             if($pollType == $REAPPOINTMENT) {
                                                 if($userTitle == $ASST) {
@@ -342,78 +343,61 @@
                                                 } else { // $userTitle == $ASSOC || $userTitle == $FULL 
                                                     $redirect = $REAPPOINTMENT_FORM;
                                                 }
-                                            } else if($pollType == $PROMOTION || $pollType == $FIFTH_YEAR_REVIEW) {
+                                            } elseif($pollType == $PROMOTION || $pollType == $FIFTH_YEAR_REVIEW) {
+                                                //print "here";
                                                 if($userTitle == $ASST) {
-                                                    if($profTitle == $ASSOC) {
-                                                        $redirect = $PROMOTION_FORM;
-                                                    } else if($profTitle == $FULL) { 
-                                                        $redirect == $ASST_FORM; 
-                                                    }
-                                                } else if($userTitle == $ASSOC) {
+                        
                                                     if($profTitle == $ASSOC) {
                                                         if($pollType == $PROMOTION) {
                                                             $redirect = $PROMOTION_FORM;
-                                                        } else if ($pollType == $FIFTH_YEAR_REVIEW) {
+                                                        } elseif($pollType == $FIFTH_YEAR_REVIEW) {
                                                             $redirect = $FIFTH_YEAR_REVIEW_FORM;
                                                         }
-                                                    } else if($profTitle == $FULL) {
+                                                    } elseif($profTitle == $FULL) { 
+                                                        $redirect = $ASST_FORM; 
+                                                    } 
+                                                } elseif($userTitle == $ASSOC) {
+                                                    if($profTitle == $ASSOC) {
+                                                        if($pollType == $PROMOTION) {
+                                                            $redirect = $PROMOTION_FORM;
+                                                        } elseif ($pollType == $FIFTH_YEAR_REVIEW) {
+                                                            $redirect = $FIFTH_YEAR_REVIEW_FORM;
+                                                        }
+                                                    } elseif($profTitle == $FULL) {
                                                         $redirect = $ASST_FORM;
                                                     }
-                                                } else if($userTitle == $FULL) {
-                                                    if($profTitle == $ASSOC || $profTitle == $FULL) {
-                                                        if($pollType == $PROMOTION) {
-                                                            $redirect = $PROMOTION_FORM;
-                                                        } else if($pollType == $FIFTH_YEAR_REVIEW) {
-                                                            $redirect = $FIFTH_YEAR_REVIEW_FORM;
-                                                        }
+                                                } elseif($userTitle == $FULL) {
+                                                    if($pollType == $PROMOTION) {
+                                                        $redirect = $PROMOTION_FORM;
+                                                    } elseif($pollType == $FIFTH_YEAR_REVIEW) {
+                                                        $redirect = $FIFTH_YEAR_REVIEW_FORM;
                                                     }
                                                 }
-                                            } else if($pollType == $MERIT) {
+                                            } elseif($pollType == $MERIT) {
                                                 if($userTitle == $ASST) {
                                                     if($profTitle == $ASST || $profTitle == $ASSOC) {
                                                         $redirect = $MERIT_FORM;
-                                                    } else if($profTitle == $FULL) {
+                                                    } elseif($profTitle == $FULL) {
                                                         $redirect = $ASST_FORM;
                                                     }
-                                                } else if($userTitle == $ASSOC) {
+                                                } elseif($userTitle == $ASSOC) {
                                                     if($profTitle == $ASST || $profTitle == $ASSOC) {
                                                         $redirect = $MERIT_FORM;
-                                                    } else if($profTitle == $FULL) {
+                                                    } elseif($profTitle == $FULL) {
                                                         $redirect = $ASST;
                                                     }
-                                                } else if($userTitle == $FULL) {
+                                                } elseif($userTitle == $FULL) {
                                                     $redirect = $MERIT_FORM;
                                                 }
-                                            } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
+                                            } elseif($pollType == $FIFTH_YEAR_APPRAISAL) {
                                                 if($userTitle == $ASST) {
                                                     if($profTitle == $ASSOC) {
-                                                        $redirect = $FIFTH_YEAR_APPRAISALagi_FORM;
+                                                        $redirect = $FIFTH_YEAR_APPRAISAL_FORM;
                                                     }
-                                                } else if($userTitle == $ASSOC || $userTitle == $FULL) {
+                                                } elseif($userTitle == $ASSOC || $userTitle == $FULL) {
                                                     $redirect = $FIFTH_YEAR_APPRAISAL_FORM;
                                                 }
                                             } 
-                                            /*if($userTitle == $ASST) {
-                                                if($pollType == $MERIT) {
-                                                    $redirect = '../forms/merit.php';
-                                                } else { // Only other form available to Assistant professors 
-                                                    $redirect = '../forms/asst.php';
-                                                }
-                                            } else if($userTitle == $ASSOC || $userTitle == $FULL) {
-                                                if($pollType == $MERIT) {
-                                                    $redirect = '../forms/merit.php';
-                                                } else if($pollType == $PROMOTION) {
-                                                    $redirect = '../forms/promotion.php';
-                                                    //$redirect = '../forms/assoc_full.php';
-                                                } else if($pollType == $REAPPOINTMENT) {
-                                                    $redirect = '../forms/reappointment.php';
-                                                } else if($pollType == $FIFTH_YEAR_APPRAISAL) {
-                                                    $redirect = '../forms/fifthYearAppraisal.php';
-                                                } else if($pollType == $FIFTH_YEAR_REVIEW) {
-                                                    $redirect = '../forms/quinquennial.php';
-                                                }
-                                            } // End of if( $userTitle == ($ASSOC || $FULL) )
-                                            */
                                         } else { // $_SESSION['title'] not set, have user 
                                                 // log in to reload data
                                             $msg = "edit.php: error - user title not set.\n";

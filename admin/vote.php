@@ -6,7 +6,7 @@
     
     if(!isAdmin()) {
         signOut();
-    } else if(idleLimitReached()) {
+    } elseif(idleLimitReached()) {
         signOut();
     }
 /* Session verification ends here */ 
@@ -165,20 +165,20 @@
 	<div class="form-group">
 		<label for="profTitle">Professor Title</label>
 		<select class="form-control" id="profTitle" name="profTitle">
-    			<option>Full Professor</option>
-    			<option>Associate Professor</option>
-    			<option>Assistant Professor</option>
+    			<option value="Assistant Professor">Assistant Professor</option>
+    			<option value="Associate Professor">Associate Professor</option>
+    			<option value="Full Professor">Full Professor</option>
 		</select>
 	</div>
 
 	<div class="form-group">
 		<label for="pollType">Poll Type</label>
 		<select class="form-control" name="pollType" id="pollType">
-    			<option value="Promotion">Promotion</option>
-    			<option value="Merit">Merit</option>
-    			<option value="Reappointment">Reappointment</option>
-    			<option value="Fifth Year Review">Fifth Year Review</option>
+       			<option value="Fifth Year Review">Fifth Year Review</option>
     			<option value="Fifth Year Appraisal">Fifth Year Appraisal</option>
+    			<option value="Merit">Merit</option>
+			<option value="Promotion">Promotion</option>
+			<option value="Reappointment">Reappointment</option>
 		</select>
 	</div>
 	<div id="actions" class="form-group">
@@ -319,6 +319,7 @@
 		<a href="home.php"><button type="button" class="btn btn-danger" value="Cancel">Cancel</button></a>
 		<button type="button" class="btn btn-primary" value="Save" onclick="pollAction(0)">Save</button>
 		<button type="button" class="btn btn-success" value="Start" onclick="pollAction(1)">Start</button>
+		<span id="formErrorMessage" class="help-block error"></span>
 	</div>
 	<!--
 	<div class="form-group">
@@ -413,32 +414,32 @@ $(document).ready(function() {
 function addToSelected() {
 	// Get the name of the professor that was doubled clicked
     var profName = $("#profSel").val();
-	
-	// Check to the 'selected' list so that duplicates are not add to the list
-	var selectedProfs = document.getElementById("selected");
-	var professors = selectedProfs.options;
-	var profFound = false;
-	for(var x=0; x < professors.length; x++) {
-		if(professors[x].value == profName) {
-			profFound = true;
+    //console.log(profName);
+    if(profName != null) {
+		// Check to the 'selected' list so that duplicates are not add to the list
+		var selectedProfs = document.getElementById("selected");
+		var professors = selectedProfs.options;
+		var profFound = false;
+		for(var x=0; x < professors.length; x++) {
+			if(professors[x].value == profName) {
+				profFound = true;
+			}
 		}
-	}
-
-	// Add the professor to the 'selected' list
-	// Keep track of selected professors so that comments can be 
-	// associated with a professor 	
-	if(!profFound) {
-		// Places the selected list in a variable so that options can be added to the list 
-		var option = document.createElement("option");
-		option.text = profName;
-		option.value = profName;
-		selectedProfs.add(option);
-
-		// Create input field to store any comments for the professor
-		createProfCmtField(profName,"");
-	} else {
-		alert(profName+" is already selected to participate.");
-	}
+		// Add the professor to the 'selected' list
+		// Keep track of selected professors so that comments can be 
+		// associated with a professor 	
+		if(profFound) {
+			alert(profName+" is already selected to participate.");
+		} else {
+			// Places the selected list in a variable so that options can be added to the list 
+			var option = document.createElement("option");
+			option.text = profName;
+			option.value = profName;
+			selectedProfs.add(option);
+			// Create input field to store any comments for the professor
+			createProfCmtField(profName,"");
+		}
+	} // End of if
 }; // End of addToSelected()
 
 function getActions() {
@@ -468,44 +469,67 @@ function pollAction(sendFlag) {
 	var dept = $('#dept option:selected').text();	
 	var emailCmt = $('#emailCmt').val();
 	if(pollType == 'Promotion' || pollType == 'Merit') { actions = getActions(); }
-		
+	// Setting All flags
 	var validTitle = validDescr = validAct = validDeact = validDateEff = 0;
 	var validPollType = validDept = validData = 0;
-    	var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
-    	var validName = validPollType = validDept = validData = 0;
-    
+    var validTitle = validDescr = validAct = validDeact = validEffDate = 0;
+    var validName = validPollType = validDept = validData = 0;
+    var formError = 0;
     if(!title || title.length == 0) {
         $("#titleErr").text("* Title required");
-    } else { validTitle = 1; }
+    } else { 
+    	$("#titleErr").text("");
+    	validTitle = 1; }
 
     if(!dateActive || dateActive.length == 0) {
         $("#dateActErr").text("* Date required");
-    } else { validActDate = 1; }
+    } else { 
+    	$("#dateActErr").text("");
+    	validActDate = 1; 
+    }
 
     if(!dateDeactive || dateDeactive.length == 0) {
         $("#dateDeactErr").text("* Date required");
-    } else { validDeactDate = 1; }
+    } else { 
+    	$("#dateDeactErr").text("");
+    	validDeactDate = 1; 
+    }
 
     if(!effDate || effDate.length == 0) {
         $("#effDateErr").text("* Date required");
-    } else { validEffDate = 1; } 
+    } else { 
+    	$("#effDateErr").text("");
+    	validEffDate = 1; 
+    } 
 
     if(!pollType || pollType.length == 0) {
         $("#pollTypeErr").text("* Poll type required");
-    } else { validPollType = 1; } 
+    } else { 
+    	$("#pollTypeErr").text("");
+    	validPollType = 1; 
+    } 
 
     if(!dept || dept.length == 0) {
         $("#deptErr").text("* Department required");
-    } else { validDept = 1; } 
-   
+    } else { 
+    	$("#deptErr").text("");
+    	validDept = 1; 
+    } 
     if(!profName || profName.length == 0) {
         $('#profNameErr').text('* Name required');
-    } else { validName = 1; }
-
+    } else { 
+    	$('#profNameErr').text('');
+    	validName = 1; 
+    }
+    // Set valid data flag if all form data is present and correct
     if(validTitle && validActDate && validDeactDate && validEffDate && validPollType && validDept) {
         if(validName) {
             validData = 1;
-        }
+        } else { formError = 1; }
+    } else { formError = 1; }
+
+    if(formError) {
+    	$('#formErrorMessage').text("Some form data is incorrect or missing.");
     }
 
         // Create pollData object
@@ -638,8 +662,15 @@ $(".delAction").on('click',removePollAction);
 $("#pollType").change(function() {
 	if($(this).val() === "Promotion" || $(this).val() === "Merit") { 
 		$("#actions").show();
+		if($(this).val() === "Promotion") {
+			$("#profTitle option[value='Assistant Professor']").hide();	
+		}
+		else {
+			$("#profTitle option[value='Assistant Professor']").show();
+		}
 	}
 	else {
+		$("#profTitle option[value='Assistant Professor']").show();
 		$("#actions").hide();
 	}
 });

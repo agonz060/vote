@@ -158,24 +158,26 @@ I cast my vote regarding the recomendation for <?php
 // End PHP ?>
 </p>
 Positive: <input type="radio" id="positiveVote" name="vote" value="1"><br>
-Positive with qualifications: <input type="radio" name="vote" value="2"><br>
+<!--
+Positive with qualifications: <input type="radio" name="vote" value="1"><br>
 <p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote cannot be cast unless
 reasons for qualification(s) are discussed at the department meeting)<br></p>
+-->
 <!-- <textarea id="qualificationsCmts" name="qualifications" row="8" style="width:100%; display:none"></textarea> -->
-Opposed: <input type="radio" id="opposedVote" name="vote" value="3"><br>
-Abstain: <input type="radio" id="abstainVote" name="vote" value="4"><br>
+Opposed: <input type="radio" id="opposedVote" name="vote" value="2"><br>
+Abstain: <input type="radio" id="abstainVote" name="vote" value="3"><br>
 <hr/>
 <strong>TEACHING</strong> (Please list positive and negative aspects):<br>
 <textarea id="teachingCmts" name="teaching" rows="8" style="width:100%">
-    <?php if(!empty($_voteData)) { echo $_voteData['teachingCmts']; } ?>
+<?php if(!empty($_voteData)) { echo $_voteData['teachingCmts']; } ?>
 </textarea>
 <strong>RESEARCH</strong> (Please list positive and negative aspects):<br>
 <textarea id="researchCmts" name="research" rows="8" style="width:100%">
-    <?php if(!empty($_voteData)) { echo $_voteData['researchCmts']; } ?>
+<?php if(!empty($_voteData)) { echo $_voteData['researchCmts']; } ?>
 </textarea>
 <strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):<br>
 <textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%">
-    <?php if(!empty($_voteData)) { echo $_voteData['pubServiceCmts']; } ?>
+<?php if(!empty($_voteData)) { echo $_voteData['pubServiceCmts']; } ?>
 </textarea>
 </div>
 <hr/>
@@ -273,7 +275,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         if(!isReadOnly) {
         var userVoteData = getVoteData();
         if(userVoteData) {
-            alert(userVoteData);
+            //alert(userVoteData);
             var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
             //alert(_pollData);
             if(_pollData) {

@@ -30,8 +30,8 @@
 	//Returns the appropriate SQL table to be used for each pollType
 	function pollTypeToTable($pollType) {
 		switch($pollType) {
-			case "Merrit":
-				return "Merrit_Data";
+			case "Merit":
+				return "Merit_Data";
 			case "Promotion":
 				return "Associate_Promotion_Data";
 			case "Reappointment":
@@ -44,13 +44,34 @@
 				return "";
 		}	
 	}
+	function getTitleRestrictions($profTitle, $pollType, $advisoryVote) {
+		$titleRestriction = "";
+		if($profTitle == "Full Professor") {
+			if($pollType == "Promotion" || $pollType == "Merit" || $pollType == "Fifth Year Review") {
+				if(!$advisoryVote) { $titleRestriction = "='Full Professor'"; }
+			}
+			elseif($pollType == "Reappointment") {
+				if(!$advisoryVote) { $titleRestriction = "!='Assistant Professor'"; }
+			}
+			else {
+				if(!$advisoryVote) { $titleRestriction = "!='Assistant Professor'"; }
+				else { $titleRestriction = "='Assistant Professor'"; }
+	
+			}
+		}
+		else {
+			if($advisoryVote) { $titleRestriction= "='Assistant Professor'";}
+			else { $titleRestriction ="!='Assistant Professor'";}
+		}
+		return $titleRestriction;
+	}	
  	//Gets the count of all eligible voters in a poll. 	
-	function getEligibleVotes($poll_id, $conn,$advisoryFlag=0) {
-		if($advisoryFlag == 1) { $titleRestriction="=";}
-		else { $titleRestriction="!=";}
+	function getEligibleVotes($poll_id, $profTitle, $pollType,$conn,$advisoryFlag=0) {
+		$titleRestriction = getTitleRestrictions($profTitle, $pollType,$advisoryFlag);
+		if($titleRestriction == "" && $advisoryFlag) {return 0;}
 		$eligible = 0;
 		$stmt = "SELECT count(Voters.user_id) AS Eligible FROM Voters INNER JOIN Users ON Users.user_id=Voters.user_id";
-		$stmt = $stmt." WHERE Users.title $titleRestriction'Assistant Professor' and Voters.poll_id='$poll_id' GROUP BY Voters.poll_id";
+		$stmt = $stmt." WHERE Users.title $titleRestriction and Voters.poll_id='$poll_id' GROUP BY Voters.poll_id";
 		//echo $stmt . '\n';
 		$result = $conn->query($stmt) or die($conn->error);
 		while($row=$result->fetch_assoc()) {
@@ -58,12 +79,11 @@
 		}
 		return $eligible;
 	}
-	//Merrits and Promotions
-	function getMultiActionCounts($pollId, $pollDataTable, $conn, $advisoryFlag=0) {
-		if($advisoryFlag == 1) { $titleRestriction="=";}
-		else { $titleRestriction="!=";}
+	//Merits and Promotions
+	function getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType, $conn, $advisoryFlag=0) {
+		$titleRestriction = getTitleRestrictions($profTitle, $pollType,$advisoryFlag);
 		$multiVoteCounts = [];
-		$eligibleVotes = getEligibleVotes($pollId,$conn,$advisoryFlag);
+		$eligibleVotes = getEligibleVotes($pollId,$profTitle,$pollType,$conn,$advisoryFlag);
 		$stmt = "SELECT * from Poll_Actions WHERE poll_id=$pollId";
 		$result = $conn->query($stmt) or die($conn->error);
 		while($row = $result->fetch_assoc()) {
@@ -71,24 +91,30 @@
 			$multiVoteCounts[$action_num]['fromLevel'] = $row["fromLevel"];
 			$multiVoteCounts[$action_num]['toLevel'] = $row["toLevel"];
 			$multiVoteCounts[$action_num]['accelerated'] = $row["toLevel"];
+			$multiVoteCounts[$action_num]['for'] = 0;
+			$multiVoteCounts[$action_num]['against'] = 0;
+			$multiVoteCounts[$action_num]['abstain'] = 0;
+			$multiVoteCounts[$action_num]['eligible'] = 0;
+			$multiVoteCounts[$action_num]['total'] = 0;
 		}
+		if($titleRestriction == "" && $advisoryFlag) {return $multiVoteCounts;}
 		foreach($multiVoteCounts as $key => $item) {
 			$totalVotes = $eligibleVotes;
 			$multiVoteCounts[$key]['for']= $multiVoteCounts[$key]['against'] = $multiVoteCounts[$key]['abstain'] = 0;
 			$stmt = "SELECT $pollDataTable.vote, count($pollDataTable.vote) as voteCount FROM $pollDataTable INNER JOIN Users ON Users.user_id=$pollDataTable.user_id";
-			$stmt .= " WHERE Users.title $titleRestriction'Assistant Professor' AND $pollDataTable.poll_id=$pollId AND $pollDataTable.action_num=$key GROUP BY $pollDataTable.vote";
+			$stmt .= " WHERE Users.title $titleRestriction AND $pollDataTable.poll_id=$pollId AND $pollDataTable.action_num=$key GROUP BY $pollDataTable.vote";
 			$result = $conn->query($stmt) or die($conn->error);
 			while($row = $result->fetch_assoc()) {
 				$vote = $row["vote"];
 				$voteCount = $row["voteCount"];
 				$totalVotes = $totalVotes - $voteCount;
-				if($vote == "0") {
+				if($vote == "1") {
 					$multiVoteCounts[$key]['for'] = $voteCount;
 				}
-				if($vote == "1") {
+				if($vote == "2") {
 					$multiVoteCounts[$key]['against'] = $voteCount;
 				}
-				if($vote == "2") {
+				if($vote == "3") {
 					$multiVoteCounts[$key]['abstain'] = $voteCount;
 				}
 			}
@@ -98,28 +124,28 @@
 		return $multiVoteCounts;
 	}
 	//The rest of the poll types
-	function getVoteCounts($pollId, $pollDataTable, $conn, $advisoryFlag=0) {
-		if($advisoryFlag == 1) { $titleRestriction="=";}
-		else { $titleRestriction="!=";}
+	function getVoteCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn,$advisoryFlag=0) {
 		$voteCounts = array("for"=> 0,"eligible"=>0,"against"=>0, "abstain"=>0, "total"=>0);
-		$voteCounts['eligible'] =  getEligibleVotes($pollId,$conn,$advisoryFlag);
+		$titleRestriction = getTitleRestrictions($profTitle, $pollType,$advisoryFlag);
+		if($titleRestriction == "" && $advisoryFlag) {return $voteCounts;}
+		$voteCounts['eligible'] =  getEligibleVotes($pollId,$profTitle,$pollType,$conn,$advisoryFlag);
 		$vote = $voteCount = 0;
 		$totalVotes = $voteCounts['eligible'];
 		$stmt = "SELECT $pollDataTable.vote, count($pollDataTable.vote) as voteCount FROM $pollDataTable INNER JOIN Users ON Users.user_id=$pollDataTable.user_id";
-		$stmt .= " WHERE Users.title $titleRestriction'Assistant Professor' AND $pollDataTable.poll_id=$pollId GROUP BY $pollDataTable.vote";
-		$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
+		$stmt .= " WHERE Users.title $titleRestriction AND $pollDataTable.poll_id=$pollId GROUP BY $pollDataTable.vote";
+		//$stmt = "SELECT vote, count(vote) AS voteCount FROM $pollDataTable WHERE poll_id=$pollId GROUP BY vote";
 		$result = $conn->query($stmt) or die($conn->error);
 		while($row = $result->fetch_assoc()) {
 			$vote = $row["vote"];
 			$voteCount = $row["voteCount"];
 			$totalVotes = $totalVotes - $voteCount;
-			if($vote == "0") {
+			if($vote == "1") {
 				$voteCounts['for'] = $voteCount;
 			}
-			if($vote == "1") {
+			if($vote == "2") {
 				$voteCounts['against'] = $voteCount;
 			}
-			if($vote == "2") {
+			if($vote == "3") {
 				$voteCounts['abstain'] = $voteCount;
 			}
 		}
@@ -179,9 +205,9 @@
 	if(empty($pollDataTable)) {
 		echo 'No Table for this pollType';
 	}
-	if($pollType == "Merrit" || $pollType == "Promotion") {
-		$multiActionCounts = getMultiActionCounts($pollId, $pollDataTable, $conn);
-		$multiAdActionCounts = getMultiActionCounts($pollId, $pollDataTable, $conn,1); 
+	if($pollType == "Merit" || $pollType == "Promotion") {
+		$multiActionCounts = getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn);
+		$multiAdActionCounts = getMultiActionCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn,1); 
 		foreach($multiActionCounts as $key => $item) {
 			$eligibleAdVotes = $multiAdActionCounts[$key]['eligible'];
 			$forAdCount = $multiAdActionCounts[$key]['for'];
@@ -234,8 +260,8 @@
 		}
 	}
 	else {
-		$voteCounts = getVoteCounts($pollId, $pollDataTable,$conn);
-		$voteAdCounts = getVoteCounts($pollId, $pollDataTable, $conn,1);
+		$voteCounts = getVoteCounts($pollId, $pollDataTable,$profTitle,$pollType,$conn);
+		$voteAdCounts = getVoteCounts($pollId, $pollDataTable, $profTitle,$pollType,$conn,1);
 
 		//advisory
 		$eligibleAdVotes = $voteAdCounts['eligible'];
