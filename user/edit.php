@@ -398,27 +398,6 @@
                                                     $redirect = $FIFTH_YEAR_APPRAISAL_FORM;
                                                 }
                                             } 
-                                            /*if($userTitle == $ASST) {
-                                                if($pollType == $MERIT) {
-                                                    $redirect = '../forms/merit.php';
-                                                } else { // Only other form available to Assistant professors 
-                                                    $redirect = '../forms/asst.php';
-                                                }
-                                            } elseif($userTitle == $ASSOC || $userTitle == $FULL) {
-                                                if($pollType == $MERIT) {
-                                                    $redirect = '../forms/merit.php';
-                                                } elseif($pollType == $PROMOTION) {
-                                                    $redirect = '../forms/promotion.php';
-                                                    //$redirect = '../forms/assoc_full.php';
-                                                } elseif($pollType == $REAPPOINTMENT) {
-                                                    $redirect = '../forms/reappointment.php';
-                                                } elseif($pollType == $FIFTH_YEAR_APPRAISAL) {
-                                                    $redirect = '../forms/fifthYearAppraisal.php';
-                                                } elseif($pollType == $FIFTH_YEAR_REVIEW) {
-                                                    $redirect = '../forms/quinquennial.php';
-                                                }
-                                            } // End of if( $userTitle == ($ASSOC || $FULL) )
-                                            */
                                         } else { // $_SESSION['title'] not set, have user 
                                                 // log in to reload data
                                             $msg = "edit.php: error - user title not set.\n";
