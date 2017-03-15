@@ -151,7 +151,8 @@
 	}
     } else { echo "savePoll.php: effective date not set\n"; }
     if($tmpDeactDate < $tmpActDate) {
-	   echo "Activation date must come before deactivation date.\n"; 
+	   echo "Activation date must come before deactivation date.\n";
+           return;
     }
 	
     if(isset($pollData['profTitle'])) {
