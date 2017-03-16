@@ -1,3 +1,4 @@
+CREATE DATABASE IF NOT EXISTS Voting;
 USE Voting;
 DROP TABLE IF EXISTS Users, Vote_Data, Votes, Voters, Professors;
 DROP TABLE IF EXISTS Assistant_Data, Associate_Promotion_Data, Fifth_Year_Appraisal_Data;
