@@ -162,14 +162,7 @@
 		<input type="text" class="form-control" name="profName" id="profName" placeholder="Professor's Full Name" value="<?php if(isset($_POST['profName'])) { echo htmlentities ($_POST['profName']); } ?>" >
 		<span id="profNameErr" class="help-block error"></span>
 	</div>
-	<div class="form-group">
-		<label for="profTitle">Professor Title</label>
-		<select class="form-control" id="profTitle" name="profTitle">
-    			<option value="Assistant Professor">Assistant Professor</option>
-    			<option value="Associate Professor">Associate Professor</option>
-    			<option value="Full Professor">Full Professor</option>
-		</select>
-	</div>
+	
 
 	<div class="form-group">
 		<label for="pollType">Poll Type</label>
@@ -179,6 +172,14 @@
     			<option value="Merit">Merit</option>
 			<option value="Promotion">Promotion</option>
 			<option value="Reappointment">Reappointment</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="profTitle">Professor Title</label>
+		<select class="form-control" id="profTitle" name="profTitle">
+    			<option value="Assistant Professor">Assistant Professor</option>
+    			<option value="Associate Professor">Associate Professor</option>
+    			<option value="Full Professor">Full Professor</option>
 		</select>
 	</div>
 	<div id="actions" class="form-group">
