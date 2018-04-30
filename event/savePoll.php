@@ -1,6 +1,6 @@
 <?php 
 	//echo "Entering savePoll.php";
-	require 'connDB.php';
+	require '../includes/connDB.php';
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = "";

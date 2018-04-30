@@ -1,6 +1,9 @@
-<?php 
+<?php /* Saves polls and sends email notifications
+         Email notification function at end of file */
     session_start();
-    
+	require_once '../includes/connDB.php';
+   	require_once "../mailer/autoload.php";
+    require_once "../../includes/functions.php";
     /*if(!isAdmin()) {
         signOut();
     } else if(idleLimitReached()) {
@@ -16,9 +19,9 @@
                 } else { return 0; }
             } else { // Error must have occurred
                     return 1; }
-        } else { // Error must have occurred 
+        } else { // Error must have occurred
             return 1; }
-    } // End of isValidSession() 
+    } // End of isValidSession()
 
     function isAdmin() {
         if(!empty($_SESSION['title'])) {
@@ -34,11 +37,11 @@
     function isSessionExpired() {
         $lastActivity = $_SESSION['LAST_ACTIVITY'];
         $timeOut = $_SESSION['IDLE_TIME_LIMIT'];
-        
+
         // Check if session has been active longer than IDLE_TIME_LIMIT
         if(time() - $lastActivity >= $timeOut) {
             return true;
-        } else { false; }   
+        } else { false; }
     }// End of isSesssionExpired()
 
     function updateLastActivity() {
@@ -64,7 +67,7 @@
         saveSessionVars();
         redirectToLogIn();
     }
-    
+
     function redirectToLogIn() {
         $jsRedirect = "<script type='text/javascript' ";
         $jsRedirect .= "src='http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js'></script>";
@@ -72,19 +75,20 @@
         echo $jsRedirect;
         return;
     }
-    
-/* Session verification ends here */ 
+
+/* Session verification ends here */
 	//echo "Entering savePoll.php\n";
-	require_once 'connDB.php';
-   	require_once "../mailer/autoload.php";
 
 	// Poll data
 	$pollId = $title = $descr = $actDate = $deactDate = $profTitle = "";
-    	$effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
+	$effDate = $pollType = $dept = $emailCmt = $name = $reason = $sendFlag = "";
+    $votingOptions = $pollNotice = $otherPollTypeInput = "";
+    $fromTitle = $fromStep = $toTitle = $toStep = "";
+    $assistantEvaluationNum = $associateEvaluationNum = $fullEvaluationNum = 0;
 	$emailInfo = $removeList = [];
 	// Voting data
 	$profName = $fName = $lName = $profId = $pollData = $votingInfo = "";
-    	$voters = []; $actions = [];	
+    	$voters = []; $actions = [];
 	//Set Timezone
 	date_default_timezone_set('America/Los_Angeles');
 
@@ -101,17 +105,17 @@
 			$votingInfo = $_POST["votingInfo"];
 			//echo " votingInfo: "; print_r($votingInfo);
 		} //else { echo "savePoll.php: error votingInfo not set"; }
-	        
+
 		if(isset($_POST["reason"])) {
 			$reason = $_POST["reason"];
 			$reason = mysqli_real_escape_string($conn,$reason);
 		} else { echo "savePoll.php: error reason not set"; }
 		if(isset($_POST["actions"])) {
 			$actions= ($_POST["actions"]);
-		} 
+		}
 	 //else { echo "savePoll.php: actions not set"; }
     } // End of if($_SERVER(..))
-    
+
     if(isset($pollData['title'])) {
         $title = $pollData['title'];
 	$title = mysqli_real_escape_string($conn,$title);
@@ -121,7 +125,6 @@
         $descr = $pollData['descr'];
 	$descr = mysqli_real_escape_string($conn,$descr);
     } else { echo "savePoll.php: description not set\n"; }
-
 
     if(isset($pollData['actDate'])) {
         $actDate = $pollData['actDate'];
@@ -151,38 +154,50 @@
 	}
     } else { echo "savePoll.php: effective date not set\n"; }
     if($tmpDeactDate < $tmpActDate) {
-<<<<<<< HEAD
 	   echo "Activation date must come before deactivation date.\n";
            return;
-=======
-	    echo "Activation date must come before deactivation date.\n";
-	    return; 
->>>>>>> 4e6e06403afb085bc924fcb00ef533bf423e65fe
     }
-	
+
     if(isset($pollData['profTitle'])) {
         $profTitle = $pollData['profTitle'];
     } else { echo "savePoll.php: profTitle not set\n"; }
 
     if(isset($pollData['pollType'])) {
+        $MERIT = "Merit";
+        $OTHER = "Other";
+        $PROMOTION = "Promotion";
+        $pollTypes = getPollTypes();
         $pollType = $pollData['pollType'];
+
+        if($pollTypes[$pollType] == $MERIT || $pollTypes[$pollType] == $OTHER || $pollTypes[$pollType] == $PROMOTION) {
+            $assistantEvaluationNum = $pollData['assistantEvaluationNum'];
+            $associateEvaluationNum = $pollData['associateEvaluationNum'];
+            $fullEvaluationNum = $pollData['fullEvaluationNum'];
+        }
+        if($pollTypes[$pollType] == 'Other') {
+            $otherPollTypeInput = $pollData['otherPollTypeInput'];
+        }
     } else { echo "savePoll.php: poll type not set\n"; }
+
+    if(isset($pollData['pollNotice'])) {
+        $pollNotice = $pollData['pollNotice'];
+    } else { echo "savePoll.php: pollNotice not set\n"; }
 
 
     if(isset($pollData['name'])) {
-	$name = $pollData['name'];
-	$name = mysqli_real_escape_string($conn,$name);
+	   $name = $pollData['name'];
+	   $name = mysqli_real_escape_string($conn,$name);
     } else { echo "savePoll.php: professor name not set\n"; }
 
 
     if(isset($pollData['dept'])) {
         $dept = $pollData['dept'];
     } else { echo "savePoll.php: department not set\n"; }
-    
-    if(isset($pollData['emailCmt'])) {
+
+    /*if(isset($pollData['emailCmt'])) {
         $emailCmt = $pollData['emailCmt'];
 	$emailCmt = mysqli_real_escape_string($conn,$emailCmt);
-    } else { echo "savePoll.php: emailCmt not set\n"; }
+    } else { echo "savePoll.php: emailCmt not set\n"; } */
 
 
     if(isset($pollData['pollId'])) {
@@ -193,54 +208,69 @@
         $sendFlag = $pollData['sendFlag'];
     } else { $sendFlag = 0; } // Only save poll if no flag
 
+    $votingOptions = $pollData['votingOptions'];
+    $assistantForm = $pollData['assistantForm'];
+    $associateForm = $pollData['associateForm'];
+    $fullForm = $pollData['fullForm'];
+    // End of setting variable ----------------------------
+
     //echo "pollId set to 30\n";
     //$pollId = 36;
     $userName = $_SESSION['userName'];
+    // echo "Poll_ID: ".$pollId;
     if($pollId > 0) { // Update Polls database if pollId exists
         //echo 'Updating existing poll id: '.$pollId."\n";
         // Update modification history
 
 		$history=":edit:" . "$userName" . ":" . date("Y-m-d") . ":" . $reason;
-		
+
         // Mysql command to update Poll information
         $cmd = "UPDATE Polls SET title='$title', description='$descr', actDate='$actDate', ";
 		$cmd .= "deactDate='$deactDate' , history=CONCAT(history,'$history'), effDate='$effDate',";
-        $cmd .= " name='$name', dept='$dept', pollType='$pollType', profTitle='$profTitle' WHERE poll_id='$pollId'";	
+        $cmd .= " name='$name', dept='$dept', pollType='$pollType', profTitle='$profTitle', otherPollTypeInput='$otherPollTypeInput',";
+        $cmd .= "votingOptions='$votingOptions', notice='$pollNotice', assistantForm='$assistantForm',associateForm='$associateForm',";
+        $cmd .= "fullForm='$fullForm', assistantEvaluationNum='$assistantEvaluationNum', associateEvaluationNum='$associateEvaluationNum',";
+        $cmd .= " fullEvaluationNum='$fullEvaluationNum' WHERE poll_id='$pollId'";
         //echo "updating cmd: $cmd\n";
-		//echo "Update Polls cmd: $cmd";
+		// echo "Update Polls cmd: $cmd";
 		$result = mysqli_query($conn, $cmd);
-			
+
 		if(!$result) { echo "savePoll.php: could not update Polls table\n".mysqli_error($conn)."\n"; }
-		
+
 	} else { // Create new Poll in database
-        //echo "Poll id not found. Creating new poll\n";
-	// Update modification history
-        $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason; 
+        // echo " Creating new poll\n";
+        // echo "associate: $associateEvaluationNum full: $fullEvaluationNum";
+        // Update modification history
+        $history="create:" ."$userName" . ":" . date("Y-m-d") . ":" . $reason;
 
         // Mysql command to create new Poll
-        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,dept,history,profTitle)";
-	$cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$dept','$history','$profTitle')";
-	//echo "$cmd";
+        $cmd = "INSERT INTO Polls(title,description,actDate,deactDate,effDate,name,pollType,otherPollTypeInput,dept,history,profTitle,";
+        $cmd .= "votingOptions,notice,assistantForm,associateForm,fullForm,assistantEvaluationNum,associateEvaluationNum,fullEvaluationNum)";
+        $cmd .= " VALUES('$title','$descr','$actDate','$deactDate','$effDate','$name','$pollType','$otherPollTypeInput','$dept','$history',";
+        $cmd .= "'$profTitle','$votingOptions','$pollNotice','$assistantForm','$associateForm','$fullForm','$assistantEvaluationNum',";
+        $cmd .= "'$associateEvaluationNum','$fullEvaluationNum')";
+	    // echo "$cmd";
 
-        $result = mysqli_query($conn,$cmd);	
+        $result = mysqli_query($conn,$cmd);
 		// Create new poll
 		if($result) {
-            // Order table by id from highest ID number to the lowest ID number and  
+            // Order table by id from highest ID number to the lowest ID number and
             // limit the result to the first ID number to get the most recently added poll
             $getIDCmd = "SELECT * FROM Polls ORDER BY poll_id DESC LIMIT 1";
             $result = mysqli_query($conn, $getIDCmd);
-            
+
             if($result) {
                 $row = $result->fetch_assoc();
                 $pollId = $row['poll_id'];
                 //echo 'New pollId: '.$pollId."\n";
                 //echo "Finished updating Polls table\n";
             } else { echo "savePoll.php: could not fetch poll ID\n"; }
-        } else { echo mysqli_error($conn); 
-				//echo "savePoll.php: could not execute INSERT command $cmd\n"; 
-		} 
+        } else { echo mysqli_error($conn);
+				//echo "savePoll.php: could not execute INSERT command $cmd\n";
+		}
 	}// End of updating Polls table
-   //If Multiple Actions are set in forms(Only applicable for Merrit and Promotion) 
+
+    //If Multiple Actions are set in forms(Only applicable for Merrit and Promotion)
     if($actions) {
 	    $oldActionCount = 0;
 	    $query = "SELECT count(action_num) FROM Poll_Actions WHERE poll_id=?";
@@ -250,8 +280,8 @@
 	    mysqli_stmt_bind_result($stmt, $oldActionCount) or die(mysqli_error($conn));
 	    mysqli_stmt_fetch($stmt);
 	    mysqli_stmt_close($stmt);
-	    //echo $oldActionCount; 
-	    //Deletes old Poll Actions 
+	    //echo $oldActionCount;
+	    //Deletes old Poll Actions
 	    if($oldActionCount) {
 	    	   $query = "DELETE FROM Poll_Actions WHERE poll_id=?";
 		   $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
@@ -260,20 +290,22 @@
 	    	   mysqli_stmt_close($stmt);
 	    }
 	    //Insert new Poll Actions
-	    $actionNum = $fromLevel = $toLevel = $accelerated = -1;
-	    $query = "INSERT INTO Poll_Actions(poll_id, action_num, fromLevel, toLevel, accelerated) VALUES(?,?,?,?,?)";
+	    $actionNum = $fromTitle = $fromStep = $toTitle = $toStep = $accelerated = -1;
+	    $query = "INSERT INTO Poll_Actions(poll_id, action_num, fromTitle, fromStep, toTitle, toStep, accelerated) VALUES(?,?,?,?,?,?,?)";
 	    $stmt = mysqli_prepare($conn,$query) or die(mysqli_error($conn));
-	    mysqli_stmt_bind_param($stmt, "iiiii", $pollId, $actionNum, $fromLevel, $toLevel, $accelerated) or die(mysqli_error($conn));
+	    mysqli_stmt_bind_param($stmt, "iissssi", $pollId, $actionNum, $fromTitle, $fromStep, $toTitle, $toStep, $accelerated) or die(mysqli_error($conn));
 	    for($i=0; $i < count($actions); $i++) {
 		    $actionNum = $i + 1;
-		    $fromLevel = $actions[$i]["fromLevel"];
-		    $toLevel = $actions[$i]["toLevel"];
+		    $fromTitle = $actions[$i]["fromTitle"];
+            $fromStep = $actions[$i]["fromStep"];
+		    $toTitle = $actions[$i]["toTitle"];
+            $toStep = $actions[$i]["toStep"];
 		    $accelerated = $actions[$i]["accelerated"];
 		    mysqli_stmt_execute($stmt) or die(mysqli_error($conn));
-	    }	
+	    }
 	    mysqli_stmt_close($stmt);
-    } 		
-    //****Get rid of voter comments		
+    }
+    //****Get rid of voter comments
     if($votingInfo) {// Update Voters table
         //echo "Updating Voters table\n";
         $profNames = array_keys($votingInfo);
@@ -284,7 +316,7 @@
 
         if($result) {
            if($result->num_rows > 0) {
-                // Keep list of professor ID's 
+                // Keep list of professor ID's
                 $idList = [];
 
                 while($row = $result->fetch_assoc()) {
@@ -294,7 +326,7 @@
                 $tmpProfNames = array_map('strtolower',$profNames);
                 //echo 'profNames converted to lower: ';print_r($tmpProfNames);
 
-                // Check if the previous participants are still in the current vote 
+                // Check if the previous participants are still in the current vote
                 // (may have been removed if admin edits a saved poll)
                 foreach ($idList as $id) {
                     $getNameCmd = "SELECT fName, lName FROM Users WHERE user_id='$id'";
@@ -302,7 +334,7 @@
 
                     if($result->num_rows > 0) {
                         $removeList = [];
-                       
+
                         while($row = $result->fetch_assoc()) {
                             $name = $row['fName'];
                             $name .= " ".$row['lName'];
@@ -314,16 +346,16 @@
                             if(in_array($name,$tmpProfNames) == false) {
                                 //echo 'name: '.$name." not found in currently voting professors\n";
                                 $removeList[] = $id;
-                            } else { 
+                            } else {
                                 // if user is found then user remains in the current vote
                                 $voters[] = $id; }
                         }
                     }
-                    
+
                     // Remove professors from current poll
                     foreach($removeList as $id) {
                         //echo 'removing from vote id: '.$id."\n";
-                    
+
                         $delCmd = "DELETE FROM Voters WHERE user_id='$id'";
                         $result = mysqli_query($conn, $delCmd);
 
@@ -334,22 +366,22 @@
                 }// End of foreach
            } // End of if
         } else { echo "savePoll.php: error executing getProfsCmd\n"; }
-        
+
         if($profNames) {
-            // Add professors to current poll by inserting prof's 
+            // Add professors to current poll by inserting prof's
             // id and comment into the Voters table
             $e = $email = "";
             //echo 'ProfNames: '; print_r($profNames);
             foreach($profNames as $name) {
-                // Get user id of each professor 
+                // Get user id of each professor
                 //echo 'Name:'.$name."\n" ;
                 $nameSplit = explode(' ',$name);
                 $fName = $nameSplit[0];
                 $lName = $nameSplit[1];
-                
+
                 $selectCmd = "SELECT user_id, email FROM Users WHERE fName='$fName' and lName='$lName'";
                 $result = mysqli_query($conn,$selectCmd);
-                
+
                 if($result) {
                     $row = $result->fetch_assoc();
                     $id = $row['user_id'];
@@ -359,37 +391,54 @@
                     if(!$email) { echo "savePoll.php: error getting email"; }
 
                     $cmt = $votingInfo[$name];
-                    
-                    // Store information for sending emails 
+
+                    // Store information for sending emails
                     $e = array( "name" => $name,
                                 //"comment" => $cmt,
                                 "email" => $email );
                     $emailInfo[] = $e;
-                    
-                    // Voter already part of current vote then UPDATE voters data 
+
+                    // Voter already part of current vote then UPDATE voters data
                     if(in_array($id, $voters)) {
                         //echo 'update voter: '.$id." comment\n";
                         //$updateVoter = "UPDATE Voters SET comment='$cmt' WHERE user_id='$id' AND poll_id='$pollId'";
                         //$result = mysqli_query($conn, $updateVoter);
 
-                        //if(!$result) { echo "savePoll.php: could not update voter: $id info"; } 
+                        //if(!$result) { echo "savePoll.php: could not update voter: $id info"; }
                     } else { // Voter is new to poll, i.e INSERT voter into poll
-                        //echo "inserting new voter: $id into Voters table\n";
-                        //echo "voters: ";print_r($voters);
                         // Add id to voters[] for use when sending emails
-                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, pollEndDate, voteFlag) ";
-                        $addToPollCmd .= "VALUES('$id','$pollId','$deactDate','0')";
+                        $addToPollCmd = "INSERT INTO Voters(user_id, poll_id, submissionDate, voteFlag) ";
+                        $addToPollCmd .= "VALUES('$id','$pollId',NULL,'0')";
                         $result = mysqli_query($conn,$addToPollCmd);
-                        
-                        if(!$result) { echo "savePoll.php: could not insert user_id='$id' into poll using: $addToPollCmd\n"; }
+
+                        if(!$result) { echo "savePoll.php: ".mysqli_error($conn); }
                     }
-                } else { echo "savePoll.php: could not get user_id for user='$name'\n"; };
-            }// End of foreach    
+                } else {
+                    echo "savePoll.php: could not get user_id for user='$name'\n";
+                    $removePoll = "DELETE FROM polls WHERE p_id={$poll_id}";
+                    $result = mysqli_query($conn,$removePoll);
+                };
+            }// End of foreach
         }// End of adding profs to poll
     } // End of updating Voters table
 
+    function isPollSet($id,$table) {
+        global $conn;
+        $exists = false;
+        $query = "SELECT count(*) FROM $table WHERE poll_id=$id";
+
+        $result = mysqli_query($conn, $query);
+        if($results) {
+            $row = $results->fetch_assoc();
+            // echo "row: "; print_r($row);
+        } else { // Query failed to execute display error
+            echo "savePoll.php: ". mysqli_error($conn);
+        }
+
+        return $exists;
+    }
     // Function that sends emails, function call below this function
-    function sendEmail($name, $cmt, $email) { 
+    function sendEmail($name, $cmt, $email) {
             //PHPMailer Object
         $mail = new PHPMailer;
 
@@ -433,12 +482,12 @@
 
         //Send HTML or Plain Text email
         $mail->isHTML(true);
-        $mail->Subject = "Sent from vote.php";
-        
+        $mail->Subject = "New poll alert";
+
         // Compose message body
         $bodyMsg = "<h1>Comment:</h1> <br>" . $cmt . "<br>";
-        $bodyMsg .= "<hr><br>Please follow the link to access your "; 
-        $voteLink = "<a href='localhost/vote/index.php'>voting documents</a><br>";
+        $bodyMsg .= "<hr><br>Please follow the link to access your ";
+        $voteLink = "<a href='www.engr.ucr.edu/intranet/vote/'>voting documents</a><br>";
         $bodyMsg .= $voteLink;
 
         $mail->Body = $bodyMsg;
@@ -456,9 +505,10 @@
         }
 
         return;
-    } // End of function sendMail() 
-
-    if($sendFlag) { // Send email to all voters participating in poll
+    } // End of function sendMail()
+    // Send email to all voters participating in poll
+    // $sendFlag = 0;
+    if($sendFlag) {
         // User info variables
         $name = $email = "";
 	//$cmt = "";
@@ -468,8 +518,6 @@
             $email = $userInfo["email"];
 
             sendEmail($name,$emailCmt,$email);
-        }   
+        }
     } // End of sending emails
-
-    
 ?>

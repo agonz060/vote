@@ -2,9 +2,9 @@
     session_start();
     //var_dump($_SESSION);
     
-    if(idleTimeLimitReached()) {
+    /*if(idleTimeLimitReached()) {
         signOut();
-    } else { updateLastActivity(); }
+    } else { updateLastActivity(); } */
 
     function idleTimeLimitReached() {
         if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -63,10 +63,8 @@
         echo $jsRedirect;
         return;
     }
-// End session verification  
-?>
-<?php
-    require_once '../event/connDB.php';
+    // End session verification  
+    //require_once '../event/connDB.php';
     //echo "1";
     // Poll data
     // * NOTE: $_voteData is data posted from a database(storage)
@@ -84,7 +82,7 @@
             $action = $_POST['action'];
 
             if($action == $CANCEL) {
-                cancelVote();
+                cancelVote($pollData);
             }         
         } else { // Get poll data posted by /user/edit.php 
             //echo "Loading poll data<br>";

@@ -1,22 +1,23 @@
-<?php 
+<?php
     session_start();
     //var_dump($_SESSION);
-    
+    require_once "../includes/connDB.php";
+    require_once "../includes/functions.php";
     /*if(idleTimeLimitReached()) {
         signOut();
     } else { updateLastActivity(); }
     */
     function idleTimeLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+        if(isset($_SESSION['LAST_ACTIVITY'])) {
+            if(isset($_SESSION['IDLE_TIME_LIMIT'])) {
                 if(isSessionExpired()) {
                     return 1;
                 } else { return 0; }
             } else { // Error must have occurred
                 return 1; }
-        } else { // Error must have occurred 
+        } else { // Error must have occurred
             return 1; }
-    } // End of isValidSession() 
+    } // End of isValidSession()
 
     // Check for expired activity
     function isSessionExpired() {
@@ -25,7 +26,7 @@
         // Check if session has been active longer than IDLE_TIME_LIMIT
         if(time() - $lastActivity >= $timeOut) {
             return true;
-        } else { false; }   
+        } else { false; }
     }// End of isSesssionExpired()
 
     function updateLastActivity() {
@@ -63,23 +64,22 @@
         echo $jsRedirect;
         return;
     }
-    // Form data 
+    // Form data
     // * NOTE: $_voteData is user data previously submitted by the user
     //                     sent from review.php
-    $pollData = $_voteData = "";
+    $pollData = $voteData = "";
     $name = $pollType = $profTitle = $dept = $effDate = "";
-    // Vote data 
+    // Vote data
     $comment = "";
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
-        //print_r($_POST);
+        // print "post data: "; print_r($_POST); print "<hr>";
         //echo "here";
-        if(!empty($_POST['cancelVote'])) {
-            echo "canceling vote";
+        if(isset($_POST['cancelVote'])) {
             cancelVote();
         }
 
-        if(!empty($_POST['pollData'])) {
+        if(isset($_POST['pollData'])) {
             $pollData = $_POST['pollData'];
             $pollData = json_decode($pollData,true);
 
@@ -87,17 +87,16 @@
             $pollType = $pollData['pollType'];
             $dept = $pollData['dept'];
             $effDate = $pollData['effDate'];
-        } else { // Error  
+        } else { // Error
             $alertMsg = "fifthYearAppraisal.php: error loading pollData";
             alertAndRedirect($alertMsg);
         }
-
-        if(!empty($_POST['_voteData'])) {
-            $_voteData = $_POST['_voteData'];
-            $_voteData = json_decode($_voteData,true);  
-        } 
+        if(isset($_POST['voteData'])) {
+            $voteData = $_POST['voteData'];
+            $voteData = json_decode($voteData,true);
+        }
     } // End of if($_SERVER[...])
-    
+
     function cancelVote() {
         updateAndSaveSession();
         redirectToReviewPage();
@@ -117,7 +116,7 @@
         echo $jsRedirect;
         return;
     }
-// End of PHP 
+// End of PHP
 ?>
 <html>
 <head>
@@ -135,11 +134,11 @@
 <div>
 <p class="preface">
 <strong>NOTE:</strong> Comment may be submitted to the chair prior to the department meeting if the
-faculty member wishes to remain anonymous and/or will not be able to attend the meeting 
+faculty member wishes to remain anonymous and/or will not be able to attend the meeting
 and would like the comments brought up at the meeting for discussion.<br>
 </p>
 <p class="preface">
-[Use this statement for ECE & CEE advisory ballots instead of the above <strong>NOTE</strong> above..ie. Use instead: 
+[Use this statement for ECE & CEE advisory ballots instead of the above <strong>NOTE</strong> above..ie. Use instead:
 Comment may be submitted to the chair prior to the department meeting if the faculty member will
 not be able to attend the meeting and would like the comments brought up at the meeting for discussion.]<br>
 </p>
@@ -150,38 +149,37 @@ Comments not discussed at the meeting will not be reflected in the department le
 </div>
 <hr/>
 <div>
-<p> 
-I cast my vote regarding the recomendation for <?php
-	$displayStr = "$name's 5<sup>th</sup>-Year Appraisal in the $dept ";
-	$displayStr .= "Department, effective $effDate.<br>";  
-	echo $displayStr
+<p>
+I cast my vote regarding the recomendation for
+    <?php
+    	$displayStr = "$name's 5<sup>th</sup>-Year Appraisal in the $dept ";
+    	$displayStr .= "Department, effective $effDate.<br>";
+    	echo $displayStr;
 // End PHP ?>
 </p>
 Positive: <input type="radio" id="positiveVote" name="vote" value="1"><br>
-<!--
-Positive with qualifications: <input type="radio" name="vote" value="1"><br>
+Positive with qualifications: <input type="radio" name="vote" value="4"><br>
 <p id="posPreface" name="posPreface" class="preface" style="display:none">(Please state qualifications below. A Positive with qualification(s) vote cannot be cast unless
 reasons for qualification(s) are discussed at the department meeting)<br></p>
--->
 <!-- <textarea id="qualificationsCmts" name="qualifications" row="8" style="width:100%; display:none"></textarea> -->
 Opposed: <input type="radio" id="opposedVote" name="vote" value="2"><br>
 Abstain: <input type="radio" id="abstainVote" name="vote" value="3"><br>
 <hr/>
 <strong>TEACHING</strong> (Please list positive and negative aspects):<br>
 <textarea id="teachingCmts" name="teaching" rows="8" style="width:100%">
-<?php if(!empty($_voteData)) { echo $_voteData['teachingCmts']; } ?>
+<?php if(isset($voteData)) { echo $voteData['teachingCmts']; } ?>
 </textarea>
 <strong>RESEARCH</strong> (Please list positive and negative aspects):<br>
 <textarea id="researchCmts" name="research" rows="8" style="width:100%">
-<?php if(!empty($_voteData)) { echo $_voteData['researchCmts']; } ?>
+<?php if(isset($voteData)) { echo $voteData['researchCmts']; } ?>
 </textarea>
 <strong>PUBLIC SERVICE</strong> (Please list positive and negative aspects):<br>
 <textarea id="pubServiceCmts" name="pubService" rows="8" style="width:100%">
-<?php if(!empty($_voteData)) { echo $_voteData['pubServiceCmts']; } ?>
+<?php if(isset($voteData)) { echo $voteData['pubServiceCmts']; } ?>
 </textarea>
 </div>
 <hr/>
-<p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
+<p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the
 department FAO within <strong><u>TWO DAYS</u></strong> following the department meeting.
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
@@ -198,47 +196,50 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 <!-- End of HTML body -->
 <!-- Scripting begins -->
 <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
-<script> 
+<script>
     loadVoteData();
     // Document ready
     $(function() {
-        var IN_FAVOR_VOTE = 2;
+        var QUALIFICATIONS_VOTE = 4;
 		$("input[type=radio][name=vote]").change(function() {
-			if(this.value == IN_FAVOR_VOTE) {
+			if(this.value == QUALIFICATIONS_VOTE) {
 				$('#posPreface').show();
 			}
 			else {
 				$('#posPreface').hide();
 			}
 		});
-		$("#submitButton").click(function() { 
+		$("#submitButton").click(function() {
 			//getVoteData();
-			submitVote(); 
+			submitVote();
 		});
     }); // End of document ready
 
     function loadVoteData() {
-        var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+        var QUALIFICATIONS_VOTE = 4;
+        var loadData = <?php if(isset($pollData['READ_ONLY'])) { echo 1; }
                                 else { echo 0; } ?>;
-        if(loadData) {        
-            var vote = <?php if(!empty($_voteData['vote'])) 
-                                { echo $_voteData['vote']; } 
+        if(loadData) {
+            var vote = <?php if(isset($voteData['vote']))
+                                { echo $voteData['vote']; }
                                 else { echo 0; } ?>;
 
             $("input[name=vote][value="+vote+"]").attr('checked','checked');
-        }  
+            if(vote == QUALIFICATIONS_VOTE) {
+                $('#posPreface').show();
+            }
+        }
     }
 
-    function getVoteData() {
-    	var IN_FAVOR_VOTE = 2;
+    function getFormData() {
         var _vote = $("input[name=vote]:checked").val();
         var _teachingCmts = $("#teachingCmts").val();
         var _researchCmts = $("#researchCmts").val();
         var _pubServiceCmts = $("#pubServiceCmts").val();
-        
+
         //alert("vote:"+_vote+" teaching:"+_teachingCmts+" research:"+_researchCmts+" public: "+_pubServiceCmts);
 
-        if(_teachingCmts.length == 0 || !_teachingCmts.trim()) {
+        /*if(_teachingCmts.length == 0 || !_teachingCmts.trim()) {
         	var noCmtEntered = "Teaching comments are required to submit vote.";
         	alert(noCmtEntered);
         	return 0;
@@ -250,10 +251,10 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         	var noCmtEntered = "Public service comments are required to submit vote.";
         	alert(noCmtEntered);
         	return 0;
-        }
+        }*/
 
         if(_vote > 0 && _vote <= 4) {
-            var voteData = { vote: _vote, teachingCmts: _teachingCmts 
+            var voteData = { vote: _vote, teachingCmts: _teachingCmts
             				, researchCmts: _researchCmts
             				, pubServiceCmts: _pubServiceCmts };
             var voteDataStr = "vote: "+_vote;
@@ -261,7 +262,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
             	voteDataStr += " pubSerCmts: "+_pubServiceCmts;
 			//alert(voteDataStr);
             return voteData;
-        } else { // Vote missing 
+        } else { // Vote missing
             var voteMissing = "Please select a voting option before submitting.";
             alert(voteMissing);
             return 0;
@@ -270,32 +271,32 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
 
     // Helper functions begin here
     function submitVote() {
-        var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+        var isReadOnly = <?php if(isset($pollData['READ_ONLY'])) { echo 1; }
                                 else { echo 0; } ?>;
         if(!isReadOnly) {
-        var userVoteData = getVoteData();
+        var userVoteData = getFormData();
         if(userVoteData) {
             //alert(userVoteData);
-            var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
+            var _pollData = <?php if(isset($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
             //alert(_pollData);
             if(_pollData) {
                 //alert(_pollData);
                 $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
-                            , function(data) { 
+                            , function(data) {
                                 if(data) { // Error occured during submission
                                     alert(data);
                                 } else { // Successful submission
                                     alert("Thank you for voting!");
                                     window.location.href = "../user/edit.php";
-                                } 
+                                }
                             }) // End of function()
                         .fail(function() {
                             var msg = "asst.php : error posting to submitVote.php";
                             alert(msg);
                 }); // End of $.post(...)
             }
-        } 
-        } // End of if(!isReadOnly)   
+        }
+        } // End of if(!isReadOnly)
     }
 </script>
 <!-- Scripting ends -->

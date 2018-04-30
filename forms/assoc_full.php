@@ -284,7 +284,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                                 } 
                             }) // End of function()
                         .fail(function() {
-                            var msg = "asst.php : error posting to submitVote.php";
+                            var msg = "assoc_full.php : error posting to submitVote.php";
                             alert(msg);
                 }); // End of $.post(...)
             }

@@ -1,5 +1,5 @@
 <?php 
-    require_once '../event/connDB.php';
+    require_once '../includes/connDB.php';
     session_start(); 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if(!empty($_POST["home"])) {
@@ -31,14 +31,12 @@
 		<ul class="nav navbar-nav">
 			<li><a href="../home.php">Home</a></li>
 			<li><a href="../vote.php">Create Poll</a></li>
-			<li><a href="editTable.php">Edit Poll</a></li>
+			<li><a href="../edit.php">Edit Poll</a></li>
 			<li class="active"><a href="reviewTable.php">Review Poll</a></li>
 			<li><a href="../add.php">Add User</a></li>
 		</ul>
 	</div>
 </nav>
-<!-- Last change here from 'require' -> 'require_once' -->
-<?php require_once "loadEditTable.php"; ?>
 <div class="container">
 <table class="table table-responsive table-bordered table-hover" align="center">
 	<thead>

@@ -1,16 +1,15 @@
 <?php 
     session_start();
 
-    require_once "event/sessionHandling.php";
-    require_once "event/redirections.php";
-
-    if(!isAdmin()) {
-        signOut();
-    } else if(idleLimitReached()) {
-        signOut();
-    }
+    //require_once "includes/sessionHandling.php";
+    //require_once "includes/redirections.php";
+    require_once "includes/connDB.php";
+    // if(!isAdmin()) {
+    //     signOut();
+    // } else if(idleLimitReached()) {
+    //     signOut();
+    // }
     
-require_once 'event/connDB.php';
 #<!-- Define variables -->
 $firstName = $lastName = $email = $title = $pass1 = $pass2 = $hashPass = "";
 $tmpPass1 = $tmpPass2 = $registrationErr = $errFirstName = "";
@@ -148,8 +147,8 @@ function cleanInput($data) {
 		<ul class="nav navbar-nav">
 			<li><a href="home.php">Home</a></li>
 			<li><a href="vote.php">Create Poll</a></li>
-			<li><a href="edit/editTable.php">Edit Poll</a></li>
-			<li><a href="edit/reviewTable.php">Review Poll</a></li>
+			<li><a href="edit.php">Edit Poll</a></li>
+			<li><a href="review.php">Review Poll</a></li>
 			<li class="active"><a href="add.php">Add User</a></li>
 		</ul>
 	</div>
@@ -200,8 +199,6 @@ function cleanInput($data) {
 <!-- Form ends here -->
 </form>
 </div>
-</body>
-</html>
 <!-- Scripts begin here -->
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script type="text/javascript">
@@ -233,3 +230,5 @@ function cleanInput($data) {
     };
 // Script ends here
 </script>
+</body>
+</html>

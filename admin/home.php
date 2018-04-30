@@ -1,15 +1,14 @@
-<?php // Session verification 
+<?php // Session verification
     session_start();
-    require_once "event/sessionHandling.php";
-    require_once "event/redirections.php";                                                                                                                                                                  
-    if(!isAdmin()) {
-        signOut();
-    } else if(idleLimitReached()) {
-        signOut();
-    }
- // End Session verification?>
-<?php
-    require_once 'event/connDB.php'; 
+    require_once 'includes/sessionHandling.php';
+    require_once 'includes/redirections.php';
+    require_once 'includes/connDB.php';
+
+    // if(!isAdmin()) {
+    //     signOut();
+    // }
+
+    // End Session verification
      /* $_SERVER(POST) starts here */
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         if(!empty($_POST['action'])) {
@@ -30,7 +29,7 @@
                     redirectToVotePage();
                 } else if($action == $EDIT) {
                     saveSessionVars();
-                    redirectToEditPage();      
+                    redirectToEditPage();
                 } else if($action == $REVIEW) {
                     saveSessionVars();
                     redirectToReviewPage();
@@ -38,15 +37,13 @@
                     signOut();
                     saveSessionVars();
                     redirectToLogIn();
-                } 
+                }
             } else { // End of isValidSession()
                 signOut();
             } // End of else
-        } 
+        }
     } // End of $_SERVER['REQUEST_METHOD']
-/* $_SERVER(POST) ends here */
-?>
-<?php
+
     function getOutstandingVotes($conn, $user_id) {
 	    $outstandingVotes = 0;
 	    $query = "SELECT count(user_id) AS COUNT FROM Voters WHERE user_id=?";
@@ -59,7 +56,6 @@
     }
     $outstandingVotes = getOutstandingVotes($conn, $_SESSION['user_id']);
 ?>
-<body>
 <head>
 <title>Home</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -68,11 +64,11 @@
 	margin-bottom: 0px;
     }
     div.jumbotron {
-	background-image: url('http://newsroom.ucr.edu/images/releases/2787_0hi.jpg');
+	background-image: url('../images/home.jpg');
 	background-size: cover;
 	color: white;
 	background-repeat: no-repeat;
-	text-shadow: black 1px 1px 1px;	
+	text-shadow: black 1px 1px 1px;
 	min-height: 100%;
 	text-align: center;
 	margin-bottom: 0;
@@ -83,19 +79,20 @@
     }
 </style>
 </head>
+<body>
 <nav class="navbar navbar-default">
-	<div class="container-fluid">
-		<div class="navbar-header">
-			<a class="navbar-brand" href="home.php">BCOE Voting</a>
-		</div>
-		<ul class="nav navbar-nav">
-			<li class="active"><a href="home.php">Home</a></li>
-			<li><a href="vote.php">Create Poll</a></li>
-			<li><a href="edit/editTable.php">Edit Poll</a></l>
-			<li><a href="edit/reviewTable.php">Review Poll</a></li>
-			<li><a href="add.php">Add User</a></li>
-		</ul>
-	</div>
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="home.php">BCOE Voting</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="home.php">Home</a></li>
+            <li><a href="vote.php">Create Poll</a></li>
+            <li><a href="edit.php">Edit Poll</a></li>
+            <li><a href="review.php">Review Poll</a></li>
+            <li><a href="manage.php">Manage Users</a></li>
+        </ul>
+    </div>
 </nav>
 <div class="jumbotron">
 	<h1>Welcome <?php echo htmlspecialchars($_SESSION["userName"]); ?>!</h1>
@@ -104,7 +101,7 @@
     		<form id="menuForm" method="post" action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
     			<button name="action" value="signOut" class="btn btn-transparent">Sign Out</button>
     		</form>
-	</div> 
+	</div>
 
 	<!--
 	<p>You have <?php echo $outstandingVotes; ?> polls to vote on.</p>
@@ -121,6 +118,7 @@
 
     function reloadPage() {
         location.reload();
-    };                 
+    };
 </script> <!-- Scripting ends here -->
 </body> <!-- Document body ends here -->
+</html>

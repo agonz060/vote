@@ -7,8 +7,8 @@
     } else { updateLastActivity(); }
     */
     function idleTimeLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+        if(isset($_SESSION['LAST_ACTIVITY'])) {
+            if(isset($_SESSION['IDLE_TIME_LIMIT'])) {
                 if(isSessionExpired()) {
                     return 1;
                 } else { return 0; }
@@ -64,9 +64,9 @@
         return;
     }
     // Form data 
-    // * NOTE: $_voteData is user data previously submitted by the user
+    // * NOTE: $voteData is user data previously submitted by the user
     //                     sent from review.php
-    $pollData = $_voteData = "";
+    $pollData = $voteData = "";
     $name = $pollType = $profTitle = $dept = $effDate = "";
     // Vote data 
     $comment = "";
@@ -74,12 +74,12 @@
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         //print_r($_POST);
         //echo "here";
-        if(!empty($_POST['cancelVote'])) {
-            echo "canceling vote";
+        if(isset($_POST['cancelVote'])) {
+            // echo "canceling vote";
             cancelVote();
         }
 
-        if(!empty($_POST['pollData'])) {
+        if(isset($_POST['pollData'])) {
             $pollData = $_POST['pollData'];
             $pollData = json_decode($pollData,true);
 
@@ -92,9 +92,9 @@
             alertAndRedirect($alertMsg);
         }
 
-        if(!empty($_POST['_voteData'])) {
-            $_voteData = $_POST['_voteData'];
-            $_voteData = json_decode($_voteData,true);  
+        if(isset($_POST['voteData'])) {
+            $voteData = $_POST['voteData'];
+            $voteData = json_decode($voteData,true);  
         } 
     } // End of if($_SERVER[...])
     
@@ -169,7 +169,7 @@ Abstain: <input type="radio" name="vote" value="3"></br>
 <hr/>
 Comments:</br>
 <textarea id="voteCmt" rows="8" style="width:100%"><?php 
-        if(!empty($_voteData['voteCmt'])) { echo $_voteData['voteCmt']; } ?></textarea>
+        if(isset($voteData['voteCmt'])) { echo $voteData['voteCmt']; } ?></textarea>
 </div>
 <hr/>
 <p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
@@ -202,11 +202,11 @@ $(function() { // Document ready
 }); // End JQuery document ready
 
 function loadVoteData() {
-    var loadData = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+    var loadData = <?php if(isset($pollData['READ_ONLY'])) { echo 1; }
                             else { echo 0; } ?>;
     if(loadData) {  // Load and display user data from server     
-        var vote = <?php if(!empty($_voteData['vote'])) 
-                            { echo $_voteData['vote']; } 
+        var vote = <?php if(isset($voteData['vote'])) 
+                            { echo $voteData['vote']; } 
                             else { echo 0; } ?>;
         $('input[name=vote][value='+vote+']').attr('checked','checked');
     }  
@@ -214,22 +214,22 @@ function loadVoteData() {
 
 function getVoteData() {
     var IN_FAVOR_VOTE = 2;
-    var _vote = $("input[name=vote]:checked").val();
-    var _voteCmt = $("#voteCmt").val();
-    //alert("vote:"+_vote+" _comments:"+_comments);
+    var vote = $("input[name=vote]:checked").val();
+    var voteCmt = $("#voteCmt").val();
+    //alert("vote:"+vote+" _comments:"+_comments);
 
-    if(_vote) {
-        if(_voteCmt.length == 0 || !_voteCmt.trim()) {
+    if(vote) {
+        if(voteCmt.length == 0 || !voteCmt.trim()) {
             var noCmtEntered = "Comment(s) required to submit vote.";
             alert(noCmtEntered);
             return 0;
         } 
 
-        if(_vote > 0 && _vote <= 3) {
-            var voteData = { vote: _vote, voteCmt: _voteCmt };
+        if(vote > 0 && vote <= 3) {
+            var voteData = { vote: vote, voteCmt: voteCmt };
             /*
-            var voteDataStr = "vote: "+_vote;
-                voteDataStr += "voteCmt: " + _voteCmt; 
+            var voteDataStr = "vote: "+vote;
+                voteDataStr += "voteCmt: " + voteCmt; 
             alert(voteDataStr);
             */
             return voteData;
@@ -241,13 +241,13 @@ function getVoteData() {
     }
 }
 function submitVote() {
-        var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
-                                else { echo 0; } ?>;
-        if(!isReadOnly) {
+    var isReadOnly = <?php if(isset($pollData['READ_ONLY'])) { echo 1; }
+                            else { echo 0; } ?>;
+    if(!isReadOnly) {
         var userVoteData = getVoteData();
         if(userVoteData) {
             //alert(userVoteData);
-            var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
+            var _pollData = <?php if(isset($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
             //alert(_pollData);
             if(_pollData) {
                 $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
@@ -260,14 +260,14 @@ function submitVote() {
                                 } 
                             }) // End of function()
                         .fail(function() {
-                            var msg = "asst.php : error posting to submitVote.php";
+                            var msg = "reappointment.php : error posting to submitVote.php";
                             alert(msg);
                 }); // End of $.post(...)
             }
         } else { // Error while getting vote data
             alert("Something went wrong while collecting vote information.");
         }
-        } // End of if(!isReadOnly)   
+    } // End of if(!isReadOnly)   
 } // End of submitVote()
 </script>
 </html>

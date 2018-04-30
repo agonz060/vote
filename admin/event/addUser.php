@@ -1,5 +1,4 @@
 <body>
-<!-- Start PHP -->
 <?php
 
 #<!-- Define variables -->

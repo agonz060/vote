@@ -1,17 +1,10 @@
 <?php
+	require_once '../includes/connDB.php';
+
 	if(isset($_POST["poll_id"])) {
-		$servername = "localhost";
-		$username = "root";
-		$pwd = "Computer_Science99";
-		$db = "Voting";
 		$resultsAvailable = false;
 
-		$conn = new mysqli($servername, $username, $pwd, $db);
-
-		if($conn->connect_error) {
-			echo "deleteRow.php: Connection error: " . $conn->connect_error . "<br>";
-		}
-		$id = $_POST["poll_id"];	
+		$id = $_POST["poll_id"];
 		$delCmd = "DELETE from Polls WHERE poll_id=$id";
 		$result = mysqli_query($conn, $delCmd);
 
@@ -21,9 +14,8 @@
 		$result = mysqli_query($conn,$delVotersCmd);
 
 		if(!$result) { echo "deleteRow.php: could not delete voters with poll_id: $id"; }
-
 	}
 	else {
-		echo "deleteRow.php: poll_id not set"; 
+		echo "deleteRow.php: poll_id not set";
 	}
-?>
+

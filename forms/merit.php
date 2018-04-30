@@ -1,22 +1,22 @@
-<?php 
+<?php
     session_start();
     //var_dump($_SESSION);
-    
+
     if(idleTimeLimitReached()) {
         signOut();
     } else { updateLastActivity(); }
 
     function idleTimeLimitReached() {
-        if(!(empty($_SESSION['LAST_ACTIVITY']))) {
-            if(!empty($_SESSION['IDLE_TIME_LIMIT'])) {
+        if(isset($_SESSION['LAST_ACTIVITY'])) {
+            if(isset($_SESSION['IDLE_TIME_LIMIT'])) {
                 if(isSessionExpired()) {
                     return 1;
                 } else { return 0; }
             } else { // Error must have occurred
                 return 1; }
-        } else { // Error must have occurred 
+        } else { // Error must have occurred
             return 1; }
-    } // End of isValidSession() 
+    } // End of isValidSession()
 
     // Check for expired activity
     function isSessionExpired() {
@@ -25,7 +25,7 @@
         // Check if session has been active longer than IDLE_TIME_LIMIT
         if(time() - $lastActivity >= $timeOut) {
             return true;
-        } else { false; }   
+        } else { false; }
     }// End of isSesssionExpired()
 
     function updateLastActivity() {
@@ -64,24 +64,24 @@
         return;
     }
 
-    // Form data 
-    // * NOTE: $_voteData is user data previously submitted by the user
+    // Form data
+    // * NOTE: $voteData is user data previously submitted by the user
     //                     sent from review.php
-    $pollData = $_voteData = "";
+    $pollData = $voteData = "";
     $name = $pollType = $profTitle = $dept = $effDate = "";
     $READ_ONLY = "";
-    // Vote data 
+    // Vote data
     $comment = "";
 
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         //print_r($_POST);
         //echo "here";
-        if(!empty($_POST['cancelVote'])) {
-            echo "canceling vote";
+        if(isset($_POST['cancelVote'])) {
+            //echo "canceling vote";
             cancelVote();
         }
 
-        if(!empty($_POST['pollData'])) {
+        if(isset($_POST['pollData'])) {
             $pollData = $_POST['pollData'];
             $pollData = json_decode($pollData,true);
 
@@ -94,19 +94,19 @@
 
             if(isset($pollData['actionInfoArray'])) {
                 $actionInfoArray = $pollData['actionInfoArray'];
-
+                //print("ActionInfo: "); print_r($actionInfoArray);
             }
-        } else { // Error  
+        } else { // Error
             $alertMsg = "merit.php: error loading pollData";
             alertAndRedirect($alertMsg);
         }
 
-        if(!empty($_POST['_voteData'])) {
-            $_voteData = $_POST['_voteData'];
-            $_voteData = json_decode($_voteData,true);  
-        } 
+        if(isset($_POST['voteData'])) {
+            $voteData = $_POST['voteData'];
+            $voteData = json_decode($voteData,true);
+        }
     } // End of if($_SERVER[...])
-    
+
     function cancelVote() {
         updateAndSaveSession();
         redirectToReviewPage();
@@ -137,8 +137,8 @@
         $romanArr[10] = "X";
         return $romanArr[$num];
     }
-// End of PHP 
-?> 
+// End of PHP
+?>
 <html>
 <head>
 <title>Faculty Confidential Advisory Vote To The Chair</title>
@@ -155,7 +155,7 @@
 <div>
 <p class="preface">
 <strong>NOTE:</strong> Comment may be submitted to the chair prior to the department meeting if the
-faculty member wishes to remain anonymous and/or will not be able to attend the meeting 
+faculty member wishes to remain anonymous and/or will not be able to attend the meeting
 and would like the comments brought up at the meeting for discussion.<br>
 </p>
 <p class="preface">
@@ -167,13 +167,14 @@ Comments not discussed at the meeting will not be reflected in the department le
 </div>
 <hr>
 <!-- Start voting options -->
-<?php // Displaying voting options in PHP  
+<?php // Displaying voting options in PHP
     // Voting options are broken up into HTML strings stored in variables
     // to be display appropiate actions (i.e if a vote has 2 actions, then
-    // $action = $intro, $step, $outro, $voteOptions, $completeVoteComment will  
+    // $action = $intro, $step, $outro, $voteOptions, $completeVoteComment will
     // be displayed twice)
     $displayActions = array();
-    // 
+    $fromTitle = $fromStep = $toTitle = $toStep = "";
+    //
     if($numActions > 0 && $numActions <= 3) {
         $actionCount = 0;
         $actionInfo = "";
@@ -181,25 +182,25 @@ Comments not discussed at the meeting will not be reflected in the department le
         while($actionCount < $numActions) {
             $actionNum = $actionCount + 1;
             $voteNum = "vote".$actionNum;
-            $index = $actionCount;
 
-            if($index < $numActions) {
-                $actionInfo = $actionInfoArray[$index];
+            if($actionCount < $numActions) {
+                $actionInfo = $actionInfoArray[$actionNum ];
+                $fromTitle = $actionInfo['fromTitle'];
+                $fromStep = $actionInfo['fromStep'];
+                $toTitle = $actionInfo['toTitle'];
+                $toStep = $actionInfo['toStep'];
             }
             // Default intro
-            $intro = "<div>\n<p>\nI cast my vote regarding the recomendation for $name's $pollType Advancement from Professor, ";
+            $intro = "<div>\n<p>\nI cast my vote regarding the recomendation for $name's $pollType Advancement from $fromTitle, ";
             if($actionInfo['accelerated']) {
                 // Accelerted intro
-                $intro = "<div>\n<p>\nI cast my vote regarding the recomendation for $name's Accelerated $pollType Advancement from Professor, ";
+                $intro = "<div>\n<p>\nI cast my vote regarding the recomendation for $name's Accelerated $pollType Advancement from $fromTitle, ";
             }
-            // Setup var's 
-            $fromLevel = intToRoman($actionInfo['fromLevel']);
-            $toLevel = intToRoman($actionInfo['toLevel']);
-            // Insert variables 
-            $step = "Step ".$fromLevel." (OS) to Professor, Step ".$toLevel;
-            $outro = " in the Department of $dept, effective $effDate <br>\n</p>";
+            // Insert variables
+            $step = "$fromStep to $toTitle, $toStep ";
+            $outro = "in the Department of $dept, effective $effDate <br>\n</p>";
             // Setup vote options using action number
-            $voteOptions = "In Favor: <input type='radio' name='".$voteNum."' value='1'>&nbsp;&nbsp;&nbsp;  
+            $voteOptions = "In Favor: <input type='radio' name='".$voteNum."' value='1'>&nbsp;&nbsp;&nbsp;
                             Opposed: <input type='radio' name='".$voteNum."' value='2'>&nbsp;&nbsp;&nbsp;
                             Abstain: <input type='radio' name='".$voteNum."' value='3'><br>\n<hr>";
             $startVoteComment = "Comments:<br>
@@ -218,11 +219,11 @@ Comments not discussed at the meeting will not be reflected in the department le
         while($displayCount < $numActions) {
             echo $displayActions[$displayCount];
             $displayCount += 1;
-        } 
+        }
     } // End of Displaying Actions
  // End dipslaying voting options in PHP ?>
 <!-- End voting options -->
-<p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the 
+<p> Ballots must be received by the BCOE Central Personnel Services Unit(CSPU) Office or the
 department FAO within <strong><u>TWO DAYS</u></strong> following the department meeting.
 <span style="color: #FF0000; font-weight:bold">All absentee ballots must be recieved <u>prior</u> to the department meeting.</span>
 </p>
@@ -261,18 +262,18 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         var voteData = [];
         var loadData = <?php if(empty($pollData['READ_ONLY'])) { echo 0; }
                                 else { echo 1; } ?>;
-        var voteDataArray = <?php if(isset($_voteData)) {
-                                echo json_encode($_voteData);
+        var voteDataArray = <?php if(isset($voteData)) {
+                                echo json_encode($voteData);
                             } else { echo 0; }?>;
         //console.log(voteData);
-        if(loadData && voteData) { 
-            numActions = <?php if(isset($numActions)) { 
-                                echo $numActions; 
+        if(loadData && voteData) {
+            numActions = <?php if(isset($numActions)) {
+                                echo $numActions;
                             }   else { echo -1; } ?>;
 
             if(numActions == ERROR) {
                 alert("Could not retrieve $numActions from server");
-            }  else {  // Proceed to Display action data    
+            }  else {  // Proceed to Display action data
                 while(displayCount < numActions) {
                     index = displayCount;
                     actionNum = index + 1;
@@ -297,7 +298,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                     displayCount += 1;
                 } // End of while(displayCount < numActions)
             } // End of else(...)
-        } // End if(loadData) 
+        } // End if(loadData)
     }  // End of loadVoteData()
      function getVoteData() {
         var ERROR = -1;
@@ -305,8 +306,8 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
         var voteDataArray = [];
         var actionErrors = [];
 
-        var numActions = <?php if(isset($numActions)) { 
-                                echo $numActions; 
+        var numActions = <?php if(isset($numActions)) {
+                                echo $numActions;
                             }   else { echo -1; } ?>;
         //console.log(actionInfoArray);
         if(numActions == ERROR) {
@@ -320,16 +321,16 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                 var index = actionCount;
                 var action = actionCount + 1;
                 // Get comment related to the current action
-                var actionVoteCmt = '#voteCmt' + action; 
+                var actionVoteCmt = '#voteCmt' + action;
                 var _comment = $(actionVoteCmt).val();
                 // Get vote related to the current action
                 actionVote = "input[name=vote" + action + "]:checked";
-                var _vote = $(actionVote).val();
+                var vote = $(actionVote).val();
                 // Store user action data if vote is valid
-                if(_vote) {
-                    var voteData = { voteCmt: _comment, vote: _vote }
+                if(vote) {
+                    var voteData = { voteCmt: _comment, vote: vote }
                     voteDataArray.push(voteData);
-                } else { // Vote missing 
+                } else { // Vote missing
                     actionErrors.push(action);
                 }
                 // Increment count to avoid infinite loop
@@ -355,23 +356,23 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
     } // End of getVoteData()
     // Helper functions begin here
     function submitVote() {
-        var isReadOnly = <?php if(!empty($pollData['READ_ONLY'])) { echo 1; }
+        var isReadOnly = <?php if(isset($pollData['READ_ONLY'])) { echo 1; }
                                 else { echo 0; } ?>;
         if(!isReadOnly) {
             var userVoteData = getVoteData();
             if(userVoteData) {
                 //alert(userVoteData);
-                var _pollData = <?php if(!empty($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
+                var _pollData = <?php if(isset($pollData)) { echo json_encode($pollData); } else {echo 0;} ?>;
                 //alert(_pollData);
                 if(_pollData) {
                     $.post("../user/submitVote.php", { voteData: userVoteData, pollData: _pollData }
-                                , function(data) { 
+                                , function(data) {
                                     if(data) { // Error occured during submission
                                         alert(data);
                                     } else { // Successful submission
                                         alert("Thank you for voting!");
                                         window.location.href = "../user/edit.php";
-                                    } 
+                                    }
                                 }) // End of function()
                             .fail(function() {
                                 var msg = "merit.php : error posting to submitVote.php";
@@ -379,7 +380,7 @@ department FAO within <strong><u>TWO DAYS</u></strong> following the department 
                     }); // End of $.post(...)
                 }// End of if(_pollData)
             } // End of if(userVoteData)
-        } // End of if(!isReadOnly)   
+        } // End of if(!isReadOnly)
     } // End of submitVote()
 </script>
 </html>

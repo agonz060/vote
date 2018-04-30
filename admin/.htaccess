@@ -1,0 +1,3 @@
+# Make sure admin/* are not displayed to user
+# unless user knows the direct URL
+Options -Indexes

@@ -1,10 +1,12 @@
-<?php 
+<?php
     session_start();
 
-    require_once "event/sessionHandling.php";
-    require_once "event/redirections.php";
+    require_once "includes/sessionHandling.php";
+    require_once "includes/redirections.php";
+    require_once "includes/connDB.php";
+    require_once "../includes/functions.php";
 
-    // Session verfication 
+    // Session verfication
     if(!isAdmin()) {
         signOut();
     } else if(idleLimitReached()) {
@@ -12,24 +14,23 @@
     }
     // End Session verification
 
-    require_once 'edit/connDB.php';
-	require_once "edit/loadEditTable.php";
 
-    // Server POST capture here  
+    // Server POST capture here
     if($_SERVER["REQUEST_METHOD"] == "POST") {
-    	// User menu options 
+    	// User menu options
 		if(!empty($_POST["home"])) {
-			redirectToHome();	
+			redirectToHome();
 		}
     }
 ?>
 <html>
 <head>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+<title>Edit Polls</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 	.button-edit {
 		color: white;
-		background: rgb(28,184,65); 
+		background: rgb(28,184,65);
 		width: 80px;
 	}
 	.button-delete {
@@ -41,11 +42,23 @@
 </head>
 <body>
 <!-- User Menu -->
-<form method='post' id='menuForm' action='<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>'>
-<button name="home" value="home" class="pure-button">Home</button>
-</form>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="home.php">BCOE Voting</a>
+			</div>
+			<ul class="nav navbar-nav">
+				<li><a href="home.php">Home</a></li>
+				<li><a href="vote.php">Create Poll</a></li>
+				<li class="active"><a href="edit.php">Edit Poll</a></li>
+				<li><a href="review.php">Review Poll</a></li>
+				<li><a href="manage.php">Manage Users</a></li>
+			</ul>
+		</div>
+	</nav>
 <!-- End User Menu -->
-<table class="pure-table pure-table-bordered" align="center">
+<div class="container">
+<table class="table table-responsive table-hover table-bordered" align="center">
 	<thead>
 		<tr>
 			<th>Title</th>
@@ -58,12 +71,13 @@
 	</thead>
 	<tbody>
 		<?php
-			// Only display inactive polls (polls that have a start date > current date) 
+			// Only display inactive polls (polls that have a start date > current date)
 			$selectCmd="Select * from Polls Where deactDate > CURDATE()";
 			$result = $conn->query($selectCmd);
-
+			$encodedPollData = "";
 			// Get poll data for displaying
 			while($row = $result->fetch_assoc()) {
+				$encodedPollData = json_encode($row);
 				$poll_id = $row["poll_id"];
 				$title = $row["title"];
 				$description = $row["description"];
@@ -92,7 +106,8 @@
 						</td>
 						<td>
 							<form method='post' id='editForm' action='vote.php'>
-								<button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button>
+								<button class='button-edit pure-button' name='pollData' value='$encodedPollData'>Edit</button>
+								<!-- <button class='button-edit pure-button' name='poll_id' value='$poll_id'>Edit</button> -->
 								<input type='hidden' name='title' value='$title'>
 								<input type='hidden' name='description' value='$description'>
 								<input type='hidden' name='dateActive' value='$actDate'>
@@ -102,22 +117,24 @@
 								<input type='hidden' name='dept' value='$dept'>
 								<input type='hidden' name='effDate' value='$effDate'>
 							</form>
-							<button class='button-delete pure-button' value='$poll_id'>Delete</button> 	
-						</td>			
+							<button class='button-delete pure-button' value='$poll_id'>Delete</button>
+						</td>
 					</tr>";
 			}
 		?>
 	</tbody>
 </table>
+</div>
 <!-- End of web page HTML -->
 <!-- Start script -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script>
     $(document).ready(function() {
         $(".button-delete").click(function() {
             var confirmation = prompt("Type DELETE if you are sure you want to delete entry");
-            if(confirmation == "DELETE") { 
-                var poll_id = $(this).val();        
-                $.post("event/deleteRow.php", {poll_id : poll_id}, 
+            if(confirmation == "DELETE") {
+                var poll_id = $(this).val();
+                $.post("edit/deleteRow.php", {poll_id : poll_id},
                 function(response,status) {
                     location.reload();
                 });

@@ -1,14 +1,11 @@
 <?php 
     session_start();
-    //var_dump($_SESSION);
-    timeSinceLastActivity();
+    
+    require_once '../includes/connDB.php';
 
     if(idleLimitReached()) {
         signOut();
-    } else {
-        unsetPollVariables();
-        updateLAstActivity();
-    }
+    } 
 
     function idleLimitReached() {
             if(!(empty($_SESSION['LAST_ACTIVITY']))) {
@@ -89,9 +86,7 @@
         redirectToLogIn();
     }
 /* End of session verification*/
-?>
-<?php 
-    require_once '../event/connDB.php';
+    
     if($_SERVER["REQUEST_METHOD"] == "POST") {
         if(!empty($_POST['action'])) {
                 $EDIT = "edit";
@@ -162,7 +157,7 @@
 	margin-bottom: 0px;
     }
     div.jumbotron {
-    	background-image: url('http://newsroom.ucr.edu/images/releases/2787_0hi.jpg');
+    	background-image: url('../images/home.jpg');
 	background-size: cover;
 	color: white;
         background-repeat: no-repeat;

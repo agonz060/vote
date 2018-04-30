@@ -1,0 +1,22 @@
+<style>
+	.menu-stack {
+		display: inline-block;
+	}
+</style>
+
+<div class="container">
+<div class="col-md-2">
+  <h3>Vertical Pills</h3>
+  <p>Use the .nav-stacked class to vertically stack pills:</p>
+  <ul class="nav nav-pills nav-stacked testing">
+    <li class="active"><a href="#">Home</a></li>
+    <li><a href="#">Menu 1</a></li>
+    <li><a href="#">Menu 2</a></li>
+    <li><a href="#">Menu 3</a></li>
+  </ul>
+</div>
+<div class="col-md-10">
+<h3>this is a test</h3>
+<p>you a beast you a beast you a beast you a beast you a beastyou a beast you a beast you a beast</p>
+</div>
+</div>

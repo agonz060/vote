@@ -1,6 +1,7 @@
 <?php 
-    require_once '../event/connDB.php';
     session_start();  
+    require_once '../includes/connDB.php';
+    require_once '../includes/loadEditTable.php';
     if($_SERVER["REQUEST_METHOD"] == "POST") {
 	if(!empty($_POST["home"])) {
 		redirectToHome();	
@@ -31,8 +32,6 @@
 		</ul>
 	</div>
 </nav>
-<!-- Last change here from 'require' -> 'require_once' -->
-<?php require_once "loadEditTable.php"; ?>
 <div class="container">
 <table class="table table-responsive table-hover table-bordered" align="center">
 	<thead>
