@@ -1,4 +1,5 @@
 <?php
+    require_once 'connDB.php';
 
 	function getActionCount($pollId) {
         global $conn;
@@ -38,15 +39,19 @@
         return $actionInfoArray;
     }
 
-	function getNotices () {
+	function getNotices() {
         global $conn;
+        $notice = array();
         $notices = array();
 
-        $getNotices = "SELECT n_id,notice FROM notices";
+        $getNotices = "SELECT n_id,type,notice FROM notices ORDER BY n_id ASC";
         $result = mysqli_query($conn,$getNotices);
         if($result) {
             while($row = $result->fetch_assoc()) {
-                $notices[$row['n_id']] = $row['notice'];
+                $notice['type'] = $row['type'];
+                $notice['notice'] = $row['notice'];
+
+                $notices[$row['n_id']] = $notice;
             }
         }
         return $notices;
@@ -55,14 +60,6 @@
     function getPollTypes() {
         global $conn;
         $pollTypes = array();
-
-        if(!empty($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
-        } else {
-            $msg = 'edit.php: error - user_id not set. Redirecting to log in..';
-            // alertMsg($msg);
-            signOut();
-        }
 
         $getTypes = "SELECT p_id,poll_type FROM poll_types ORDER BY p_id ASC";
         $result = mysqli_query($conn,$getTypes);
@@ -77,7 +74,7 @@
     function getDepartments() {
     	global $conn;
     	$depts = array();
-    	$getDeptQuery = "SELECT d_id,department from departments";
+    	$getDeptQuery = "SELECT d_id,department from departments ORDER BY d_id ASC";
     	$result = mysqli_query($conn,$getDeptQuery);
     	if($result = mysqli_query($conn,$getDeptQuery)) {
     		while($row = $result->fetch_assoc()) {
@@ -85,6 +82,36 @@
     		}
     	}
     	return $depts;
+    }
+
+    function getTitles() {
+        global $conn;
+        $titles = array();
+
+        $selectCmd = "SELECT t_id,title FROM titles ORDER BY title ASC";
+        if($result = $conn->query($selectCmd)) {
+            while($row = mysqli_fetch_assoc($result)) {
+                $titles[$row['t_id']] = $row['title'];
+            }
+        } else {
+            echo mysqli_error($conn);
+        }
+        return $titles;
+    }
+
+    function getVotingOptions() {
+        global $conn;
+        $votingOptions = array();
+
+        $getVotingOptionsQuery = "SELECT v_id,options from voting_options ORDER BY v_id ASC";
+        if($result = $conn->query($getVotingOptionsQuery)) {
+            while($row = mysqli_fetch_assoc($result)) {
+                $votingOptions[$row['v_id']] = $row['options'];
+            }
+        } else {
+            echo mysqli_error($conn);
+        }
+        return $votingOptions;
     }
 
     function getNewPollIDs() {
@@ -99,7 +126,7 @@
             alertMsg($msg);
             signOut();
         }
-
+        // Polls where user has not voted on
         $SELECTCMD = "SELECT poll_id FROM Voters WHERE user_id=$user_id ";
         $SELECTCMD .= "AND voteFlag=0";
         $result = mysqli_query($conn,$SELECTCMD);

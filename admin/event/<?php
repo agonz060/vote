@@ -1,0 +1,11 @@
+<?php
+	require_once '../includes/connDB.php';
+	// capture post data here
+	if($_SERVER["REQUEST_METHOD"] == "POST") {
+		$action = array();
+
+		if(isset($_POST['action'])) {
+			$action = $_POST['action'];
+			var_dump($action);
+		}
+	}

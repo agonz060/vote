@@ -351,29 +351,29 @@
 		}
 	}
 
-	function getVotingOptions($pollType,$otherVotingOptionsSet=0) {
-		$positiveOpposedAbstain = array("Positive","Positive w/ Qualifications","Opposed","Abstain");
-		$inFavorOpposedAbstain = array("In favor","Opposed","Abstain");
-		$satisfactory = array("Satisfactory","Unsatisfactory","Abstain");
-		$satisfactoryWQualifications = array("Satisfactory","Satisfactory with Qualifications","Unsatisfactory","Abstain");
-		if($otherVotingOptionsSet) {
-			$key = $otherVotingOptionsSet - 1;
-			$otherVotingOptions[] = $inFavorOpposedAbstain;
-			$otherVotingOptions[] = $satisfactory;
-			$otherVotingOptions[] = $satisfactoryWQualifications;
+	// function getVotingOptions($pollType,$otherVotingOptionsSet=0) {
+	// 	$positiveOpposedAbstain = array("Positive","Positive w/ Qualifications","Opposed","Abstain");
+	// 	$inFavorOpposedAbstain = array("In favor","Opposed","Abstain");
+	// 	$satisfactory = array("Satisfactory","Unsatisfactory","Abstain");
+	// 	$satisfactoryWQualifications = array("Satisfactory","Satisfactory with Qualifications","Unsatisfactory","Abstain");
+	// 	if($otherVotingOptionsSet) {
+	// 		$key = $otherVotingOptionsSet - 1;
+	// 		$otherVotingOptions[] = $inFavorOpposedAbstain;
+	// 		$otherVotingOptions[] = $satisfactory;
+	// 		$otherVotingOptions[] = $satisfactoryWQualifications;
 
-			return $otherVotingOptions[$key];
-		}
-		// Keys are the output of the pollTypeToTable() function, values are the votiing options
-		$options = array("merits"=>$inFavorOpposedAbstain,
-							"promotions" => $inFavorOpposedAbstain,
-							"reappointments" => $inFavorOpposedAbstain,
-							"fifth_year_reviews" =>$satisfactoryWQualifications,
-							"fifth_year_appraisals" => $positiveOpposedAbstain
-						 );
-		$key = getDataTable($pollType);
-		return $options[$key];
-	}
+	// 		return $otherVotingOptions[$key];
+	// 	}
+	// 	// Keys are the output of the pollTypeToTable() function, values are the votiing options
+	// 	$options = array("merits"=>$inFavorOpposedAbstain,
+	// 						"promotions" => $inFavorOpposedAbstain,
+	// 						"reappointments" => $inFavorOpposedAbstain,
+	// 						"fifth_year_reviews" =>$satisfactoryWQualifications,
+	// 						"fifth_year_appraisals" => $positiveOpposedAbstain
+	// 					 );
+	// 	$key = getDataTable($pollType);
+	// 	return $options[$key];
+	// }
 	function printReviewComments($comments,&$format) {
 		$QUALIFICATIONS = "qualificationsCmt";
 		$COMMENT = 'voteCmt';
